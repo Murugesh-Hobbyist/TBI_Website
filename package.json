@@ -1,0 +1,19 @@
+{
+  "name": "tbi-website",
+  "private": true,
+  "version": "1.0.0",
+  "description": "TBI Website monorepo",
+  "workspaces": [
+    "apps/server",
+    "apps/web"
+  ],
+  "engines": {
+    "node": ">=18 <=20"
+  },
+  "scripts": {
+    "dev": "node apps/server/server.js",
+    "build": "npm run build -w apps/web",
+    "start": "NODE_ENV=production node apps/server/server.js",
+    "db:migrate": "node apps/server/src/services/migrate.js"
+  }
+}
