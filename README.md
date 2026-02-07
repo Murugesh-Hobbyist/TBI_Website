@@ -41,3 +41,6 @@ App runs at `http://localhost:3000`.
   - Hostinger hint: set the app root to the repository root so `package.json` is detected, and use `npm start` (startup file `index.js`).
   - Do not use Hostinger's Git Deploy (Composer) tool for this app; use the Node.js Web App feature.
   - This repo's `npm run build` also copies `apps/web/.next` to root `.next` for Hostinger Next preset detection.
+  - Health check:
+    - If the Express server is running: `GET /healthz` returns JSON `{ ok: true }`.
+    - If Hostinger is only running Next preset (no Express): `GET /api/healthz` returns `{ ok: true, servedBy: 'next' }`.
