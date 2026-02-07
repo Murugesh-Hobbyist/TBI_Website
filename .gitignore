@@ -4,6 +4,7 @@ node_modules
 .DS_Store
 
 # Next.js
+.next
 apps/web/.next
 apps/web/out
 

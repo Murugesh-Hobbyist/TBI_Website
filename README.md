@@ -40,3 +40,4 @@ App runs at `http://localhost:3000`.
 - To deploy on Hostinger Business Node.js Web App, set `NODE_ENV=production` and use `npm run build` then `npm start`.
   - Hostinger hint: set the app root to the repository root so `package.json` is detected, and use `npm start` (startup file `index.js`).
   - Do not use Hostinger's Git Deploy (Composer) tool for this app; use the Node.js Web App feature.
+  - This repo's `npm run build` also copies `apps/web/.next` to root `.next` for Hostinger Next preset detection.
