@@ -28,6 +28,13 @@ nextApp.prepare().then(() => {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
 
+  app.get('/healthz', (req, res) => {
+    res.json({ ok: true });
+  });
+  app.get('/api/healthz', (req, res) => {
+    res.json({ ok: true });
+  });
+
   const hasDb =
     Boolean(process.env.DB_HOST) &&
     Boolean(process.env.DB_USER) &&
