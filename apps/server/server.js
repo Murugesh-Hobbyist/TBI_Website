@@ -65,8 +65,9 @@ nextApp.prepare().then(() => {
 
   app.all('*', (req, res) => handle(req, res));
 
-  const server = app.listen(port, () => {
-    console.log(`Server ready on http://localhost:${port}`);
+  const host = process.env.HOST || '0.0.0.0';
+  const server = app.listen(port, host, () => {
+    console.log(`Server ready on http://${host}:${port}`);
   });
 
   setupVoiceServer(server);
