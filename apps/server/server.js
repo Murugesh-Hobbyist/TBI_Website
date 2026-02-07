@@ -28,13 +28,29 @@ nextApp.prepare().then(() => {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
 
-  const sessionStore = new MySQLStore({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: Number(process.env.DB_PORT || 3306)
-  });
+  const hasDb =
+    Boolean(process.env.DB_HOST) &&
+    Boolean(process.env.DB_USER) &&
+    Boolean(process.env.DB_NAME);
+
+  let sessionStore;
+  if (hasDb) {
+    try {
+      sessionStore = new MySQLStore({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        port: Number(process.env.DB_PORT || 3306)
+      });
+    } catch (err) {
+      // Allow the app to boot even if DB is temporarily unavailable.
+      console.error('Session store init failed, falling back to MemoryStore:', err.message || err);
+      sessionStore = undefined;
+    }
+  } else {
+    console.warn('DB env not fully configured; using MemoryStore for sessions.');
+  }
 
   app.use(
     session({
