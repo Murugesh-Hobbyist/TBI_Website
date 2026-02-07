@@ -38,3 +38,4 @@ App runs at `http://localhost:3000`.
 - Voice assistant uses WebSocket at `/voice` and OpenAI Realtime API.
 - `OPENAI_TRANSCRIBE_MODEL` controls the transcription model used for user audio.
 - To deploy on Hostinger Business Node.js Web App, set `NODE_ENV=production` and use `npm run build` then `npm start`.
+  - Hostinger hint: set the app root to the repository root so `package.json` is detected, and use `npm start` (startup file `index.js`).

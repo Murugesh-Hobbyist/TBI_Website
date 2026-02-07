@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "TBI Website monorepo",
+  "main": "index.js",
   "workspaces": [
     "apps/server",
     "apps/web"
@@ -12,8 +13,9 @@
   },
   "scripts": {
     "dev": "node apps/server/server.js",
-    "build": "npm run build -w apps/web",
-    "start": "NODE_ENV=production node apps/server/server.js",
+    "build": "npm --prefix apps/web run build",
+    "postinstall": "npm run build",
+    "start": "node index.js",
     "db:migrate": "node apps/server/src/services/migrate.js"
   }
 }
