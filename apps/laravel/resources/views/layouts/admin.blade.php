@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>@yield('title', 'Admin').' | '.config('app.name')</title>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
+        <header class="border-b border-white/10">
+            <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+                <a href="{{ route('admin.dashboard') }}" class="font-display text-xl">{{ config('app.name') }} Admin</a>
+                <form method="POST" action="{{ route('admin.logout') }}">
+                    @csrf
+                    <button class="btn btn-ghost" type="submit">Logout</button>
+                </form>
+            </div>
+        </header>
+
+        <div class="mx-auto grid max-w-6xl gap-6 px-4 py-8 md:grid-cols-4">
+            <aside class="md:col-span-1">
+                <nav class="card p-4 text-sm text-white/80 space-y-1">
+                    <a class="block rounded-lg px-3 py-2 hover:bg-white/10" href="{{ route('admin.dashboard') }}">Dashboard</a>
+                    <a class="block rounded-lg px-3 py-2 hover:bg-white/10" href="{{ route('admin.projects.index') }}">Projects</a>
+                    <a class="block rounded-lg px-3 py-2 hover:bg-white/10" href="{{ route('admin.videos.index') }}">Videos</a>
+                    <a class="block rounded-lg px-3 py-2 hover:bg-white/10" href="{{ route('admin.products.index') }}">Products</a>
+                    <a class="block rounded-lg px-3 py-2 hover:bg-white/10" href="{{ route('admin.orders.index') }}">Orders</a>
+                    <a class="block rounded-lg px-3 py-2 hover:bg-white/10" href="{{ route('admin.leads.index') }}">Leads</a>
+                    <a class="block rounded-lg px-3 py-2 hover:bg-white/10" href="{{ route('admin.kb.index') }}">Knowledge Base</a>
+                </nav>
+
+                <div class="mt-4 text-xs text-white/50">
+                    Tip: publish KB articles to improve the AI assistant.
+                </div>
+            </aside>
+
+            <main class="md:col-span-3">
+                @if (session('status'))
+                    <div class="mb-6 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                @yield('content')
+            </main>
+        </div>
+    </body>
+</html>
+
