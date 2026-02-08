@@ -34,7 +34,7 @@ if (file_exists($__envFile)) {
         if (preg_match('/^APP_KEY=.*$/m', $__env)) {
             $__env = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY='.$__key, $__env, 1) ?: $__env;
         } else {
-            $__env = rtrim($__env).\"\\nAPP_KEY={$__key}\\n\";
+            $__env = rtrim($__env)."\nAPP_KEY={$__key}\n";
         }
 
         @file_put_contents($__envFile, $__env);
