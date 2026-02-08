@@ -13,10 +13,25 @@ class SiteController extends Controller
 {
     public function home()
     {
+        $featuredProducts = collect();
+        $featuredProjects = collect();
+        $featuredVideos = collect();
+        $dbOk = true;
+
+        try {
+            $featuredProducts = Product::query()->where('is_published', true)->latest()->limit(3)->get();
+            $featuredProjects = Project::query()->where('is_published', true)->latest('published_at')->limit(3)->get();
+            $featuredVideos = Video::query()->where('is_published', true)->latest('published_at')->limit(3)->get();
+        } catch (\Throwable $e) {
+            // Shared-hosting deployments may be live before DB credentials/migrations are ready.
+            $dbOk = false;
+        }
+
         return view('site.home', [
-            'featuredProducts' => Product::query()->where('is_published', true)->latest()->limit(3)->get(),
-            'featuredProjects' => Project::query()->where('is_published', true)->latest('published_at')->limit(3)->get(),
-            'featuredVideos' => Video::query()->where('is_published', true)->latest('published_at')->limit(3)->get(),
+            'featuredProducts' => $featuredProducts,
+            'featuredProjects' => $featuredProjects,
+            'featuredVideos' => $featuredVideos,
+            'dbOk' => $dbOk,
         ]);
     }
 
@@ -61,7 +76,11 @@ class SiteController extends Controller
             'ua' => Str::limit((string) $request->userAgent(), 512, '...'),
         ];
 
-        Lead::create($data);
+        try {
+            Lead::create($data);
+        } catch (\Throwable $e) {
+            return redirect()->route('contact')->with('status', 'Thanks. Message received (database setup pending).');
+        }
 
         return redirect()->route('contact')->with('status', 'Thanks. We will get back to you shortly.');
     }
@@ -82,9 +101,12 @@ class SiteController extends Controller
             'ua' => Str::limit((string) $request->userAgent(), 512, '...'),
         ];
 
-        Lead::create($data);
+        try {
+            Lead::create($data);
+        } catch (\Throwable $e) {
+            return redirect()->route('quote')->with('status', 'Quote request received (database setup pending).');
+        }
 
         return redirect()->route('quote')->with('status', 'Quote request received. We will contact you.');
     }
 }
-

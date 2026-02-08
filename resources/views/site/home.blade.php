@@ -4,6 +4,12 @@
 
 @section('content')
     <section class="mx-auto max-w-6xl px-4 pt-14">
+        @if (!($dbOk ?? true))
+            <div class="mb-8 rounded-2xl border border-orange-400/20 bg-orange-500/10 px-4 py-3 text-sm text-orange-100">
+                Site is live, but the database is not configured yet. Set `DB_*` values in `.env` and run migrations to publish Projects, Products, and Videos.
+            </div>
+        @endif
+
         <div class="grid gap-10 md:grid-cols-2 md:items-center">
             <div>
                 <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/70">
@@ -133,4 +139,3 @@
         </div>
     </section>
 @endsection
-
