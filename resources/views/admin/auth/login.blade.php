@@ -4,7 +4,26 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Admin Login | {{ config('app.name') }}</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @else
+            <script>
+                window.tailwind = window.tailwind || {};
+                window.tailwind.config = {
+                    theme: {
+                        extend: {
+                            fontFamily: {
+                                sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                                display: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+                            },
+                        },
+                    },
+                };
+            </script>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <link rel="stylesheet" href="{{ asset('assets/app.css') }}">
+            <script src="{{ asset('assets/app.js') }}" defer></script>
+        @endif
     </head>
     <body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
         <div class="mx-auto flex min-h-screen max-w-md items-center px-4">
@@ -34,4 +53,3 @@
         </div>
     </body>
 </html>
-

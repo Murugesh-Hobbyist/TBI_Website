@@ -8,7 +8,26 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700&family=fraunces:600,700&display=swap" rel="stylesheet" />
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @else
+            <script>
+                window.tailwind = window.tailwind || {};
+                window.tailwind.config = {
+                    theme: {
+                        extend: {
+                            fontFamily: {
+                                sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                                display: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+                            },
+                        },
+                    },
+                };
+            </script>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <link rel="stylesheet" href="{{ asset('assets/app.css') }}">
+            <script src="{{ asset('assets/app.js') }}" defer></script>
+        @endif
     </head>
     <body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
         <div class="pointer-events-none fixed inset-0 opacity-70">
@@ -74,7 +93,7 @@
                     </div>
                 </div>
                 <div class="mt-8 text-xs text-white/45">
-                    © {{ date('Y') }} {{ config('app.name', 'Finboard') }}. All rights reserved.
+                    (c) {{ date('Y') }} {{ config('app.name', 'Finboard') }}. All rights reserved.
                 </div>
             </div>
         </footer>
@@ -82,4 +101,3 @@
         @include('partials.assistant_widget')
     </body>
 </html>
-

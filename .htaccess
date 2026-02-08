@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # If this repo is deployed as the web root (shared hosting), route requests through /public
+    # without requiring server-level docroot changes.
+    RewriteRule ^public/ - [L]
+
+    # Serve existing files/dirs from /public
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -d
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Otherwise, forward to the Laravel front controller.
+    RewriteRule ^ public/index.php [L]
+</IfModule>
+
