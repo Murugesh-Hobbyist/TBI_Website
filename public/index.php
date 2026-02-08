@@ -93,29 +93,24 @@ if (!$__isLocalHost && file_exists($__envFile)) {
 if (!$__isLocalHost) {
     $__cacheDir = $__root.'/bootstrap/cache';
 
-    // Route cache: clear if routes/*.php are newer than cached routes.
-    $__routesMtime = max(
-        @filemtime($__root.'/routes/web.php') ?: 0,
-        @filemtime($__root.'/routes/api.php') ?: 0
-    );
-
-    if (is_dir($__cacheDir) && $__routesMtime > 0) {
+    // Route/config cache files can get "stuck" across git deployments. We
+    // unconditionally clear them so new routes/env values always take effect.
+    if (is_dir($__cacheDir)) {
         foreach ((array) glob($__cacheDir.'/routes-*.php') as $__f) {
-            if (is_file($__f) && @filemtime($__f) < $__routesMtime) {
+            if (is_file($__f)) {
                 @unlink($__f);
             }
         }
 
         $__legacyRoutes = $__cacheDir.'/routes.php';
-        if (is_file($__legacyRoutes) && @filemtime($__legacyRoutes) < $__routesMtime) {
+        if (is_file($__legacyRoutes)) {
             @unlink($__legacyRoutes);
         }
-    }
 
-    // Config cache: clear if .env is newer than cached config.
-    $__configCache = $__cacheDir.'/config.php';
-    if (is_file($__configCache) && is_file($__envFile) && @filemtime($__configCache) < @filemtime($__envFile)) {
-        @unlink($__configCache);
+        $__configCache = $__cacheDir.'/config.php';
+        if (is_file($__configCache)) {
+            @unlink($__configCache);
+        }
     }
 }
 
