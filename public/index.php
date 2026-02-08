@@ -18,26 +18,62 @@ define('LARAVEL_START', microtime(true));
 |
 */
 
+$__host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+$__hostBase = strtolower((string) strtok($__host, ':'));
+$__isLocalHost = in_array($__hostBase, ['localhost', '127.0.0.1', '::1'], true);
+
 $__root = dirname(__DIR__);
 $__envFile = $__root.'/.env';
 $__envExample = $__root.'/.env.example';
 
-if (!file_exists($__envFile) && file_exists($__envExample)) {
+// Avoid mutating local development environments.
+if (!$__isLocalHost && !file_exists($__envFile) && file_exists($__envExample)) {
     @copy($__envExample, $__envFile);
 }
 
-if (file_exists($__envFile)) {
+if (!$__isLocalHost && file_exists($__envFile)) {
     $__env = @file_get_contents($__envFile);
-    if ($__env !== false && !preg_match('/^APP_KEY=\\S+/m', $__env)) {
-        $__key = 'base64:'.base64_encode(random_bytes(32));
+    if ($__env !== false) {
+        $__dirty = false;
 
-        if (preg_match('/^APP_KEY=.*$/m', $__env)) {
-            $__env = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY='.$__key, $__env, 1) ?: $__env;
-        } else {
-            $__env = rtrim($__env)."\nAPP_KEY={$__key}\n";
+        // Ensure APP_KEY is set (required for cookies/sessions).
+        if (!preg_match('/^APP_KEY=\\S+/m', $__env)) {
+            $__key = 'base64:'.base64_encode(random_bytes(32));
+            $__dirty = true;
+
+            if (preg_match('/^APP_KEY=.*$/m', $__env)) {
+                $__env = preg_replace('/^APP_KEY=.*$/m', 'APP_KEY='.$__key, $__env, 1) ?: $__env;
+            } else {
+                $__env = rtrim($__env)."\nAPP_KEY={$__key}\n";
+            }
         }
 
-        @file_put_contents($__envFile, $__env);
+        // Production-safe defaults for shared hosting (avoid leaking stack traces).
+        if (preg_match('/^APP_ENV=local\\s*$/m', $__env)) {
+            $__env = preg_replace('/^APP_ENV=local\\s*$/m', 'APP_ENV=production', $__env, 1) ?: $__env;
+            $__dirty = true;
+        }
+
+        if (preg_match('/^APP_DEBUG=true\\s*$/m', $__env)) {
+            $__env = preg_replace('/^APP_DEBUG=true\\s*$/m', 'APP_DEBUG=false', $__env, 1) ?: $__env;
+            $__dirty = true;
+        }
+
+        // Prevent DB-backed session failures until DB credentials are configured.
+        if (preg_match('/^SESSION_DRIVER=database\\s*$/m', $__env)) {
+            $__env = preg_replace('/^SESSION_DRIVER=database\\s*$/m', 'SESSION_DRIVER=file', $__env, 1) ?: $__env;
+            $__dirty = true;
+        }
+
+        // Keep queues working without needing DB tables.
+        if (preg_match('/^QUEUE_CONNECTION=database\\s*$/m', $__env)) {
+            $__env = preg_replace('/^QUEUE_CONNECTION=database\\s*$/m', 'QUEUE_CONNECTION=sync', $__env, 1) ?: $__env;
+            $__dirty = true;
+        }
+
+        if ($__dirty) {
+            @file_put_contents($__envFile, $__env);
+        }
     }
 }
 
