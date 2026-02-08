@@ -1,18 +1,37 @@
-# Finboard Website
+# Finboard Website (Laravel)
 
-This repo now contains a Laravel rewrite of the website in `apps/laravel`.
+This repository is a Laravel application at the repository root.
 
-## Laravel (Recommended)
-See `apps/laravel/README.md`.
+## Local Setup
+Requirements: PHP 8.2+, Composer, Node.js 18+, MySQL (recommended).
 
-### What’s implemented
-- Dynamic pages: Home, Solutions, Projects, Products, Videos, About, Contact, Quote
-- Simple admin panel (login + CRUD) for:
-  - Projects, Products, Videos, Knowledge Base (KB)
-  - Leads (contact/quote requests)
-  - Orders (phase 1 checkout without payments)
-- AI assistant:
-  - Text chat and push-to-talk voice (record -> transcribe -> answer -> optional TTS reply)
+```bash
+cp .env.example .env
+composer install
+npm install
+php artisan key:generate
+php artisan migrate --seed
+php artisan storage:link
+```
 
-## Legacy Node/Next (Deprecated)
-The old Node.js platform remains in `apps/server` + `apps/web` for reference/migration, but the intended direction is Laravel.
+Run dev:
+
+```bash
+npm run dev
+php artisan serve
+```
+
+## Admin
+- URL: `/admin`
+- Email: `admin@finboard.local`
+- Password: `Admin123!`
+
+## AI Assistant
+- Widget: "Ask AI" (text + push-to-talk voice)
+- API endpoints:
+  - `POST /api/assistant/chat`
+  - `POST /api/assistant/transcribe`
+  - `POST /api/assistant/speak`
+
+## Legacy Node/Next
+The previous Node.js implementation was removed from the main tree (it remains in git history).
