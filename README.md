@@ -37,10 +37,12 @@ App runs at `http://localhost:3000`.
 - Uploads are stored in `apps/server/uploads` and served from `/uploads`.
 - Voice assistant uses WebSocket at `/voice` and OpenAI Realtime API.
 - `OPENAI_TRANSCRIBE_MODEL` controls the transcription model used for user audio.
-- To deploy on Hostinger Business Node.js Web App, set `NODE_ENV=production` and use `npm run build` then `npm start`.
-  - Hostinger hint: set the app root to the repository root so `package.json` is detected, and use `npm start` (startup file `index.js`).
-  - Do not use Hostinger's Git Deploy (Composer) tool for this app; use the Node.js Web App feature.
-  - This repo's `npm run build` also copies `apps/web/.next` to root `.next` for Hostinger Next preset detection.
-  - Health check:
-    - If the Express server is running: `GET /healthz` returns JSON `{ ok: true }`.
-    - If Hostinger is only running Next preset (no Express): `GET /api/healthz` returns `{ ok: true, servedBy: 'next' }`.
+
+## Hostinger Deployment Notes
+- If Hostinger is publishing your app as a *static* Next preset (no running Node server):
+  - This repo’s `npm run build` post-processes the Next build output so Hostinger can serve it from `.next/` (adds `index.html`, `/_next/static`, and route folders).
+  - Quick verify: `GET /__export_marker.txt` should return `200`.
+  - In this static mode, Express APIs, MySQL, and the realtime voice WebSocket will **not** run on Hostinger.
+- If your Hostinger plan/UI supports running a Node server (start command/process manager):
+  - Use `npm start` (starts `apps/server/server.js`) for full backend + MySQL + voice assistant.
+  - Health check: `GET /healthz` returns JSON `{ ok: true }`.
