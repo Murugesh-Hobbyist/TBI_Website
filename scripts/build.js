@@ -40,6 +40,50 @@ function mergeDir(src, dest) {
   }
 }
 
+function copyFileIfMissing(src, dest) {
+  if (!fs.existsSync(src)) return;
+  if (fs.existsSync(dest)) return;
+  ensureDir(path.dirname(dest));
+  fs.copyFileSync(src, dest);
+}
+
+function safeCopyDirIfMissing(srcDir, destDir) {
+  if (!fs.existsSync(srcDir) || fs.existsSync(destDir)) return;
+  ensureDir(path.dirname(destDir));
+  fs.cpSync(srcDir, destDir, { recursive: true });
+}
+
+function promoteNextBuildToStatic(nextDir, publishDir) {
+  // When a host publishes `.next` as a static directory (no Node server),
+  // `/` becomes a directory request and returns 403 unless `index.html` exists.
+  // Next build already produces pre-rendered HTML under `server/pages/*.html`;
+  // we promote those into the publish root and create `/_next/static` assets.
+
+  const serverPagesDir = path.join(nextDir, 'server', 'pages');
+  const pagesManifestPath = path.join(nextDir, 'server', 'pages-manifest.json');
+  const staticDir = path.join(nextDir, 'static');
+
+  // 1) Ensure `/_next/static` exists (map from `.next/static`).
+  safeCopyDirIfMissing(staticDir, path.join(publishDir, '_next', 'static'));
+
+  // 2) Ensure `/index.html` exists.
+  copyFileIfMissing(path.join(serverPagesDir, 'index.html'), path.join(publishDir, 'index.html'));
+
+  // 3) Promote other pre-rendered `.html` routes into `/<route>/index.html`.
+  if (!fs.existsSync(pagesManifestPath)) return;
+  const manifest = JSON.parse(fs.readFileSync(pagesManifestPath, 'utf8'));
+  for (const [route, rel] of Object.entries(manifest)) {
+    if (route === '/' || route.startsWith('/api')) continue;
+    if (!rel.endsWith('.html')) continue;
+
+    // Example: route "/admin/login" => publishDir/admin/login/index.html
+    const srcHtml = path.join(nextDir, 'server', rel);
+    const safeRoute = route.replace(/^\//, ''); // remove leading slash
+    const destHtml = path.join(publishDir, safeRoute, 'index.html');
+    copyFileIfMissing(srcHtml, destHtml);
+  }
+}
+
 (async () => {
   const repoRoot = process.cwd();
   const webDir = path.join(repoRoot, 'apps', 'web');
@@ -48,23 +92,31 @@ function mergeDir(src, dest) {
   const rootOut = path.join(repoRoot, 'out');
   const webNext = path.join(webDir, '.next');
 
-  // Build and export Next app from apps/web.
+  // Build Next app from apps/web.
   await run(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['next', 'build'], { cwd: webDir });
-  await run(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['next', 'export', '-o', 'out'], { cwd: webDir });
+  try {
+    await run(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['next', 'export', '-o', 'out'], { cwd: webDir });
+  } catch (err) {
+    // Export can fail if any route requires a Node server. We'll still try to publish
+    // the pre-rendered HTML from the Next build output so the site is not blank.
+    console.warn('next export failed; falling back to promoting Next build output for static hosting:', err.message || err);
+  }
 
   // Hostinger static deployments serve the configured output directory as the web root.
   // In Hostinger's Next preset this is commonly `.next`, so we publish static export into root `.next`.
-  if (!fs.existsSync(webOut)) {
-    throw new Error(`Expected export output at ${webOut} but it was not found.`);
+  if (fs.existsSync(webOut)) {
+    // Hostinger may publish either `.next` at repo root OR `apps/web/.next` (depending on its root dir setting).
+    // We merge the static export into both locations so `/` has `index.html` and assets resolve.
+    mergeDir(webOut, webNext);
+    mergeDir(webOut, rootNext);
+
+    // Also publish a clean `out/` at repo root for platforms that support `out` as output directory.
+    replaceDir(webOut, rootOut);
   }
 
-  // Hostinger may publish either `.next` at repo root OR `apps/web/.next` (depending on its root dir setting).
-  // We merge the static export into both locations so `/` has `index.html` and assets resolve.
-  mergeDir(webOut, webNext);
-  mergeDir(webOut, rootNext);
-
-  // Also publish a clean `out/` at repo root for platforms that support `out` as output directory.
-  replaceDir(webOut, rootOut);
+  // Extra safety: ensure the published `.next` directories can be served statically even if export didn't run.
+  promoteNextBuildToStatic(webNext, webNext);
+  promoteNextBuildToStatic(webNext, rootNext);
 
   // Debug marker to validate which output directory is being served.
   for (const p of [webNext, rootNext, rootOut]) {
