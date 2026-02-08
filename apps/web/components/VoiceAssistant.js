@@ -298,7 +298,7 @@ export default function VoiceAssistant() {
   };
 
   const connectSession = async () => {
-    if (connecting || connected) return;
+    if (connecting || connected) return 'connected';
 
     setInfo('Connecting...');
     setConnecting(true);
@@ -374,6 +374,7 @@ export default function VoiceAssistant() {
       setLocalMode(false);
       setListening(true);
       setInfo('');
+      return 'connected';
     } catch (err) {
       const message = err && err.message ? err.message : 'Unable to connect.';
       if (message === 'BACKEND_MISSING') {
@@ -385,6 +386,7 @@ export default function VoiceAssistant() {
         setInfo(`GPT voice unavailable. Using local assistant. (${message})`);
       }
       await disconnect();
+      return 'local';
     } finally {
       setConnecting(false);
     }
@@ -472,7 +474,10 @@ export default function VoiceAssistant() {
     }
 
     if (!connected) {
-      await connectSession();
+      const result = await connectSession();
+      if (result === 'local') {
+        await startLocalMic();
+      }
       return;
     }
 
@@ -520,13 +525,18 @@ export default function VoiceAssistant() {
   };
 
   const sendText = () => {
-    if (localMode) {
-      sendLocalText();
-      return;
-    }
-
     const text = String(textInput || '').trim();
     if (!text) return;
+
+    if (localMode || !connected) {
+      setLocalMode(true);
+      const answer = buildLocalAnswer(text);
+      setHistory((prev) => [...prev, { role: 'user', text }, { role: 'assistant', text: answer }]);
+      setTextInput('');
+      setInfo('');
+      speak(answer);
+      return;
+    }
 
     userDraftRef.current = '';
     setUserDraft('');
@@ -556,7 +566,7 @@ export default function VoiceAssistant() {
   };
 
   const badgeText = connected ? 'Connected' : localMode ? 'Local' : connecting ? 'Connecting' : 'Offline';
-  const canType = connected || localMode;
+  const canType = true;
 
   return (
     <>
