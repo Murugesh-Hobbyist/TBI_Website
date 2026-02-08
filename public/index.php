@@ -79,6 +79,48 @@ if (!$__isLocalHost && file_exists($__envFile)) {
 
 /*
 |--------------------------------------------------------------------------
+| Clear Stale Laravel Cache Files (Shared Hosting)
+|--------------------------------------------------------------------------
+|
+| Some shared-hosting deploy flows copy files but do not run artisan commands.
+| If route/config cache files exist from a previous deploy, new routes/env
+| values will not take effect (e.g. /install returning 404).
+|
+| We defensively delete stale cache files when their sources are newer.
+|
+*/
+
+if (!$__isLocalHost) {
+    $__cacheDir = $__root.'/bootstrap/cache';
+
+    // Route cache: clear if routes/*.php are newer than cached routes.
+    $__routesMtime = max(
+        @filemtime($__root.'/routes/web.php') ?: 0,
+        @filemtime($__root.'/routes/api.php') ?: 0
+    );
+
+    if (is_dir($__cacheDir) && $__routesMtime > 0) {
+        foreach ((array) glob($__cacheDir.'/routes-*.php') as $__f) {
+            if (is_file($__f) && @filemtime($__f) < $__routesMtime) {
+                @unlink($__f);
+            }
+        }
+
+        $__legacyRoutes = $__cacheDir.'/routes.php';
+        if (is_file($__legacyRoutes) && @filemtime($__legacyRoutes) < $__routesMtime) {
+            @unlink($__legacyRoutes);
+        }
+    }
+
+    // Config cache: clear if .env is newer than cached config.
+    $__configCache = $__cacheDir.'/config.php';
+    if (is_file($__configCache) && is_file($__envFile) && @filemtime($__configCache) < @filemtime($__envFile)) {
+        @unlink($__configCache);
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | Check If The Application Is Under Maintenance
 |--------------------------------------------------------------------------
 | 
