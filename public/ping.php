@@ -11,4 +11,5 @@ foreach (['openssl', 'mbstring', 'fileinfo', 'curl', 'zip', 'pdo', 'pdo_mysql', 
 }
 echo 'composer_json='.(file_exists(__DIR__.'/../composer.json') ? 'yes' : 'no')."\n";
 echo 'composer_lock='.(file_exists(__DIR__.'/../composer.lock') ? 'yes' : 'no')."\n";
+echo 'vendor_dir='.(is_dir(__DIR__.'/../vendor') ? 'yes' : 'no')."\n";
 echo 'vendor_autoload='.(file_exists(__DIR__.'/../vendor/autoload.php') ? 'yes' : 'no')."\n";
