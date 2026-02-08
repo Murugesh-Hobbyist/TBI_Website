@@ -1,226 +1,309 @@
 import { useEffect, useRef, useState } from 'react';
 
-function downsampleBuffer(buffer, inputSampleRate, outputSampleRate) {
-  if (outputSampleRate === inputSampleRate) return buffer;
-  const sampleRateRatio = inputSampleRate / outputSampleRate;
-  const newLength = Math.round(buffer.length / sampleRateRatio);
-  const result = new Float32Array(newLength);
-  let offsetResult = 0;
-  let offsetBuffer = 0;
-  while (offsetResult < result.length) {
-    const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
-    let accum = 0;
-    let count = 0;
-    for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i += 1) {
-      accum += buffer[i];
-      count += 1;
-    }
-    result[offsetResult] = accum / count;
-    offsetResult += 1;
-    offsetBuffer = nextOffsetBuffer;
+function safeJsonParse(text) {
+  try {
+    return JSON.parse(text);
+  } catch (_) {
+    return null;
   }
-  return result;
-}
-
-function floatTo16BitPCM(float32Array) {
-  const output = new Int16Array(float32Array.length);
-  for (let i = 0; i < float32Array.length; i += 1) {
-    let s = Math.max(-1, Math.min(1, float32Array[i]));
-    output[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
-  }
-  return output;
-}
-
-function int16ToBase64(int16Array) {
-  const bytes = new Uint8Array(int16Array.buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i += 1) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-function base64ToInt16(base64) {
-  const binary = atob(base64);
-  const len = binary.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i += 1) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return new Int16Array(bytes.buffer);
 }
 
 export default function VoiceAssistant() {
   const [open, setOpen] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [listening, setListening] = useState(false);
   const [userDraft, setUserDraft] = useState('');
   const [assistantDraft, setAssistantDraft] = useState('');
   const [history, setHistory] = useState([]);
   const [textInput, setTextInput] = useState('');
   const [info, setInfo] = useState('');
-  const wsRef = useRef(null);
-  const audioContextRef = useRef(null);
-  const processorRef = useRef(null);
-  const sourceRef = useRef(null);
-  const outputContextRef = useRef(null);
-  const mountedRef = useRef(false);
+
+  const pcRef = useRef(null);
+  const dcRef = useRef(null);
+  const micStreamRef = useRef(null);
+  const audioElRef = useRef(null);
+
+  // Data channel event handling must not depend on stale React state.
+  const userDraftRef = useRef('');
+  const assistantDraftRef = useRef('');
+
+  const disconnect = async () => {
+    setConnecting(false);
+    setConnected(false);
+    setListening(false);
+
+    try {
+      if (dcRef.current) dcRef.current.close();
+    } catch (_) {
+      // ignore
+    }
+
+    try {
+      if (pcRef.current) pcRef.current.close();
+    } catch (_) {
+      // ignore
+    }
+
+    try {
+      if (micStreamRef.current) {
+        micStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    } catch (_) {
+      // ignore
+    }
+
+    try {
+      if (audioElRef.current) {
+        audioElRef.current.srcObject = null;
+      }
+    } catch (_) {
+      // ignore
+    }
+
+    pcRef.current = null;
+    dcRef.current = null;
+    micStreamRef.current = null;
+
+    userDraftRef.current = '';
+    assistantDraftRef.current = '';
+    setUserDraft('');
+    setAssistantDraft('');
+  };
 
   useEffect(() => {
-    mountedRef.current = true;
+    if (open) return;
+    disconnect();
+  }, [open]);
+
+  useEffect(() => {
     return () => {
-      mountedRef.current = false;
+      disconnect();
     };
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
+  const flushTurn = () => {
+    const u = (userDraftRef.current || '').trim();
+    const a = (assistantDraftRef.current || '').trim();
 
-    setInfo('Connecting...');
-    const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/voice`;
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
+    if (!u && !a) return;
 
-    ws.onopen = () => {
-      if (!mountedRef.current) return;
-      setConnected(true);
-      setInfo('');
-    };
-    ws.onclose = () => {
-      if (!mountedRef.current) return;
-      setConnected(false);
-      setListening(false);
-      setInfo('Offline');
-    };
-    ws.onerror = () => {
-      if (!mountedRef.current) return;
-      setConnected(false);
-      setInfo('Offline');
-    };
+    setHistory((prev) => [
+      ...prev,
+      ...(u ? [{ role: 'user', text: u }] : []),
+      ...(a ? [{ role: 'assistant', text: a }] : [])
+    ]);
 
-    ws.onmessage = (event) => {
-      let payload;
-      try {
-        payload = JSON.parse(event.data);
-      } catch (_) {
-        return;
-      }
-
-      if (payload.type === 'error') {
-        setInfo(payload.message || 'Voice assistant error.');
-      }
-      if (payload.type === 'status') {
-        setInfo(payload.message || '');
-      }
-      if (payload.type === 'assistant_text_delta') {
-        setAssistantDraft((prev) => prev + payload.delta);
-      }
-      if (payload.type === 'user_transcript_delta') {
-        setUserDraft((prev) => prev + payload.delta);
-      }
-      if (payload.type === 'audio_delta') {
-        playAudioDelta(payload.delta);
-      }
-      if (payload.type === 'turn_done') {
-        const userText = (payload.user || '').trim();
-        const assistantText = (payload.assistant || '').trim();
-        setHistory((prev) => [
-          ...prev,
-          ...(userText ? [{ role: 'user', text: userText }] : []),
-          ...(assistantText ? [{ role: 'assistant', text: assistantText }] : [])
-        ]);
-        setUserDraft('');
-        setAssistantDraft('');
-      }
-    };
-
-    return () => {
-      try {
-        ws.close();
-      } catch (_) {
-        // ignore
-      }
-    };
-  }, [open]);
-
-  const playAudioDelta = (base64) => {
-    if (!outputContextRef.current) {
-      outputContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-    }
-    const outputContext = outputContextRef.current;
-    const int16 = base64ToInt16(base64);
-    const float32 = new Float32Array(int16.length);
-    for (let i = 0; i < int16.length; i += 1) {
-      float32[i] = int16[i] / 0x8000;
-    }
-    const buffer = outputContext.createBuffer(1, float32.length, 24000);
-    buffer.getChannelData(0).set(float32);
-    const source = outputContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(outputContext.destination);
-    source.start();
-  };
-
-  const startListening = async () => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+    userDraftRef.current = '';
+    assistantDraftRef.current = '';
     setUserDraft('');
     setAssistantDraft('');
+  };
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    audioContextRef.current = audioContext;
-    const source = audioContext.createMediaStreamSource(stream);
-    sourceRef.current = source;
+  const handleServerEvent = (event) => {
+    if (!event || typeof event.type !== 'string') return;
 
-    const processor = audioContext.createScriptProcessor(4096, 1, 1);
-    processorRef.current = processor;
+    if (event.type === 'error') {
+      setInfo(event.error?.message || event.message || 'Voice error.');
+      return;
+    }
 
-    processor.onaudioprocess = (event) => {
-      const input = event.inputBuffer.getChannelData(0);
-      const downsampled = downsampleBuffer(input, audioContext.sampleRate, 24000);
-      const int16 = floatTo16BitPCM(downsampled);
-      const base64 = int16ToBase64(int16);
-      wsRef.current.send(JSON.stringify({ type: 'audio_chunk', audio: base64 }));
-    };
+    if (event.type === 'input_audio_buffer.speech_started') {
+      userDraftRef.current = '';
+      assistantDraftRef.current = '';
+      setUserDraft('');
+      setAssistantDraft('');
+      return;
+    }
 
-    source.connect(processor);
-    processor.connect(audioContext.destination);
+    if (event.type === 'conversation.item.input_audio_transcription.delta') {
+      userDraftRef.current = (userDraftRef.current || '') + (event.delta || '');
+      setUserDraft(userDraftRef.current);
+      return;
+    }
+
+    if (event.type === 'conversation.item.input_audio_transcription.completed') {
+      if (event.transcript) {
+        userDraftRef.current = event.transcript;
+        setUserDraft(event.transcript);
+      }
+      return;
+    }
+
+    if (event.type === 'response.created') {
+      assistantDraftRef.current = '';
+      setAssistantDraft('');
+      return;
+    }
+
+    if (event.type === 'response.output_text.delta') {
+      assistantDraftRef.current = (assistantDraftRef.current || '') + (event.delta || '');
+      setAssistantDraft(assistantDraftRef.current);
+      return;
+    }
+
+    if (event.type === 'response.output_audio_transcript.delta') {
+      assistantDraftRef.current = (assistantDraftRef.current || '') + (event.delta || '');
+      setAssistantDraft(assistantDraftRef.current);
+      return;
+    }
+
+    if (event.type === 'response.done') {
+      flushTurn();
+    }
+  };
+
+  const connectSession = async () => {
+    if (connecting || connected) return;
+
+    setInfo('Connecting...');
+    setConnecting(true);
+
+    try {
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }]
+      });
+      pcRef.current = pc;
+
+      pc.onconnectionstatechange = () => {
+        const s = pc.connectionState;
+        if (s === 'connected') {
+          setConnected(true);
+          setInfo('');
+        }
+        if (s === 'failed' || s === 'disconnected' || s === 'closed') {
+          setConnected(false);
+        }
+      };
+
+      pc.ontrack = (e) => {
+        if (!audioElRef.current) {
+          audioElRef.current = new Audio();
+          audioElRef.current.autoplay = true;
+        }
+        if (e.streams && e.streams[0]) {
+          audioElRef.current.srcObject = e.streams[0];
+        }
+      };
+
+      const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = mic;
+      mic.getAudioTracks().forEach((track) => {
+        track.enabled = true;
+        pc.addTrack(track, mic);
+      });
+
+      const dc = pc.createDataChannel('oai-events');
+      dcRef.current = dc;
+      dc.onmessage = (e) => {
+        const parsed = safeJsonParse(e.data);
+        if (parsed) handleServerEvent(parsed);
+      };
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      const offerSdp = pc.localDescription?.sdp;
+      if (!offerSdp) throw new Error('Failed to create SDP offer.');
+
+      const res = await fetch('/api/voice/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/sdp' },
+        body: offerSdp
+      });
+
+      if (!res.ok) {
+        if (res.status === 404) {
+          throw new Error('Voice backend is not available (static deployment). Deploy as a Node app to enable voice.');
+        }
+        const txt = await res.text();
+        const json = safeJsonParse(txt);
+        const msg = json?.error || json?.details || txt || `HTTP ${res.status}`;
+        throw new Error(`Voice session failed: ${msg}`);
+      }
+
+      const answerSdp = await res.text();
+      await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+
+      setConnected(true);
+      setListening(true);
+      setInfo('');
+    } catch (err) {
+      setInfo(err.message || 'Unable to connect.');
+      await disconnect();
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  const startMic = async () => {
+    if (!connected) {
+      await connectSession();
+      return;
+    }
+
+    if (micStreamRef.current) {
+      micStreamRef.current.getAudioTracks().forEach((t) => {
+        t.enabled = true;
+      });
+    }
     setListening(true);
   };
 
-  const stopListening = () => {
-    if (processorRef.current) {
-      processorRef.current.disconnect();
-    }
-    if (sourceRef.current) {
-      sourceRef.current.disconnect();
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-    }
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'commit' }));
+  const stopMic = () => {
+    if (micStreamRef.current) {
+      micStreamRef.current.getAudioTracks().forEach((t) => {
+        t.enabled = false;
+      });
     }
     setListening(false);
+  };
+
+  const sendEvent = (payload) => {
+    const dc = dcRef.current;
+    if (!dc || dc.readyState !== 'open') {
+      setInfo('Not connected. Click Start Mic to connect.');
+      return false;
+    }
+    dc.send(JSON.stringify(payload));
+    return true;
   };
 
   const sendText = () => {
     const text = String(textInput || '').trim();
     if (!text) return;
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
+    userDraftRef.current = '';
+    setUserDraft('');
+
+    const ok = sendEvent({
+      type: 'conversation.item.create',
+      item: {
+        type: 'message',
+        role: 'user',
+        content: [{ type: 'input_text', text }]
+      }
+    });
+    if (!ok) return;
+
+    // Capture typed input in history right away.
     setHistory((prev) => [...prev, { role: 'user', text }]);
     setTextInput('');
+
+    assistantDraftRef.current = '';
+    setAssistantDraft('');
     setInfo('');
-    wsRef.current.send(JSON.stringify({ type: 'text', text }));
+
+    sendEvent({ type: 'response.create' });
   };
 
-  const offlineHelp =
-    'Voice requires the Node backend (WebSocket /voice). In static deployments, the voice assistant will show Offline.';
+  const closePanel = async () => {
+    setOpen(false);
+  };
 
   return (
     <>
-      {open && <div className="voice-backdrop" onClick={() => setOpen(false)} aria-hidden="true" />}
+      {open && <div className="voice-backdrop" onClick={closePanel} aria-hidden="true" />}
 
       {open && (
         <div className="voice-panel" role="dialog" aria-label="Voice assistant">
@@ -230,8 +313,8 @@ export default function VoiceAssistant() {
               <div className="voice-sub">Ask about products, ECS, Sail OS, quotes, or checkout.</div>
             </div>
             <div className="voice-status">
-              <span className="badge">{connected ? 'Connected' : 'Offline'}</span>
-              <button className="icon-btn" onClick={() => setOpen(false)} aria-label="Close voice assistant">
+              <span className="badge">{connected ? 'Connected' : connecting ? 'Connecting' : 'Offline'}</span>
+              <button className="icon-btn" onClick={closePanel} aria-label="Close voice assistant">
                 X
               </button>
             </div>
@@ -239,11 +322,10 @@ export default function VoiceAssistant() {
 
           <div className="voice-body">
             {info && <div className="voice-info">{info}</div>}
-            {!connected && <div className="voice-hint">{offlineHelp}</div>}
 
             <div className="voice-history" aria-live="polite">
               {history.length === 0 && !userDraft && !assistantDraft ? (
-                <div className="voice-empty">Start a voice session or type a question.</div>
+                <div className="voice-empty">Click Start Mic and ask your question.</div>
               ) : null}
               {history.map((m, idx) => (
                 <div key={`${m.role}-${idx}`} className={`voice-bubble ${m.role}`}>
@@ -269,11 +351,11 @@ export default function VoiceAssistant() {
           <div className="voice-panel-footer">
             <div className="voice-controls">
               {!listening ? (
-                <button className="btn" onClick={startListening} disabled={!connected}>
+                <button className="btn" onClick={startMic} disabled={connecting}>
                   Start Mic
                 </button>
               ) : (
-                <button className="btn outline" onClick={stopListening}>
+                <button className="btn outline" onClick={stopMic}>
                   Stop
                 </button>
               )}

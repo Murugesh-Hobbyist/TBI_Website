@@ -35,14 +35,15 @@ App runs at `http://localhost:3000`.
 
 ## Notes
 - Uploads are stored in `apps/server/uploads` and served from `/uploads`.
-- Voice assistant uses WebSocket at `/voice` and OpenAI Realtime API.
+- Voice assistant uses OpenAI Realtime (WebRTC). Backend endpoint: `POST /api/voice/session`.
 - `OPENAI_TRANSCRIBE_MODEL` controls the transcription model used for user audio.
 
 ## Hostinger Deployment Notes
-- If Hostinger is publishing your app as a *static* Next preset (no running Node server):
-  - This repo’s `npm run build` post-processes the Next build output so Hostinger can serve it from `.next/` (adds `index.html`, `/_next/static`, and route folders).
+- If Hostinger is publishing your app as a static Next preset (no running Node server):
+  - This repo's `npm run build` post-processes the Next build output so Hostinger can serve it from `.next/` (adds `index.html`, `/_next/static`, and route folders).
   - Quick verify: `GET /__export_marker.txt` should return `200`.
-  - In this static mode, Express APIs, MySQL, and the realtime voice WebSocket will **not** run on Hostinger.
-- If your Hostinger plan/UI supports running a Node server (start command/process manager):
-  - Use `npm start` (starts `apps/server/server.js`) for full backend + MySQL + voice assistant.
-  - Health check: `GET /healthz` returns JSON `{ ok: true }`.
+  - In this static mode, Express APIs, MySQL, and the voice assistant will not work.
+- For full dynamic features (API, MySQL, admin, quotes, and voice):
+  - Deploy as a Node app and run `npm start` (starts `apps/server/server.js`).
+  - Health check: `GET /api/healthz` returns JSON `{ ok: true }`.
+  - Voice health: `GET /api/voice/healthz` returns `{ ok: true, mode: 'webrtc', ... }`.

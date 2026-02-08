@@ -14,6 +14,7 @@ const ordersRoute = require('./src/routes/orders');
 const quotesRoute = require('./src/routes/quotes');
 const forumRoute = require('./src/routes/forum');
 const adminRoute = require('./src/routes/admin');
+const voiceRoute = require('./src/routes/voice');
 
 const dev = process.env.NODE_ENV !== 'production';
 const port = Number(process.env.PORT || 3000);
@@ -85,6 +86,7 @@ nextApp.prepare().then(() => {
   app.use('/api/quotes', quotesRoute);
   app.use('/api/forum', forumRoute);
   app.use('/api/admin', adminRoute);
+  app.use('/api/voice', voiceRoute);
 
   app.all('*', (req, res) => handle(req, res));
 

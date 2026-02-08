@@ -1,16 +1,24 @@
 const WebSocket = require('ws');
 const { createVoiceSession, endVoiceSession, addTranscript } = require('../services/voiceService');
+const { instructions } = require('./assistantInstructions');
 
 function setupVoiceServer(server) {
   const wss = new WebSocket.Server({ server, path: '/voice' });
 
   wss.on('connection', async (client, req) => {
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const sessionId = await createVoiceSession(null, ipAddress);
+    let sessionId = null;
+    try {
+      sessionId = await createVoiceSession(null, ipAddress);
+    } catch (err) {
+      // Voice should still work even if DB is temporarily unavailable.
+      console.error('Voice session DB create failed:', err.message || err);
+      sessionId = null;
+    }
 
     const openAiKey = process.env.OPENAI_API_KEY;
-    const model = process.env.OPENAI_REALTIME_MODEL || 'gpt-realtime';
-    const voice = process.env.OPENAI_REALTIME_VOICE || 'alloy';
+    const model = process.env.OPENAI_REALTIME_MODEL || 'gpt-realtime-mini';
+    const voice = process.env.OPENAI_REALTIME_VOICE || 'marin';
     const transcribeModel = process.env.OPENAI_TRANSCRIBE_MODEL || 'whisper-1';
 
     if (!openAiKey) {
@@ -19,9 +27,10 @@ function setupVoiceServer(server) {
       return;
     }
 
-    const openAiSocket = new WebSocket(`wss://api.openai.com/v1/realtime?model=${model}`, {
+    const openAiSocket = new WebSocket(`wss://api.openai.com/v1/realtime?model=${encodeURIComponent(model)}`, {
       headers: {
-        Authorization: `Bearer ${openAiKey}`
+        Authorization: `Bearer ${openAiKey}`,
+        'OpenAI-Beta': 'realtime=v1'
       }
     });
 
@@ -45,8 +54,7 @@ function setupVoiceServer(server) {
         session: {
           type: 'realtime',
           model,
-          instructions:
-            'You are the TBI Website voice assistant. Answer questions about the company, projects, videos, and products. Suggest products when appropriate and guide users to request a quote or checkout. Keep responses concise and helpful.',
+          instructions,
           voice,
           input_audio_format: 'pcm16',
           output_audio_format: 'pcm16',
@@ -102,11 +110,17 @@ function setupVoiceServer(server) {
 
         const assistantTranscript = assistantTexts.join(' ').trim();
         const userText = userTranscript.trim();
-        if (userText) {
-          await addTranscript(sessionId, 'user', userText);
-        }
-        if (assistantTranscript) {
-          await addTranscript(sessionId, 'assistant', assistantTranscript);
+        if (sessionId) {
+          try {
+            if (userText) {
+              await addTranscript(sessionId, 'user', userText);
+            }
+            if (assistantTranscript) {
+              await addTranscript(sessionId, 'assistant', assistantTranscript);
+            }
+          } catch (err) {
+            console.error('Voice transcript DB write failed:', err.message || err);
+          }
         }
         sendToClient({ type: 'turn_done', user: userText, assistant: assistantTranscript });
         userTranscript = '';
@@ -159,7 +173,13 @@ function setupVoiceServer(server) {
       if (openAiSocket.readyState === WebSocket.OPEN) {
         openAiSocket.close();
       }
-      await endVoiceSession(sessionId);
+      if (sessionId) {
+        try {
+          await endVoiceSession(sessionId);
+        } catch (err) {
+          console.error('Voice session DB end failed:', err.message || err);
+        }
+      }
     });
   });
 }
