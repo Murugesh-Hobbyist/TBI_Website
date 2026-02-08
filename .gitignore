@@ -1,5 +1,6 @@
 # Laravel / PHP
-/vendor
+# NOTE: We intentionally commit `vendor/` for Hostinger Git deployment environments
+# that do not run Composer during deploy.
 /public/build
 /public/hot
 /public/storage
