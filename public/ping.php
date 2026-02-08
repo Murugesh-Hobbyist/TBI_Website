@@ -9,4 +9,6 @@ echo 'sapi='.PHP_SAPI."\n";
 foreach (['openssl', 'mbstring', 'fileinfo', 'curl', 'zip', 'pdo', 'pdo_mysql', 'pdo_sqlite'] as $ext) {
     echo $ext.'='.(extension_loaded($ext) ? 'yes' : 'no')."\n";
 }
+echo 'composer_json='.(file_exists(__DIR__.'/../composer.json') ? 'yes' : 'no')."\n";
+echo 'composer_lock='.(file_exists(__DIR__.'/../composer.lock') ? 'yes' : 'no')."\n";
 echo 'vendor_autoload='.(file_exists(__DIR__.'/../vendor/autoload.php') ? 'yes' : 'no')."\n";
