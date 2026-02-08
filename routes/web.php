@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AdminProjectController;
 use App\Http\Controllers\Admin\AdminProjectMediaController;
 use App\Http\Controllers\Admin\AdminVideoController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\InstallController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SiteController;
@@ -40,6 +41,9 @@ Route::post('/cart/remove/{product}', [CartController::class, 'remove'])->name('
 Route::post('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 
 Route::get('/forum', [SiteController::class, 'forum'])->name('forum');
+
+// One-time, token-protected installer for shared hosting (no SSH).
+Route::get('/install', [InstallController::class, 'run'])->name('install');
 
 Route::prefix('admin')->group(function () {
     // Name this route "login" so Laravel's auth middleware knows where to redirect.
