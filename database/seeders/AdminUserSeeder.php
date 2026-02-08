@@ -10,13 +10,22 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
+        // Never seed predictable admin credentials by default.
+        // If you want to seed via `php artisan db:seed`, set ADMIN_EMAIL and ADMIN_PASSWORD in .env.
+        $email = (string) env('ADMIN_EMAIL', '');
+        $password = (string) env('ADMIN_PASSWORD', '');
+        $name = (string) env('ADMIN_NAME', 'Admin');
+
+        if ($email === '' || $password === '') {
+            return;
+        }
+
         User::updateOrCreate(
-            ['email' => 'admin@finboard.local'],
+            ['email' => $email],
             [
-                'name' => 'Admin',
-                'password' => Hash::make('Admin123!'),
+                'name' => $name,
+                'password' => Hash::make($password),
             ]
         );
     }
 }
-

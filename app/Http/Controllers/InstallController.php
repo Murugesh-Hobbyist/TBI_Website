@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Throwable;
 
 class InstallController extends Controller
@@ -19,7 +21,7 @@ class InstallController extends Controller
             return response(
                 "INSTALL_TOKEN is not set.\n".
                 "Add INSTALL_TOKEN=some-long-random-string to your .env, then open:\n".
-                "/install?token=YOUR_TOKEN\n",
+                "/api/_install?token=YOUR_TOKEN\n",
                 500
             )->header('Content-Type', 'text/plain; charset=UTF-8');
         }
@@ -51,22 +53,6 @@ class InstallController extends Controller
         }
 
         try {
-            // If migrations already ran, stop early to avoid accidental resets.
-            if (Schema::hasTable('migrations') && DB::table('migrations')->count() > 0) {
-                @file_put_contents($lockPath, 'installed_at='.date('c')."\n");
-
-                return response(
-                    "Migrations already exist; marking as installed.\n".
-                    "Lock file created: storage/app/install.lock\n",
-                    200
-                )->header('Content-Type', 'text/plain; charset=UTF-8');
-            }
-        } catch (Throwable $e) {
-            // Continue and let migrate show the real error if any.
-            $out[] = "Pre-check warning: ".$e->getMessage();
-        }
-
-        try {
             $out[] = "Running: php artisan migrate --force";
             Artisan::call('migrate', ['--force' => true]);
             $out[] = trim((string) Artisan::output());
@@ -74,6 +60,32 @@ class InstallController extends Controller
             $out[] = "Running: php artisan db:seed --force";
             Artisan::call('db:seed', ['--force' => true]);
             $out[] = trim((string) Artisan::output());
+
+            $adminEmail = trim((string) env('ADMIN_EMAIL', 'admin@finboard.local'));
+            $adminName = trim((string) env('ADMIN_NAME', 'Admin'));
+            $adminPasswordEnv = (string) env('ADMIN_PASSWORD', '');
+            $generatedPassword = false;
+
+            $adminPassword = $adminPasswordEnv;
+            if ($adminPassword === '') {
+                $adminPassword = Str::password(16);
+                $generatedPassword = true;
+            }
+
+            User::updateOrCreate(
+                ['email' => $adminEmail],
+                [
+                    'name' => $adminName !== '' ? $adminName : 'Admin',
+                    'password' => Hash::make($adminPassword),
+                ]
+            );
+
+            $out[] = "Admin email: {$adminEmail}";
+            if ($generatedPassword) {
+                $out[] = "Admin password (generated): {$adminPassword}";
+            } else {
+                $out[] = "Admin password set from ADMIN_PASSWORD (not displayed).";
+            }
         } catch (Throwable $e) {
             $out[] = "ERROR: ".$e->getMessage();
 
@@ -84,11 +96,10 @@ class InstallController extends Controller
         @file_put_contents($lockPath, 'installed_at='.date('c')."\n");
 
         $out[] = "OK. Lock file created: storage/app/install.lock";
-        $out[] = "Next: open /admin/login and sign in (seeded admin user).";
-        $out[] = "Security: remove INSTALL_TOKEN from .env after this.";
+        $out[] = "Next: open /admin/login and sign in.";
+        $out[] = "Security: remove INSTALL_TOKEN from .env after this (and ADMIN_PASSWORD if you set one).";
 
         return response(implode("\n\n", array_filter($out))."\n", 200)
             ->header('Content-Type', 'text/plain; charset=UTF-8');
     }
 }
-
