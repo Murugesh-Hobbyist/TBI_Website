@@ -13,3 +13,5 @@ echo 'composer_json='.(file_exists(__DIR__.'/../composer.json') ? 'yes' : 'no').
 echo 'composer_lock='.(file_exists(__DIR__.'/../composer.lock') ? 'yes' : 'no')."\n";
 echo 'vendor_dir='.(is_dir(__DIR__.'/../vendor') ? 'yes' : 'no')."\n";
 echo 'vendor_autoload='.(file_exists(__DIR__.'/../vendor/autoload.php') ? 'yes' : 'no')."\n";
+echo 'bootstrap_cache_packages='.(file_exists(__DIR__.'/../bootstrap/cache/packages.php') ? 'yes' : 'no')."\n";
+echo 'bootstrap_cache_services='.(file_exists(__DIR__.'/../bootstrap/cache/services.php') ? 'yes' : 'no')."\n";
