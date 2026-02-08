@@ -4,15 +4,24 @@ import Layout from '../components/Layout';
 export default function Cart() {
   const [items, setItems] = useState([]);
   const [products, setProducts] = useState([]);
+  const [note, setNote] = useState('');
 
   const load = async () => {
-    const cartRes = await fetch('/api/cart');
-    const cartData = await cartRes.json();
-    setItems(cartData.items || []);
+    try {
+      const cartRes = await fetch('/api/cart');
+      if (!cartRes.ok) throw new Error('Cart API unavailable');
+      const cartData = await cartRes.json();
+      setItems(cartData.items || []);
 
-    const productsRes = await fetch('/api/products');
-    const productData = await productsRes.json();
-    setProducts(productData || []);
+      const productsRes = await fetch('/api/products');
+      const productData = productsRes.ok ? await productsRes.json() : [];
+      setProducts(productData || []);
+      setNote('');
+    } catch (err) {
+      setItems([]);
+      setProducts([]);
+      setNote('Cart API is unavailable in this deployment.');
+    }
   };
 
   useEffect(() => {
@@ -29,6 +38,7 @@ export default function Cart() {
       <section className="page-hero">
         <h1>Cart</h1>
         <p>Review your items before checkout.</p>
+        {note && <p className="status">{note}</p>}
       </section>
       <section className="card">
         {items.length === 0 && <p>Your cart is empty.</p>}

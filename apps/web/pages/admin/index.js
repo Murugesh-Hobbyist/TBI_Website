@@ -6,6 +6,7 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [note, setNote] = useState('');
 
   useEffect(() => {
     fetch('/api/admin/me')
@@ -19,14 +20,17 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!user) return;
     fetch('/api/products')
-      .then((res) => res.json())
-      .then(setProducts);
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Products API unavailable'))))
+      .then(setProducts)
+      .catch(() => setNote('Admin APIs are unavailable in this deployment.'));
     fetch('/api/admin/quotes')
-      .then((res) => res.json())
-      .then(setQuotes);
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Quotes API unavailable'))))
+      .then(setQuotes)
+      .catch(() => setNote('Admin APIs are unavailable in this deployment.'));
     fetch('/api/admin/orders')
-      .then((res) => res.json())
-      .then(setOrders);
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Orders API unavailable'))))
+      .then(setOrders)
+      .catch(() => setNote('Admin APIs are unavailable in this deployment.'));
   }, [user]);
 
   const logout = async () => {
@@ -39,6 +43,7 @@ export default function AdminDashboard() {
       <section className="page-hero">
         <h1>Admin Dashboard</h1>
         <p>Manage quotes, orders, and forum moderation.</p>
+        {note && <p className="status">{note}</p>}
         <button className="btn outline" onClick={logout}>Logout</button>
       </section>
 

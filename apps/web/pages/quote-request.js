@@ -15,12 +15,13 @@ export default function QuoteRequest() {
   const submit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
-    const res = await fetch('/api/quotes', { method: 'POST', body: formData });
-    if (res.ok) {
+    try {
+      const res = await fetch('/api/quotes', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('Quotes API unavailable');
       setStatus('Quote submitted. We will reach out soon.');
       event.target.reset();
-    } else {
-      setStatus('Failed to submit quote.');
+    } catch (err) {
+      setStatus('Quote submission is unavailable in this deployment.');
     }
   };
 

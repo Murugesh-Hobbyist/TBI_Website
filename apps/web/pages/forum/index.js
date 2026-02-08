@@ -5,6 +5,7 @@ import Layout from '../../components/Layout';
 export default function Forum() {
   const [topics, setTopics] = useState([]);
   const [title, setTitle] = useState('');
+  const [note, setNote] = useState('');
 
   const load = () => {
     fetch('/api/forum/topics')
@@ -13,18 +14,32 @@ export default function Forum() {
   };
 
   useEffect(() => {
-    load();
+    fetch('/api/forum/topics')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Forum API unavailable'))))
+      .then((data) => {
+        setTopics(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        setTopics([]);
+        setNote('Forum API is unavailable in this deployment.');
+      });
   }, []);
 
   const create = async (event) => {
     event.preventDefault();
-    await fetch('/api/forum/topics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title })
-    });
-    setTitle('');
-    load();
+    try {
+      const res = await fetch('/api/forum/topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title })
+      });
+      if (!res.ok) throw new Error('Forum API unavailable');
+      setTitle('');
+      setNote('');
+      load();
+    } catch (err) {
+      setNote('Creating topics is unavailable in this deployment.');
+    }
   };
 
   return (
@@ -32,6 +47,7 @@ export default function Forum() {
       <section className="page-hero">
         <h1>Forum</h1>
         <p>Share ideas and ask questions.</p>
+        {note && <p className="status">{note}</p>}
       </section>
       <form className="form" onSubmit={create}>
         <div className="row">
@@ -48,7 +64,7 @@ export default function Forum() {
               <strong>{topic.title}</strong>
               <p>{new Date(topic.created_at).toLocaleString()}</p>
             </div>
-            <Link href={`/forum/${topic.id}`}>Open</Link>
+            <Link href={`/forum-topic?id=${encodeURIComponent(topic.id)}`}>Open</Link>
           </div>
         ))}
       </section>

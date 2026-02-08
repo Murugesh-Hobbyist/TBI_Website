@@ -5,15 +5,16 @@ export default function Checkout() {
   const [status, setStatus] = useState('');
 
   const submit = async () => {
-    const res = await fetch('/api/orders', { method: 'POST' });
-    if (res.ok) {
+    try {
+      const res = await fetch('/api/orders', { method: 'POST' });
+      if (!res.ok) throw new Error('Orders API unavailable');
       const data = await res.json();
       setStatus(`Order #${data.order.id} created. Redirecting to payment placeholder...`);
       setTimeout(() => {
         window.location.href = '/payment-placeholder';
       }, 1200);
-    } else {
-      setStatus('Failed to create order.');
+    } catch (err) {
+      setStatus('Checkout is unavailable in this deployment.');
     }
   };
 

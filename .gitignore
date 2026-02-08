@@ -5,6 +5,7 @@ node_modules
 
 # Next.js
 .next
+out
 apps/web/.next
 apps/web/out
 
