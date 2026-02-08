@@ -37,7 +37,7 @@ export default function Cart() {
     <Layout title="Cart" description="Your cart">
       <section className="page-hero">
         <h1>Cart</h1>
-        <p>Review your items before checkout.</p>
+        <p>Review your selections before checkout.</p>
         {note && <p className="status">{note}</p>}
       </section>
       <section className="card">
@@ -45,7 +45,7 @@ export default function Cart() {
         {items.map((item) => {
           const product = products.find((p) => p.id === item.product_id);
           return (
-            <div className="row" key={item.product_id}>
+            <div className="row" key={item.product_id} style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div>
                 <strong>{product ? product.name : 'Unknown product'}</strong>
                 <p>Qty: {item.quantity}</p>
@@ -54,7 +54,7 @@ export default function Cart() {
             </div>
           );
         })}
-        <div className="row total">
+        <div className="row total" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px' }}>
           <strong>Total</strong>
           <strong>${total.toFixed(2)}</strong>
         </div>

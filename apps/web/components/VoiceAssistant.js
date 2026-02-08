@@ -51,44 +51,97 @@ function base64ToInt16(base64) {
 }
 
 export default function VoiceAssistant() {
+  const [open, setOpen] = useState(false);
   const [connected, setConnected] = useState(false);
   const [listening, setListening] = useState(false);
-  const [userText, setUserText] = useState('');
-  const [assistantText, setAssistantText] = useState('');
+  const [userDraft, setUserDraft] = useState('');
+  const [assistantDraft, setAssistantDraft] = useState('');
+  const [history, setHistory] = useState([]);
+  const [textInput, setTextInput] = useState('');
+  const [info, setInfo] = useState('');
   const wsRef = useRef(null);
   const audioContextRef = useRef(null);
   const processorRef = useRef(null);
   const sourceRef = useRef(null);
   const outputContextRef = useRef(null);
+  const mountedRef = useRef(false);
 
   useEffect(() => {
-    const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/voice`);
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    setInfo('Connecting...');
+    const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/voice`;
+    const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
-    ws.onopen = () => setConnected(true);
+    ws.onopen = () => {
+      if (!mountedRef.current) return;
+      setConnected(true);
+      setInfo('');
+    };
     ws.onclose = () => {
+      if (!mountedRef.current) return;
       setConnected(false);
       setListening(false);
+      setInfo('Offline');
     };
-    ws.onerror = () => setConnected(false);
+    ws.onerror = () => {
+      if (!mountedRef.current) return;
+      setConnected(false);
+      setInfo('Offline');
+    };
 
     ws.onmessage = (event) => {
-      const payload = JSON.parse(event.data);
+      let payload;
+      try {
+        payload = JSON.parse(event.data);
+      } catch (_) {
+        return;
+      }
+
+      if (payload.type === 'error') {
+        setInfo(payload.message || 'Voice assistant error.');
+      }
+      if (payload.type === 'status') {
+        setInfo(payload.message || '');
+      }
       if (payload.type === 'assistant_text_delta') {
-        setAssistantText((prev) => prev + payload.delta);
+        setAssistantDraft((prev) => prev + payload.delta);
       }
       if (payload.type === 'user_transcript_delta') {
-        setUserText((prev) => prev + payload.delta);
+        setUserDraft((prev) => prev + payload.delta);
       }
       if (payload.type === 'audio_delta') {
         playAudioDelta(payload.delta);
       }
+      if (payload.type === 'turn_done') {
+        const userText = (payload.user || '').trim();
+        const assistantText = (payload.assistant || '').trim();
+        setHistory((prev) => [
+          ...prev,
+          ...(userText ? [{ role: 'user', text: userText }] : []),
+          ...(assistantText ? [{ role: 'assistant', text: assistantText }] : [])
+        ]);
+        setUserDraft('');
+        setAssistantDraft('');
+      }
     };
 
     return () => {
-      ws.close();
+      try {
+        ws.close();
+      } catch (_) {
+        // ignore
+      }
     };
-  }, []);
+  }, [open]);
 
   const playAudioDelta = (base64) => {
     if (!outputContextRef.current) {
@@ -110,8 +163,8 @@ export default function VoiceAssistant() {
 
   const startListening = async () => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-    setUserText('');
-    setAssistantText('');
+    setUserDraft('');
+    setAssistantDraft('');
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -151,34 +204,131 @@ export default function VoiceAssistant() {
     setListening(false);
   };
 
+  const sendText = () => {
+    const text = String(textInput || '').trim();
+    if (!text) return;
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+
+    setHistory((prev) => [...prev, { role: 'user', text }]);
+    setTextInput('');
+    setInfo('');
+    wsRef.current.send(JSON.stringify({ type: 'text', text }));
+  };
+
+  const offlineHelp =
+    'Voice requires the Node backend (WebSocket /voice). In static deployments, the voice assistant will show Offline.';
+
   return (
-    <div className="voice">
-      <div className="voice-header">
-        <h3>Talk to us</h3>
-        <span className={connected ? 'badge ok' : 'badge'}>{connected ? 'Connected' : 'Offline'}</span>
-      </div>
-      <p className="voice-sub">Ask about products, quotes, or help with checkout.</p>
-      <div className="voice-controls">
-        {!listening ? (
-          <button className="btn" onClick={startListening} disabled={!connected}>
-            Start
-          </button>
-        ) : (
-          <button className="btn outline" onClick={stopListening}>
-            Stop
-          </button>
-        )}
-      </div>
-      <div className="voice-transcripts">
-        <div>
-          <h4>You</h4>
-          <p>{userText || '...'}</p>
+    <>
+      {open && <div className="voice-backdrop" onClick={() => setOpen(false)} aria-hidden="true" />}
+
+      {open && (
+        <div className="voice-panel" role="dialog" aria-label="Voice assistant">
+          <div className="voice-panel-header">
+            <div>
+              <div className="voice-title">Talk to us</div>
+              <div className="voice-sub">Ask about products, ECS, Sail OS, quotes, or checkout.</div>
+            </div>
+            <div className="voice-status">
+              <span className="badge">{connected ? 'Connected' : 'Offline'}</span>
+              <button className="icon-btn" onClick={() => setOpen(false)} aria-label="Close voice assistant">
+                X
+              </button>
+            </div>
+          </div>
+
+          <div className="voice-body">
+            {info && <div className="voice-info">{info}</div>}
+            {!connected && <div className="voice-hint">{offlineHelp}</div>}
+
+            <div className="voice-history" aria-live="polite">
+              {history.length === 0 && !userDraft && !assistantDraft ? (
+                <div className="voice-empty">Start a voice session or type a question.</div>
+              ) : null}
+              {history.map((m, idx) => (
+                <div key={`${m.role}-${idx}`} className={`voice-bubble ${m.role}`}>
+                  <div className="voice-bubble-role">{m.role === 'user' ? 'You' : 'Assistant'}</div>
+                  <div className="voice-bubble-text">{m.text}</div>
+                </div>
+              ))}
+              {userDraft ? (
+                <div className="voice-bubble user">
+                  <div className="voice-bubble-role">You</div>
+                  <div className="voice-bubble-text">{userDraft}</div>
+                </div>
+              ) : null}
+              {assistantDraft ? (
+                <div className="voice-bubble assistant">
+                  <div className="voice-bubble-role">Assistant</div>
+                  <div className="voice-bubble-text">{assistantDraft}</div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="voice-panel-footer">
+            <div className="voice-controls">
+              {!listening ? (
+                <button className="btn" onClick={startListening} disabled={!connected}>
+                  Start Mic
+                </button>
+              ) : (
+                <button className="btn outline" onClick={stopListening}>
+                  Stop
+                </button>
+              )}
+            </div>
+            <div className="voice-text">
+              <input
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                placeholder="Type a question..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') sendText();
+                }}
+                aria-label="Type a question"
+                disabled={!connected}
+              />
+              <button className="btn outline" onClick={sendText} disabled={!connected}>
+                Send
+              </button>
+            </div>
+          </div>
         </div>
-        <div>
-          <h4>Assistant</h4>
-          <p>{assistantText || '...'}</p>
-        </div>
-      </div>
-    </div>
+      )}
+
+      <button
+        className="voice-fab"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={open ? 'Close voice assistant' : 'Open voice assistant'}
+        type="button"
+      >
+        <span aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M19 11a7 7 0 0 1-14 0"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M12 18v3"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </button>
+    </>
   );
 }

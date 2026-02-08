@@ -43,10 +43,10 @@ export default function Forum() {
   };
 
   return (
-    <Layout title="Forum" description="Community forum">
+    <Layout title="Forum" description="TwinBot community forum">
       <section className="page-hero">
         <h1>Forum</h1>
-        <p>Share ideas and ask questions.</p>
+        <p>Ask questions about ECS deployments and share operator tips.</p>
         {note && <p className="status">{note}</p>}
       </section>
       <form className="form" onSubmit={create}>
@@ -59,7 +59,7 @@ export default function Forum() {
       <section className="card">
         {topics.length === 0 && <p>No topics yet.</p>}
         {topics.map((topic) => (
-          <div key={topic.id} className="row">
+          <div key={topic.id} className="row" style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div>
               <strong>{topic.title}</strong>
               <p>{new Date(topic.created_at).toLocaleString()}</p>

@@ -101,12 +101,14 @@ function setupVoiceServer(server) {
         }
 
         const assistantTranscript = assistantTexts.join(' ').trim();
-        if (userTranscript.trim()) {
-          await addTranscript(sessionId, 'user', userTranscript.trim());
+        const userText = userTranscript.trim();
+        if (userText) {
+          await addTranscript(sessionId, 'user', userText);
         }
         if (assistantTranscript) {
           await addTranscript(sessionId, 'assistant', assistantTranscript);
         }
+        sendToClient({ type: 'turn_done', user: userText, assistant: assistantTranscript });
         userTranscript = '';
       }
     });

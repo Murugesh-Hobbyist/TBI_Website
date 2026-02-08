@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
+import { SITE } from '../lib/siteData';
 
 export default function QuoteRequest() {
   const [products, setProducts] = useState([]);
@@ -7,9 +8,9 @@ export default function QuoteRequest() {
 
   useEffect(() => {
     fetch('/api/products')
-      .then((res) => res.json())
-      .then(setProducts)
-      .catch(() => setProducts([]));
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('API unavailable'))))
+      .then((data) => setProducts(Array.isArray(data) ? data : []))
+      .catch(() => setProducts(SITE.productsFallback));
   }, []);
 
   const submit = async (event) => {
@@ -61,7 +62,7 @@ export default function QuoteRequest() {
         </div>
         <div className="row">
           <label>Notes</label>
-          <textarea name="notes" rows="4" />
+          <textarea name="notes" rows="4" placeholder="Share requirements, sensors, tolerances, and timelines." />
         </div>
         <div className="row">
           <label>File Upload</label>

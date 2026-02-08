@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
-
-const FALLBACK_PRODUCTS = [
-  { id: 1, name: 'Sample Product', description: 'Example description.', price: 99.0, images: [] },
-  { id: 2, name: 'Starter Kit', description: 'A simple starter product.', price: 149.0, images: [] }
-];
+import { SITE } from '../lib/siteData';
 
 export default function ProductDetail() {
   const router = useRouter();
@@ -27,7 +23,7 @@ export default function ProductDetail() {
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error('API unavailable'))))
       .then((data) => setProduct(data))
       .catch(() => {
-        const fallback = FALLBACK_PRODUCTS.find((p) => p.id === productId) || FALLBACK_PRODUCTS[0];
+        const fallback = SITE.productsFallback.find((p) => p.id === productId) || SITE.productsFallback[0];
         setProduct(fallback);
         setNote('Live product API is unavailable in this deployment.');
       });
@@ -76,28 +72,45 @@ export default function ProductDetail() {
     <Layout title={product.name} description={product.description || ''}>
       <section className="page-hero">
         <h1>{product.name}</h1>
-        <p>{product.description || 'No description provided.'}</p>
+        <p>{product.description || 'Request full specifications and a pricing quote.'}</p>
         {note && <p className="status">{note}</p>}
       </section>
-      <section className="product-detail">
-        <div className="image-placeholder">
+      <section className="grid">
+        <div className="image-card">
           {firstImage ? (
             <img src={firstImage.url} alt={firstImage.alt_text || product.name} />
           ) : (
-            <span>Image</span>
+            <div style={{ height: '200px', background: '#f1ece2' }} />
           )}
+          <div className="content">
+            <strong>Configuration Notes</strong>
+            <p>We customize channels, display size, and logging based on your workflow.</p>
+          </div>
         </div>
-        <div className="product-info">
-          <p className="price">${Number(product.price).toFixed(2)}</p>
-          <div className="row">
+        <div className="card">
+          <h3>Request This Product</h3>
+          <p>Specify quantity and our team will share pricing and lead time.</p>
+          <div className="row" style={{ display: 'grid', gap: '8px', marginTop: '12px' }}>
             <label>Quantity</label>
             <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
           </div>
-          <button className="btn" onClick={addToCart}>Add to cart</button>
+          <div className="header-cta" style={{ marginTop: '12px' }}>
+            <button className="btn" onClick={addToCart}>Add to cart</button>
+            <a className="btn outline" href="/quote-request">Request quote</a>
+          </div>
           {message && <p className="status">{message}</p>}
         </div>
       </section>
+      {product.highlights && product.highlights.length > 0 && (
+        <section className="card">
+          <h3>Highlights</h3>
+          <div className="list">
+            {product.highlights.map((item) => (
+              <div key={item}>- {item}</div>
+            ))}
+          </div>
+        </section>
+      )}
     </Layout>
   );
 }
-

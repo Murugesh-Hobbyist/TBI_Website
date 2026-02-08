@@ -1,24 +1,23 @@
 import Layout from '../components/Layout';
+import { SITE } from '../lib/siteData';
 
 export default function Projects() {
   return (
-    <Layout title="Projects" description="TBI projects">
+    <Layout title="Projects" description="TwinBot project highlights">
       <section className="page-hero">
         <h1>Projects</h1>
-        <p>Selected work across digital experiences, product systems, and media delivery.</p>
+        <p>Selected ECS and automation builds that show our production capability.</p>
       </section>
       <section className="grid">
+        {SITE.solutions.sampleProjects.map((project) => (
+          <div className="card" key={project.title}>
+            <h3>{project.title}</h3>
+            <p>{project.desc}</p>
+          </div>
+        ))}
         <div className="card">
-          <h3>Operations Dashboard</h3>
-          <p>Unified view for inventory, orders, and customer insights.</p>
-        </div>
-        <div className="card">
-          <h3>Commerce Studio</h3>
-          <p>Multi-channel product launch and fulfillment orchestration.</p>
-        </div>
-        <div className="card">
-          <h3>Media Pipeline</h3>
-          <p>Video production and streaming automation for marketing teams.</p>
+          <h3>Sail OS Deployments</h3>
+          <p>Operator dashboards for data logging, reporting, and visualization.</p>
         </div>
       </section>
     </Layout>

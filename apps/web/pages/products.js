@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Layout from '../components/Layout';
 import Link from 'next/link';
+import { SITE } from '../lib/siteData';
 
-const FALLBACK_PRODUCTS = [
-  { id: 1, name: 'Sample Product', price: 99.0, image_url: null },
-  { id: 2, name: 'Starter Kit', price: 149.0, image_url: null }
-];
+const categoryFromId = (id) => {
+  if (id >= 300) return 'Accessories';
+  if (id >= 200) return 'FitSense Series';
+  return 'DigiDial Console';
+};
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -18,35 +20,58 @@ export default function Products() {
         setProducts(Array.isArray(data) ? data : []);
       })
       .catch(() => {
-        setProducts(FALLBACK_PRODUCTS);
+        setProducts(SITE.productsFallback);
         setNote('Live products API is unavailable in this deployment.');
       });
   }, []);
 
+  const grouped = useMemo(() => {
+    const groups = {};
+    products.forEach((product) => {
+      const category = product.category || categoryFromId(product.id || 0);
+      if (!groups[category]) groups[category] = [];
+      groups[category].push(product);
+    });
+    return groups;
+  }, [products]);
+
   return (
-    <Layout title="Products" description="TBI products">
+    <Layout title="Products" description="TwinBot products">
       <section className="page-hero">
         <h1>Products</h1>
-        <p>Browse available items and request a custom quote if you need scale.</p>
+        <p>Production-ready ECS hardware and measurement systems.</p>
         {note && <p className="status">{note}</p>}
       </section>
-      <section className="grid">
-        {products.length === 0 && <p>No products yet.</p>}
-        {products.map((product) => (
-          <div className="card" key={product.id}>
-            <div className="image-placeholder">
-              {product.image_url ? (
-                <img src={product.image_url} alt={product.name} />
-              ) : (
-                <span>Image</span>
-              )}
+
+      {Object.keys(grouped).length === 0 && <p>No products yet.</p>}
+      {Object.entries(grouped).map(([category, items]) => (
+        <section key={category}>
+          <div className="section-title">
+            <div>
+              <h2>{category}</h2>
+              <p>Built for accuracy and repeatability.</p>
             </div>
-            <h3>{product.name}</h3>
-            <p>${Number(product.price).toFixed(2)}</p>
-            <Link href={`/product?id=${encodeURIComponent(product.id)}`}>View</Link>
+            <a className="btn ghost" href="/quote-request">Request pricing</a>
           </div>
-        ))}
-      </section>
+          <div className="grid">
+            {items.map((product) => (
+              <div className="image-card" key={product.id}>
+                {product.image_url ? (
+                  <img src={product.image_url} alt={product.name} />
+                ) : (
+                  <div style={{ height: '200px', background: '#f1ece2' }} />
+                )}
+                <div className="content">
+                  <span className="badge">{category}</span>
+                  <h3>{product.name}</h3>
+                  <p>{product.description || 'Request full specifications and a pricing quote.'}</p>
+                  <Link className="btn ghost" href={`/product?id=${encodeURIComponent(product.id)}`}>View details</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
     </Layout>
   );
 }
