@@ -1,39 +1,37 @@
-# Finboard Website (Laravel)
+# TwinBot Website (Laravel)
 
-This repository is a Laravel application at the repository root.
+This repository contains the Laravel application powering `dev.twinbot.in`.
 
 ## Local Setup
-Requirements: PHP 8.1+, Composer (optional), MySQL (recommended).
+Requirements: PHP 8.1+, Composer (optional), MySQL (optional for public pages).
 
 ```bash
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
 php artisan storage:link
-```
-
-Run dev:
-
-```bash
 php artisan serve
 ```
 
-## Admin
-- URL: `/admin`
-- Email: `admin@finboard.local`
-- Password: `Admin123!`
+## Public Site Without DB
+Home + Products pages render using `config/twinbot.php` if the database is unavailable.
 
-## Deployment Notes (Hostinger)
+## Admin
+- URL: `/admin/login`
+- Installer (creates admin user): `/api/_install?token=YOUR_TOKEN`
+  - Set `INSTALL_TOKEN` in `.env` first.
+  - Admin email comes from `ADMIN_EMAIL`.
+  - Admin password comes from `ADMIN_PASSWORD` (if empty, a random password is generated and printed once by the installer).
+
+## Deployment Notes (Shared Hosting)
 - `vendor/` is committed to support Git deployments where Composer is not executed on the server.
 - On first request (non-local host), the app will auto-create `.env` from `.env.example` and generate `APP_KEY` if missing.
-- You should still configure database credentials (`DB_*`) and (optional) `OPENAI_API_KEY` in `.env`.
+- Configure database credentials (`DB_*`) and (optional) `OPENAI_API_KEY` in `.env`.
 
 ## AI Assistant
-- Widget: "Ask AI" (text + push-to-talk voice)
+- Widget is controlled by `ASSISTANT_WIDGET_ENABLED` (default: false).
 - API endpoints:
   - `POST /api/assistant/chat`
   - `POST /api/assistant/transcribe`
   - `POST /api/assistant/speak`
 
-## Legacy Node/Next
-The previous Node.js implementation was removed from the main tree (it remains in git history).

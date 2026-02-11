@@ -6,7 +6,7 @@
     <div class="flex items-center justify-between">
         <div>
             <div class="font-display text-3xl">Order #{{ $order->id }}</div>
-            <div class="mt-2 text-sm text-white/60">{{ strtoupper($order->status) }} · {{ $order->created_at }}</div>
+            <div class="mt-2 text-sm text-white/60">{{ strtoupper($order->status) }} - {{ $order->created_at }}</div>
         </div>
         <a href="{{ route('admin.orders.index') }}" class="btn btn-ghost">Back</a>
     </div>
@@ -30,7 +30,7 @@
                         <div class="font-semibold">{{ $it->title }}</div>
                         <div class="mt-1 text-sm text-white/60">
                             Qty: {{ $it->qty }}
-                            @if ($it->sku) · SKU: {{ $it->sku }} @endif
+                            @if ($it->sku) - SKU: {{ $it->sku }} @endif
                         </div>
                         <div class="mt-2 text-sm text-white/80">
                             {{ $order->currency }} {{ number_format(((int) $it->line_total_cents) / 100, 2) }}
@@ -45,4 +45,3 @@
         </div>
     </div>
 @endsection
-

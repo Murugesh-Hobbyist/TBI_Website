@@ -10,14 +10,15 @@
     if (!log) return;
 
     const wrap = document.createElement('div');
-    wrap.className = 'rounded-xl border border-white/10 bg-white/5 p-3';
+    const isUser = role === 'user';
+    wrap.className = 'rounded-2xl border border-black/10 p-3 ' + (isUser ? 'bg-[#E7F6FF]' : 'bg-white');
 
     const meta = document.createElement('div');
-    meta.className = 'text-xs text-white/50';
+    meta.className = 'text-xs text-[#364151]';
     meta.textContent = role === 'user' ? 'You' : 'AI';
 
     const body = document.createElement('div');
-    body.className = 'mt-1 whitespace-pre-wrap text-white/90';
+    body.className = 'mt-1 whitespace-pre-wrap text-[#0F172A]';
     body.textContent = text;
 
     wrap.appendChild(meta);
@@ -214,6 +215,25 @@
     appendLog('assistant', 'Hi. Ask me about products, projects, or automation capabilities.');
   }
 
-  document.addEventListener('DOMContentLoaded', initAssistantWidget);
-})();
+  function initMobileMenu() {
+    const toggle = el('tb-menu-toggle');
+    const mobileNav = el('tb-mobile-nav');
+    if (!toggle || !mobileNav) return;
 
+    toggle.addEventListener('click', function () {
+      const isOpen = !mobileNav.classList.contains('hidden');
+      if (isOpen) {
+        mobileNav.classList.add('hidden');
+        toggle.setAttribute('aria-expanded', 'false');
+      } else {
+        mobileNav.classList.remove('hidden');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    initMobileMenu();
+    initAssistantWidget();
+  });
+})();

@@ -61,7 +61,7 @@ class InstallController extends Controller
             Artisan::call('db:seed', ['--force' => true]);
             $out[] = trim((string) Artisan::output());
 
-            $adminEmail = trim((string) env('ADMIN_EMAIL', 'admin@finboard.local'));
+            $adminEmail = trim((string) env('ADMIN_EMAIL', 'admin@twinbot.local'));
             $adminName = trim((string) env('ADMIN_NAME', 'Admin'));
             $adminPasswordEnv = (string) env('ADMIN_PASSWORD', '');
             $generatedPassword = false;

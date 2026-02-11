@@ -1,38 +1,46 @@
 /* Fallback styles when Vite build output is unavailable (e.g., shared hosting without Node). */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+
+  --tb-primary: #0067ff;
+  --tb-primary-hover: #005ee9;
+  --tb-ink: #0f172a;
+  --tb-muted: #364151;
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.75rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.25rem;
+  border-radius: 60px;
+  padding: 17px 35px;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: Manrope, ui-sans-serif, system-ui, sans-serif;
+  line-height: 1;
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+  text-decoration: none;
 }
 
 .btn-primary {
-  background: #ffffff;
-  color: #09090b; /* zinc-950 */
+  background: var(--tb-primary);
+  border: 0;
+  color: #ffffff;
 }
 
 .btn-primary:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--tb-primary-hover);
 }
 
 .btn-ghost {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.9);
+  border: 2px solid var(--tb-primary);
+  background: transparent;
+  color: var(--tb-primary);
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--tb-primary);
   color: #ffffff;
 }
 
@@ -43,8 +51,7 @@
 }
 
 .card {
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
 }
-

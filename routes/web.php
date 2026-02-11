@@ -19,11 +19,13 @@ use App\Http\Controllers\VideoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'home'])->name('home');
+Route::get('/features', [SiteController::class, 'features'])->name('features');
 Route::get('/solutions', [SiteController::class, 'solutions'])->name('solutions');
+Route::get('/pricing', [SiteController::class, 'pricing'])->name('pricing');
 Route::get('/about', [SiteController::class, 'about'])->name('about');
 Route::get('/contact', [SiteController::class, 'contact'])->name('contact');
 Route::post('/contact', [SiteController::class, 'submitContact'])->name('contact.submit');
-Route::get('/quote', [SiteController::class, 'quote'])->name('quote');
+Route::get('/quote', fn () => redirect()->route('contact'))->name('quote');
 Route::post('/quote', [SiteController::class, 'submitQuote'])->name('quote.submit');
 
 Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
@@ -32,13 +34,22 @@ Route::get('/projects/{project:slug}', [ProjectController::class, 'show'])->name
 Route::get('/videos', [VideoController::class, 'index'])->name('videos.index');
 Route::get('/videos/{video:slug}', [VideoController::class, 'show'])->name('videos.show');
 
+// WooCommerce-style alias used on twinbot.in.
+Route::get('/shop', [ProductController::class, 'index'])->name('shop');
+
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
+Route::post('/products/{product}/enquiry', [ProductController::class, 'enquiry'])->name('products.enquiry');
 
 Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
 Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
 Route::post('/cart/remove/{product}', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+
+// Pages present in twinbot.in sitemap but not implemented here.
+Route::get('/hello-world', fn () => redirect()->route('home'))->name('hello-world');
+Route::get('/my-account', fn () => redirect()->route('contact'))->name('my-account');
+Route::get('/enquiry-cart', fn () => redirect()->route('products.index'))->name('enquiry-cart');
 
 Route::get('/forum', [SiteController::class, 'forum'])->name('forum');
 

@@ -3,9 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
-use App\Models\Product;
-use App\Models\Project;
-use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -13,31 +10,27 @@ class SiteController extends Controller
 {
     public function home()
     {
-        $featuredProducts = collect();
-        $featuredProjects = collect();
-        $featuredVideos = collect();
-        $dbOk = true;
-
-        try {
-            $featuredProducts = Product::query()->where('is_published', true)->latest()->limit(3)->get();
-            $featuredProjects = Project::query()->where('is_published', true)->latest('published_at')->limit(3)->get();
-            $featuredVideos = Video::query()->where('is_published', true)->latest('published_at')->limit(3)->get();
-        } catch (\Throwable $e) {
-            // Shared-hosting deployments may be live before DB credentials/migrations are ready.
-            $dbOk = false;
-        }
+        // Prefer rendering the public site even if DB is not configured on the server.
+        $featuredProducts = collect(config('twinbot.products', []))->take(6)->values();
 
         return view('site.home', [
             'featuredProducts' => $featuredProducts,
-            'featuredProjects' => $featuredProjects,
-            'featuredVideos' => $featuredVideos,
-            'dbOk' => $dbOk,
         ]);
+    }
+
+    public function features()
+    {
+        return view('site.features');
     }
 
     public function solutions()
     {
         return view('site.solutions');
+    }
+
+    public function pricing()
+    {
+        return view('site.pricing');
     }
 
     public function about()
@@ -52,7 +45,7 @@ class SiteController extends Controller
 
     public function quote()
     {
-        return view('site.quote');
+        return redirect()->route('contact');
     }
 
     public function forum()
@@ -104,9 +97,9 @@ class SiteController extends Controller
         try {
             Lead::create($data);
         } catch (\Throwable $e) {
-            return redirect()->route('quote')->with('status', 'Quote request received (database setup pending).');
+            return redirect()->route('contact')->with('status', 'Quote request received (database setup pending).');
         }
 
-        return redirect()->route('quote')->with('status', 'Quote request received. We will contact you.');
+        return redirect()->route('contact')->with('status', 'Quote request received. We will contact you.');
     }
 }

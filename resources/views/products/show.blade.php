@@ -1,66 +1,91 @@
 @extends('layouts.site')
 
-@section('title', $product->title.' | Products | Finboard')
+@section('title', ($product['title'] ?? 'Product').' - '.config('twinbot.site.domain'))
+@section('meta_description', \Illuminate\Support\Str::limit(strip_tags((string) ($product['summary'] ?? config('twinbot.site.tagline'))), 160))
 
 @section('content')
-    <section class="mx-auto max-w-6xl px-4 pt-14">
-        <a href="{{ route('products.index') }}" class="text-sm text-white/70 hover:text-white">← Back to Products</a>
-        <div class="mt-6 grid gap-8 md:grid-cols-2 md:items-start">
-            <div class="card p-6">
-                <div class="text-xs text-white/60">Product</div>
-                <h1 class="mt-2 font-display text-4xl tracking-tight">{{ $product->title }}</h1>
-                @if ($product->summary)
-                    <p class="mt-4 text-white/70">{{ $product->summary }}</p>
-                @endif
-                <div class="mt-6 flex items-center justify-between rounded-xl border border-white/10 bg-black/20 px-4 py-3">
-                    <div class="text-sm text-white/70">
-                        @if ($product->sku)
-                            SKU: <span class="text-white/90">{{ $product->sku }}</span>
-                        @else
-                            SKU: <span class="text-white/60">n/a</span>
-                        @endif
-                    </div>
-                    <div class="text-lg font-semibold text-white">
-                        {{ $product->currency }} {{ number_format(((int) $product->price_cents) / 100, 2) }}
-                    </div>
-                </div>
+    @php
+        $img = $product['image'] ?? null;
+        $src = $img && \Illuminate\Support\Str::startsWith($img, ['http://', 'https://']) ? $img : ($img ? asset($img) : null);
+        $c = config('twinbot.contact');
+    @endphp
 
-                <form class="mt-6 flex gap-3" method="POST" action="{{ route('cart.add', $product) }}">
-                    @csrf
-                    <input type="number" name="qty" value="1" min="1" max="99" class="w-24 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-400/40" />
-                    <button class="btn btn-primary" type="submit">Add to Cart</button>
-                    <a class="btn btn-ghost" href="{{ route('quote') }}">Request Quote</a>
-                </form>
+    <section class="mx-auto max-w-6xl px-4 pt-10 pb-16">
+        <a href="{{ route('products.index') }}" class="text-sm font-semibold text-[#0067FF] hover:text-[#005EE9]">Back to Products</a>
+
+        <div class="mt-6 grid gap-6 md:grid-cols-2 md:items-start">
+            <div class="rounded-3xl border border-black/10 bg-white p-6 md:p-8">
+                <div class="text-xs font-semibold text-[#364151]">{{ $product['series'] ?? 'Product' }}</div>
+                <h1 class="mt-2 font-display text-4xl tracking-tight text-[#0F172A]">{{ $product['title'] ?? 'Product' }}</h1>
+                @if (!empty($product['summary']))
+                    <p class="mt-4 text-sm text-[#364151]">{{ $product['summary'] }}</p>
+                @endif
+
+                @if ($src)
+                    <div class="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white">
+                        <img src="{{ $src }}" alt="" class="h-72 w-full object-contain p-6" />
+                    </div>
+                @endif
+
+                @if (!empty($product['body']))
+                    <div class="mt-6 rounded-2xl border border-black/10 bg-[#E7F6FF] p-5">
+                        <div class="font-semibold text-[#0F172A]">Details</div>
+                        <div class="mt-2 whitespace-pre-wrap text-sm text-[#364151]">{{ $product['body'] }}</div>
+                    </div>
+                @endif
             </div>
 
-            <div class="space-y-4">
-                @if ($product->body)
-                    <div class="card p-6">
-                        <h2 class="font-display text-2xl">Details</h2>
-                        <div class="mt-3 text-sm text-white/75 whitespace-pre-wrap">{{ $product->body }}</div>
-                    </div>
-                @endif
+            <div class="rounded-3xl border border-black/10 bg-white p-6 md:p-8">
+                <h2 class="font-display text-2xl text-[#0F172A]">Send us your enquiry</h2>
+                <p class="mt-2 text-sm text-[#364151]">
+                    Share your requirements. We will respond with next steps.
+                </p>
 
-                @if ($product->media->count())
-                    <div class="card p-6">
-                        <h2 class="font-display text-2xl">Media</h2>
-                        <div class="mt-4 grid gap-3 md:grid-cols-2">
-                            @foreach ($product->media as $m)
-                                <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-                                    <div class="text-xs text-white/60">{{ strtoupper($m->type) }}</div>
-                                    @if ($m->title)
-                                        <div class="mt-1 font-semibold">{{ $m->title }}</div>
-                                    @endif
-                                    @if ($m->type === 'image' && $m->path)
-                                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($m->path) }}" alt="" class="mt-3 h-40 w-full rounded-lg object-cover" />
-                                    @elseif ($m->external_url)
-                                        <div class="mt-2 text-sm text-white/70 break-words">{{ $m->external_url }}</div>
-                                    @endif
-                                </div>
-                            @endforeach
+                <form class="mt-5 grid gap-3" method="POST" action="{{ route('products.enquiry', ['product' => $product['slug'] ?? '']) }}">
+                    @csrf
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="text-xs font-semibold text-[#364151]">Name</label>
+                            <input name="name" value="{{ old('name') }}" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0067FF]/30" required />
+                            @error('name')<div class="mt-1 text-xs text-red-700">{{ $message }}</div>@enderror
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-[#364151]">Company</label>
+                            <input name="company" value="{{ old('company') }}" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0067FF]/30" />
+                            @error('company')<div class="mt-1 text-xs text-red-700">{{ $message }}</div>@enderror
                         </div>
                     </div>
-                @endif
+
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="text-xs font-semibold text-[#364151]">Email</label>
+                            <input name="email" type="email" value="{{ old('email') }}" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0067FF]/30" />
+                            @error('email')<div class="mt-1 text-xs text-red-700">{{ $message }}</div>@enderror
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-[#364151]">Phone</label>
+                            <input name="phone" value="{{ old('phone') }}" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0067FF]/30" />
+                            @error('phone')<div class="mt-1 text-xs text-red-700">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-[#364151]">Message</label>
+                        <textarea name="message" rows="5" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0067FF]/30">{{ old('message') }}</textarea>
+                        @error('message')<div class="mt-1 text-xs text-red-700">{{ $message }}</div>@enderror
+                    </div>
+
+                    <button class="btn btn-primary" type="submit">Send us your enquiry</button>
+                </form>
+
+                <div class="mt-6 rounded-2xl border border-black/10 bg-[#E7F6FF] p-5">
+                    <div class="font-semibold text-[#0F172A]">Prefer direct contact?</div>
+                    <div class="mt-2 text-sm text-[#364151]">
+                        Phone: <a class="font-semibold text-[#0067FF] hover:text-[#005EE9]" href="tel:{{ $c['phone_tel'] }}">{{ $c['phone_display'] }}</a><br>
+                        Email: <a class="font-semibold text-[#0067FF] hover:text-[#005EE9]" href="mailto:{{ $c['email_primary'] }}">{{ $c['email_primary'] }}</a><br>
+                        Whatsapp: <a class="font-semibold text-[#0067FF] hover:text-[#005EE9]" href="{{ $c['whatsapp_url'] }}">{{ $c['phone_display'] }}</a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

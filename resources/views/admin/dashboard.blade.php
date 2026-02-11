@@ -44,7 +44,7 @@
                     <a href="{{ route('admin.leads.show', $l) }}" class="block rounded-xl border border-white/10 bg-black/20 px-4 py-3 hover:bg-white/5">
                         <div class="text-xs text-white/60">{{ strtoupper($l->type) }}</div>
                         <div class="mt-1 font-semibold">{{ $l->name }}</div>
-                        <div class="mt-1 text-white/60">{{ $l->email ?: 'no email' }} · {{ $l->phone ?: 'no phone' }}</div>
+                        <div class="mt-1 text-white/60">{{ $l->email ?: 'no email' }} - {{ $l->phone ?: 'no phone' }}</div>
                     </a>
                 @empty
                     <div class="text-white/60">No leads yet.</div>
@@ -60,7 +60,7 @@
             <div class="mt-4 space-y-3 text-sm">
                 @forelse ($latestOrders as $o)
                     <a href="{{ route('admin.orders.show', $o) }}" class="block rounded-xl border border-white/10 bg-black/20 px-4 py-3 hover:bg-white/5">
-                        <div class="text-xs text-white/60">#{{ $o->id }} · {{ strtoupper($o->status) }}</div>
+                        <div class="text-xs text-white/60">#{{ $o->id }} - {{ strtoupper($o->status) }}</div>
                         <div class="mt-1 font-semibold">{{ $o->customer_name }}</div>
                         <div class="mt-1 text-white/60">{{ $o->currency }} {{ number_format(((int) $o->subtotal_cents) / 100, 2) }}</div>
                     </a>
@@ -71,4 +71,3 @@
         </div>
     </div>
 @endsection
-

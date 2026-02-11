@@ -5,6 +5,16 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// Laravel requires OpenSSL for cookie/session encryption. Fail fast with a clear message
+// instead of a fatal error in the encryption middleware.
+if (!function_exists('openssl_cipher_iv_length')) {
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=UTF-8');
+    echo "Server misconfiguration: PHP OpenSSL extension is required.\n";
+    echo "Enable OpenSSL in php.ini (extension=openssl) or contact your hosting provider.\n";
+    exit(1);
+}
+
 /*
 |--------------------------------------------------------------------------
 | Shared Hosting Bootstrap (Hostinger)

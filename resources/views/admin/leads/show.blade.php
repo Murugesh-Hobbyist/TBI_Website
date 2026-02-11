@@ -6,7 +6,7 @@
     <div class="flex items-center justify-between">
         <div>
             <div class="font-display text-3xl">Lead #{{ $lead->id }}</div>
-            <div class="mt-2 text-sm text-white/60">{{ strtoupper($lead->type) }} · {{ $lead->created_at }}</div>
+            <div class="mt-2 text-sm text-white/60">{{ strtoupper($lead->type) }} - {{ $lead->created_at }}</div>
         </div>
         <a href="{{ route('admin.leads.index') }}" class="btn btn-ghost">Back</a>
     </div>
@@ -30,4 +30,3 @@
         </div>
     </div>
 @endsection
-
