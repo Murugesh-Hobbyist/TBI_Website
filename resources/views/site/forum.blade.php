@@ -1,16 +1,36 @@
 @extends('layouts.site')
 
-@section('title', 'Forum - '.config('twinbot.site.domain'))
+@section('title', 'Forum | TwinBot Innovations')
+@section('meta_description', 'TwinBot community forum is under preparation. Reach our team directly for technical help and product guidance.')
 
 @section('content')
-    <section class="mx-auto max-w-6xl px-4 pt-14">
-        <div class="rounded-3xl border border-black/10 bg-white p-6 md:p-10">
-            <h1 class="font-display text-4xl tracking-tight text-[#0F172A]">Forum</h1>
-            <p class="mt-4 max-w-3xl text-sm text-[#364151]">
-                Forum is not available yet. If you need support, use the
-                <a class="font-semibold text-[#0067FF] hover:text-[#005EE9]" href="{{ route('contact') }}">contact</a>
-                page.
-            </p>
+    <section class="tb-section pt-6 md:pt-10 pb-16">
+        <div class="mx-auto max-w-6xl px-4">
+            <div class="tb-panel p-6 md:p-10 tb-reveal">
+                <span class="tb-eyebrow">Community</span>
+                <h1 class="tb-heading mt-4">Forum is under construction.</h1>
+                <p class="tb-lead mt-5 max-w-3xl">We are building a proper space for knowledge sharing, troubleshooting playbooks, and application discussions around TwinBot systems. Until then, our team is available directly.</p>
+
+                <div class="mt-7 grid gap-4 md:grid-cols-3">
+                    <div class="tb-card">
+                        <h2 class="font-display text-xl text-[#112743]">Technical Queries</h2>
+                        <p class="mt-2 text-sm text-[#4C6686]">Get support on integration, sensors, communication, and diagnostics.</p>
+                    </div>
+                    <div class="tb-card">
+                        <h2 class="font-display text-xl text-[#112743]">Product Selection</h2>
+                        <p class="mt-2 text-sm text-[#4C6686]">Find the right TwinBot platform based on your process and quality requirements.</p>
+                    </div>
+                    <div class="tb-card">
+                        <h2 class="font-display text-xl text-[#112743]">Project Planning</h2>
+                        <p class="mt-2 text-sm text-[#4C6686]">Discuss timelines, deployment strategy, and phased scaling approach.</p>
+                    </div>
+                </div>
+
+                <div class="mt-7 flex flex-wrap gap-3">
+                    <a href="{{ route('contact') }}" class="btn btn-primary">Contact Engineering Team</a>
+                    <a href="{{ route('products.index') }}" class="btn btn-ghost">Explore Products</a>
+                </div>
+            </div>
         </div>
     </section>
 @endsection

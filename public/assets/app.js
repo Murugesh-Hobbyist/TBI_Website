@@ -11,14 +11,14 @@
 
     const wrap = document.createElement('div');
     const isUser = role === 'user';
-    wrap.className = 'rounded-2xl border border-black/10 p-3 ' + (isUser ? 'bg-[#E7F6FF]' : 'bg-white');
+    wrap.className = 'rounded-2xl border border-black/10 p-3 ' + (isUser ? 'bg-[#E7F4FF]' : 'bg-white');
 
     const meta = document.createElement('div');
-    meta.className = 'text-xs text-[#364151]';
-    meta.textContent = role === 'user' ? 'You' : 'AI';
+    meta.className = 'text-xs text-[#4A6587]';
+    meta.textContent = isUser ? 'You' : 'AI';
 
     const body = document.createElement('div');
-    body.className = 'mt-1 whitespace-pre-wrap text-[#0F172A]';
+    body.className = 'mt-1 whitespace-pre-wrap text-[#142847]';
     body.textContent = text;
 
     wrap.appendChild(meta);
@@ -86,6 +86,7 @@
         input.focus();
       }, 0);
     };
+
     const close = function () {
       modal.classList.add('hidden');
     };
@@ -142,6 +143,7 @@
         stream.getTracks().forEach(function (t) {
           t.stop();
         });
+
         const blob = new Blob(chunks, { type: 'audio/webm' });
 
         try {
@@ -232,8 +234,39 @@
     });
   }
 
+  function initRevealMotion() {
+    const revealItems = document.querySelectorAll('.tb-reveal');
+    if (!revealItems.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+      revealItems.forEach(function (item) {
+        item.classList.add('tb-inview');
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('tb-inview');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.15,
+      }
+    );
+
+    revealItems.forEach(function (item) {
+      observer.observe(item);
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initMobileMenu();
+    initRevealMotion();
     initAssistantWidget();
   });
 })();

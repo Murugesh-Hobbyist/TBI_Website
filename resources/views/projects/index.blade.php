@@ -1,45 +1,43 @@
 @extends('layouts.site')
 
-@section('title', 'Projects - '.config('twinbot.site.domain'))
-@section('meta_description', 'Selected industrial automation projects delivered by TwinBot Innovations.')
+@section('title', 'Projects | TwinBot Innovations')
+@section('meta_description', 'Browse selected TwinBot automation projects and deployment case snapshots.')
 
 @section('content')
-    <section class="mx-auto max-w-6xl px-4 pt-10 pb-16">
-        <div class="rounded-3xl border border-black/10 bg-white p-6 md:p-10">
-            <h1 class="font-display text-4xl tracking-tight text-[#0F172A]">Projects</h1>
-            <p class="mt-3 max-w-3xl text-sm text-[#364151]">
-                Proof of execution. Publish only what you are proud to defend in a meeting.
-            </p>
-        </div>
-
-        @if (!($dbOk ?? true))
-            <div class="mt-6 rounded-2xl border border-orange-400/30 bg-orange-50 px-4 py-3 text-sm text-orange-900">
-                Database is not configured yet. Configure `DB_*` in `.env` and run migrations to publish projects.
+    <section class="tb-section pt-6 md:pt-10 pb-16">
+        <div class="mx-auto max-w-6xl px-4">
+            <div class="tb-panel p-6 md:p-10 tb-reveal">
+                <span class="tb-eyebrow">Execution Portfolio</span>
+                <h1 class="tb-heading mt-4">Proof of delivery, not just promises.</h1>
+                <p class="tb-lead mt-5 max-w-3xl">These project snapshots reflect our applied engineering approach across industrial automation and embedded control challenges.</p>
             </div>
-        @endif
 
-        <div class="mt-8 grid gap-4 md:grid-cols-3">
-            @foreach ($projects as $p)
-                <a href="{{ route('projects.show', $p) }}" class="group rounded-3xl border border-black/10 bg-white p-6 hover:bg-[#E7F6FF]">
-                    <div class="text-xs font-semibold text-[#364151]">Project</div>
-                    <div class="mt-2 font-semibold text-[#0F172A]">{{ $p->title }}</div>
-                    @if ($p->summary)
-                        <div class="mt-2 text-sm text-[#364151]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $p->summary), 140) }}</div>
-                    @endif
-                    <div class="mt-3 text-sm font-semibold text-[#0067FF] group-hover:text-[#005EE9]">Read more</div>
-                </a>
-            @endforeach
-
-            @if (($dbOk ?? true) && $projects->count() === 0)
-                <div class="rounded-3xl border border-black/10 bg-white p-6 text-sm text-[#364151] md:col-span-3">
-                    No published projects yet.
+            @if (!($dbOk ?? true))
+                <div class="mt-5 rounded-2xl border border-orange-300 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-900 tb-reveal">
+                    Database is not configured yet. Configure <code>DB_*</code> in <code>.env</code> and run migrations to publish projects.
                 </div>
             @endif
-        </div>
 
-        <div class="mt-8 text-sm text-[#364151]">
-            {{ $projects->links() }}
+            <div class="mt-5 grid gap-4 md:grid-cols-3">
+                @foreach ($projects as $project)
+                    <a href="{{ route('projects.show', $project) }}" class="tb-card tb-reveal">
+                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#597696]">Project</div>
+                        <h2 class="mt-2 font-display text-xl text-[#112743]">{{ $project->title }}</h2>
+                        @if ($project->summary)
+                            <p class="mt-2 text-sm leading-relaxed text-[#4C6686]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $project->summary), 140) }}</p>
+                        @endif
+                        <div class="mt-4 text-sm font-bold text-[#0B6ECD]">Read case details</div>
+                    </a>
+                @endforeach
+
+                @if (($dbOk ?? true) && $projects->count() === 0)
+                    <div class="tb-panel p-6 text-sm text-[#4C6686] md:col-span-3 tb-reveal">No published projects yet.</div>
+                @endif
+            </div>
+
+            <div class="mt-8 text-sm text-[#4C6686]">
+                {{ $projects->links() }}
+            </div>
         </div>
     </section>
 @endsection
-

@@ -1,57 +1,86 @@
 @extends('layouts.site')
 
-@section('title', 'Pricing - '.config('twinbot.site.domain'))
-@section('meta_description', 'Competitive pricing for embedded automation solutions. Replace costly PLC systems with ECS.')
+@section('title', 'Pricing | TwinBot Innovations')
+@section('meta_description', 'TwinBot pricing model is designed around measurable value, lower ownership cost, and scalable embedded automation deployment.')
 
 @section('content')
-    <section class="mx-auto max-w-6xl px-4 pt-10">
-        <div class="rounded-3xl border border-black/10 bg-white p-6 md:p-10">
-            <h1 class="font-display text-4xl tracking-tight text-[#0F172A]">Pricing</h1>
-            <p class="mt-3 max-w-3xl text-sm text-[#364151]">
-                Our pricing strategy is designed to provide exceptional value without compromising quality.
-                By replacing costly PLC systems with embedded control systems, we help you achieve significant savings while maintaining high performance.
-            </p>
-            <div class="mt-6 flex flex-wrap gap-3">
-                <a href="{{ route('contact') }}" class="btn btn-primary">Request a Quote</a>
-                <a href="{{ route('products.index') }}" class="btn btn-ghost">Browse Products</a>
+    <section class="tb-section pt-6 md:pt-10">
+        <div class="mx-auto max-w-6xl px-4">
+            <div class="tb-panel p-6 md:p-10 tb-reveal">
+                <span class="tb-eyebrow">Commercial Clarity</span>
+                <h1 class="tb-heading mt-4">Transparent value, engineered for industrial ROI.</h1>
+                <p class="tb-lead mt-5 max-w-3xl">We price systems based on your technical scope, deployment scale, and support needs. The objective is simple: stronger control and measurement capability with lower lifetime cost than rigid legacy stacks.</p>
+                <div class="mt-7 flex flex-wrap gap-3">
+                    <a href="{{ route('contact') }}" class="btn btn-primary">Request Pricing Consultation</a>
+                    <a href="{{ route('products.index') }}" class="btn btn-ghost">Explore Product Families</a>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="mx-auto mt-8 max-w-6xl px-4">
-        <div class="grid gap-4 md:grid-cols-3">
-            @foreach ([
-                ['t' => 'Customizable Packages', 'd' => 'Choose features that align with your requirements and ROI targets.'],
-                ['t' => 'Cost and Maintenance', 'd' => 'Lower total cost of ownership with affordable spares and simpler maintenance.'],
-                ['t' => 'Beyond PLC Limits', 'd' => 'Data logging and analytics at a price that is typically expensive with PLC systems.'],
-            ] as $c)
-                <div class="rounded-3xl border border-black/10 bg-white p-6">
-                    <div class="font-display text-xl text-[#0F172A]">{{ $c['t'] }}</div>
-                    <div class="mt-2 text-sm text-[#364151]">{{ $c['d'] }}</div>
-                </div>
-            @endforeach
-        </div>
-    </section>
-
-    <section class="mx-auto mt-8 max-w-6xl px-4 pb-16">
-        <div class="rounded-3xl border border-black/10 bg-white p-6 md:p-8">
-            <h2 class="font-display text-2xl text-[#0F172A]">Enjoy these features on all plans</h2>
-            <div class="mt-6 grid gap-4 md:grid-cols-3">
+    <section class="tb-section">
+        <div class="mx-auto max-w-6xl px-4">
+            <div class="grid gap-4 md:grid-cols-3">
                 @foreach ([
-                    ['t' => 'Support', 'd' => 'Our support team is available to assist and resolve issues promptly.'],
-                    ['t' => 'Durable Solutions', 'd' => 'Reliable hardware designed for industrial environments.'],
-                    ['t' => 'Scalable', 'd' => 'Scale with your business needs without compromising performance.'],
-                    ['t' => 'Enclosure', 'd' => 'Secure enclosures (3D-printed / sheet metal) for protection and security.'],
-                    ['t' => 'Protection', 'd' => 'Options for water and dust protection to improve longevity.'],
-                    ['t' => 'Transparent Value', 'd' => 'Competitive rates compared to other automation solution providers.'],
-                ] as $f)
-                    <div class="rounded-2xl border border-black/10 bg-[#E7F6FF] p-5">
-                        <div class="font-semibold text-[#0F172A]">{{ $f['t'] }}</div>
-                        <div class="mt-1 text-sm text-[#364151]">{{ $f['d'] }}</div>
-                    </div>
+                    ['title' => 'Pilot Package', 'desc' => 'Fast validation package for teams testing feasibility, data flow, and process fit before full rollout.'],
+                    ['title' => 'Production Package', 'desc' => 'Complete deployment with hardware, software, commissioning support, and operational handover.'],
+                    ['title' => 'Scale Package', 'desc' => 'Expansion model for multi-line and multi-station deployments with staged rollout economics.'],
+                ] as $plan)
+                    <article class="tb-card tb-reveal">
+                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#597696]">Model</div>
+                        <h2 class="mt-2 font-display text-xl text-[#112743]">{{ $plan['title'] }}</h2>
+                        <p class="mt-2 text-sm leading-relaxed text-[#4C6686]">{{ $plan['desc'] }}</p>
+                    </article>
                 @endforeach
             </div>
         </div>
     </section>
-@endsection
 
+    <section class="tb-section">
+        <div class="mx-auto max-w-6xl px-4">
+            <div class="grid gap-5 md:grid-cols-2">
+                <div class="tb-panel p-6 md:p-8 tb-reveal">
+                    <span class="tb-eyebrow">Value Drivers</span>
+                    <h2 class="tb-subheading mt-3">Why teams move budget toward ECS</h2>
+                    <ul class="tb-list mt-5 text-sm">
+                        <li>Lower ownership cost through focused architecture and practical spare strategy.</li>
+                        <li>Reduced engineering friction with customizable firmware and interface flow.</li>
+                        <li>Better operational insight through integrated data logging and diagnostics.</li>
+                        <li>Faster scalability without complex module dependency chains.</li>
+                    </ul>
+                </div>
+
+                <div class="tb-panel p-6 md:p-8 tb-reveal">
+                    <span class="tb-eyebrow">Included Benefits</span>
+                    <h2 class="tb-subheading mt-3">Professional delivery standards</h2>
+                    <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                        @foreach ([
+                            'Technical consultation and scoping',
+                            'Hardware and firmware alignment',
+                            'Deployment and stabilization support',
+                            'Post-go-live assistance options',
+                            'Enclosure and protection planning',
+                            'Documentation for operations team',
+                        ] as $item)
+                            <div class="tb-panel-soft p-4 text-sm font-semibold text-[#294B70]">{{ $item }}</div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tb-section pb-16">
+        <div class="mx-auto max-w-6xl px-4">
+            <div class="tb-cta tb-reveal">
+                <span class="tb-eyebrow">Estimate</span>
+                <h2 class="tb-subheading mt-3">Share your requirement, get a realistic commercial path.</h2>
+                <p class="tb-lead mt-3 max-w-2xl">Provide channels, sensing needs, timeline, and line constraints. We will respond with a proposal structure tailored to your project stage.</p>
+                <div class="mt-5 flex flex-wrap gap-3">
+                    <a href="{{ route('contact') }}" class="btn btn-primary">Get Your Quote</a>
+                    <a href="{{ route('solutions') }}" class="btn btn-ghost">Review Solution Approach</a>
+                </div>
+            </div>
+        </div>
+    </section>
+@endsection
