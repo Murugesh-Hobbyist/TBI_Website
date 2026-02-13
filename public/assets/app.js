@@ -5,6 +5,74 @@
     return document.getElementById(id);
   }
 
+  function luminance(rgb) {
+    const m = rgb.match(/\d+/g);
+    if (!m || m.length < 3) return 255;
+    const r = Number(m[0]);
+    const g = Number(m[1]);
+    const b = Number(m[2]);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  function forceLightThemeIfNeeded() {
+    if (!document.body || !document.body.classList.contains('tb-site')) return;
+
+    const bg = window.getComputedStyle(document.body).backgroundColor;
+    if (luminance(bg) > 85) return;
+
+    if (el('tb-force-light-style')) return;
+
+    const style = document.createElement('style');
+    style.id = 'tb-force-light-style';
+    style.textContent = `
+      html, body.tb-site {
+        color-scheme: light !important;
+        background: #f6fbff !important;
+        color: #11284a !important;
+      }
+      body.tb-site::before,
+      .tb-background,
+      .tb-orb { opacity: 0 !important; }
+      .tb-header,
+      .tb-topline,
+      #tb-mobile-nav,
+      .tb-panel,
+      .tb-panel-soft,
+      .tb-card,
+      .tb-compare,
+      .tb-compare-item,
+      .tb-cta,
+      .tb-stat,
+      .tb-logo-card,
+      .tb-product-thumb {
+        background: #ffffff !important;
+        color: #11284a !important;
+        border-color: #c8d9eb !important;
+      }
+      .tb-lead,
+      .tb-muted,
+      .tb-compare-copy,
+      .tb-form-label,
+      .tb-nav-link,
+      .tb-mini-link,
+      .tb-step p,
+      .tb-list li {
+        color: #4f6890 !important;
+      }
+      .btn-primary {
+        background: linear-gradient(130deg, #0f7c8a, #1f6fd0 55%, #3687dc) !important;
+        color: #ffffff !important;
+      }
+      .btn-ghost {
+        background: #f0f7ff !important;
+        color: #2c5688 !important;
+        border-color: #b7d2ea !important;
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
   function appendLog(role, text) {
     const log = el('assistant-log');
     if (!log) return;
@@ -265,8 +333,11 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    forceLightThemeIfNeeded();
     initMobileMenu();
     initRevealMotion();
     initAssistantWidget();
   });
+
+  window.addEventListener('load', forceLightThemeIfNeeded);
 })();

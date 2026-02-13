@@ -3,6 +3,10 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="light">
+        <meta name="supported-color-schemes" content="light">
+        <meta name="darkreader-lock">
+        <meta name="theme-color" content="#f6fbff">
         <title>@yield('title', config('twinbot.site.domain'))</title>
         <meta name="description" content="@yield('meta_description', config('twinbot.site.tagline'))">
         <link rel="canonical" href="@yield('canonical', url()->current())">
