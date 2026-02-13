@@ -317,6 +317,19 @@
       }
     };
 
+    const scrollLogToLatest = function () {
+      log.scrollTop = log.scrollHeight;
+    };
+
+    const ensureLogStaysAtBottom = function () {
+      scrollLogToLatest();
+      if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(scrollLogToLatest);
+      }
+      setTimeout(scrollLogToLatest, 0);
+      setTimeout(scrollLogToLatest, 120);
+    };
+
     const setPanelOpen = function (shouldOpen) {
       if (shouldOpen) {
         panel.classList.remove('hidden');
@@ -333,6 +346,7 @@
           if (state.mode === 'chat') {
             input.focus();
           }
+          ensureLogStaysAtBottom();
         }, 0);
       }
     };
@@ -422,8 +436,29 @@
     const maybeSpeak = async function (text) {
       if (!text) return;
 
+      const speakWithBrowserVoice = async function () {
+        if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
+          return;
+        }
+
+        await new Promise(function (resolve) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.onend = function () {
+            resolve();
+          };
+          utterance.onerror = function () {
+            resolve();
+          };
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(utterance);
+        });
+      };
+
       const audioBlob = await assistantSpeak(text);
-      if (!audioBlob) return;
+      if (!audioBlob) {
+        await speakWithBrowserVoice();
+        return;
+      }
 
       state.speaking = true;
       stopRecognition();
@@ -432,6 +467,7 @@
       }
 
       const url = URL.createObjectURL(audioBlob);
+      let playbackFailed = false;
       try {
         await new Promise(function (resolve) {
           const audio = new Audio(url);
@@ -443,22 +479,41 @@
           };
 
           audio.addEventListener('ended', finish, { once: true });
-          audio.addEventListener('error', finish, { once: true });
+          audio.addEventListener(
+            'error',
+            function () {
+              playbackFailed = true;
+              finish();
+            },
+            { once: true }
+          );
           const playPromise = audio.play();
           if (playPromise && typeof playPromise.catch === 'function') {
-            playPromise.catch(finish);
+            playPromise.catch(function () {
+              playbackFailed = true;
+              finish();
+            });
           }
         });
       } finally {
         URL.revokeObjectURL(url);
         state.speaking = false;
       }
+
+      if (playbackFailed) {
+        await speakWithBrowserVoice();
+      }
     };
 
     const runAssistantAction = function (action) {
       if (!action || action.type !== 'navigate' || !action.url) return false;
 
-      appendLog('system', 'Opening ' + (action.label || 'requested page') + '...');
+      const openingText = 'Opening ' + (action.label || 'requested page') + '...';
+      if (state.mode === 'voice') {
+        setVoiceStatus(openingText);
+      } else {
+        appendLog('system', openingText);
+      }
       storeSet(assistantStore.open, '1');
       storeSet(assistantStore.mode, state.mode);
       storeSet(assistantStore.voiceActive, state.voiceActive ? '1' : '0');
@@ -481,7 +536,9 @@
 
       const result = await assistantChat(msg);
       const reply = (result && result.text ? result.text : '').trim();
-      appendLog('assistant', reply || '(no response)');
+      if (opts.logAssistant !== false) {
+        appendLog('assistant', reply || '(no response)');
+      }
 
       const didNavigate = runAssistantAction(result ? result.action : null);
       if (!didNavigate && opts.speakReply && reply) {
@@ -554,7 +611,11 @@
         setVoiceStatus('Thinking...');
         stopRecognition();
 
-        submitMessage(finalText, { speakReply: true })
+        submitMessage(finalText, {
+          speakReply: true,
+          logUser: false,
+          logAssistant: false,
+        })
           .catch(function (e) {
             appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
           })
@@ -724,6 +785,7 @@
       history.forEach(function (entry) {
         appendLog(entry.role, entry.text, { skipPersist: true });
       });
+      ensureLogStaysAtBottom();
     } else {
       appendLog(
         'assistant',
