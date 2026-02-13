@@ -9,7 +9,7 @@
     @endphp
 
     <section class="tb-section pt-6 md:pt-10">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             <div class="grid gap-5 md:grid-cols-2">
                 <div class="tb-panel p-6 md:p-10 tb-reveal">
                     <span class="tb-eyebrow">Contact TwinBot</span>
@@ -89,7 +89,7 @@
     </section>
 
     <section class="tb-section">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             <div class="grid gap-5 md:grid-cols-2">
                 <div class="tb-panel p-6 md:p-8 tb-reveal">
                     <span class="tb-eyebrow">Share Useful Inputs</span>
@@ -131,7 +131,7 @@
     </section>
 
     <section class="tb-section pb-16">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             <div class="tb-cta tb-reveal">
                 <span class="tb-eyebrow">Need Immediate Help?</span>
                 <h2 class="tb-subheading mt-3">Call or WhatsApp for faster triage.</h2>
@@ -144,4 +144,5 @@
         </div>
     </section>
 @endsection
+
 

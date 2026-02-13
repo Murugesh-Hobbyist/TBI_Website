@@ -15,7 +15,7 @@
     @endphp
 
     <section class="tb-section pt-4 md:pt-6">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             <div class="tb-hero-shell p-5 md:p-7 tb-reveal">
                 <div class="tb-hero-grid">
                     <div>
@@ -67,7 +67,7 @@
     </section>
 
     <section class="tb-section">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             <div class="tb-panel p-5 md:p-6">
                 <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                     <div>
@@ -95,7 +95,7 @@
     </section>
 
     <section class="tb-section">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             <div class="grid gap-3 md:grid-cols-2">
                 <div class="tb-panel p-5 md:p-6 tb-reveal">
                     <div class="flex items-center justify-between gap-3">
@@ -151,7 +151,7 @@
     </section>
 
     <section class="tb-section pb-10">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             <div class="grid gap-3 md:grid-cols-[1.1fr_0.9fr]">
                 <div class="tb-panel p-5 md:p-6 tb-reveal">
                     <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -210,3 +210,4 @@
         </div>
     </section>
 @endsection
+

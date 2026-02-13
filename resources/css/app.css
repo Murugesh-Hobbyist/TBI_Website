@@ -248,6 +248,11 @@ body.tb-site::before {
   margin-top: 1.35rem;
 }
 
+.tb-wrap {
+  width: 100%;
+  padding-inline: clamp(14px, 2.6vw, 42px);
+}
+
 .tb-panel {
   position: relative;
   overflow: hidden;

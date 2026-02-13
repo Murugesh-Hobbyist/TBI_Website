@@ -64,13 +64,13 @@
 
         <header class="tb-header">
             <div class="tb-topline">
-                <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-2 text-[11px] font-semibold text-[#1e456f]">
+                <div class="tb-wrap flex w-full items-center justify-between gap-3 py-2 text-[11px] font-semibold text-[#1e456f]">
                     <div class="hidden sm:block">Embedded automation for measurable uptime, traceability, and faster operator decisions.</div>
                     <a href="{{ route('contact') }}" class="tb-mini-link">Start technical discussion</a>
                 </div>
             </div>
 
-            <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3">
+            <div class="tb-wrap flex w-full items-center justify-between gap-3 py-3">
                 <a href="{{ route('home') }}" class="tb-brand-badge" aria-label="{{ config('twinbot.site.domain') }}">
                     <img src="{{ asset(config('twinbot.assets.logo')) }}" alt="{{ config('twinbot.site.name') }}" class="h-9 w-auto" />
                 </a>
@@ -98,7 +98,7 @@
             </div>
 
             <div id="tb-mobile-nav" class="hidden border-t border-[#d7e0eb] bg-white/95 md:hidden">
-                <div class="mx-auto max-w-6xl px-4 py-3">
+                <div class="tb-wrap py-3">
                     <nav class="flex flex-col gap-1.5 text-sm font-semibold text-[#21496f]">
                         <a href="{{ route('home') }}" class="tb-mobile-link">Home</a>
                         <a href="{{ route('products.index') }}" class="tb-mobile-link">Products</a>
@@ -117,7 +117,7 @@
 
         <main class="relative z-10">
             @if (session('status'))
-                <div class="mx-auto max-w-6xl px-4 pt-4">
+                <div class="tb-wrap pt-4">
                     <div class="rounded-xl border border-[#bdd0e4] bg-[#eef7ff] px-4 py-2 text-sm font-semibold text-[#1d4d78]">
                         {{ session('status') }}
                     </div>
@@ -128,7 +128,7 @@
         </main>
 
         <footer class="relative z-10 mt-12 border-t border-[#d3ddea] bg-white/92">
-            <div class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 md:grid-cols-4">
+            <div class="tb-wrap grid w-full gap-8 py-10 md:grid-cols-4">
                 <div class="md:col-span-2">
                     <img src="{{ asset(config('twinbot.assets.logo')) }}" alt="{{ config('twinbot.site.name') }}" class="h-9 w-auto" />
                     <p class="mt-3 max-w-lg text-sm leading-relaxed text-[#4b6585]">{{ config('twinbot.site.tagline') }} We engineer practical embedded control systems focused on uptime, traceability, and easier operations.</p>
@@ -161,7 +161,7 @@
             </div>
 
             <div class="border-t border-[#dbe4ee] py-3">
-                <div class="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 text-xs text-[#607c9b] md:flex-row md:items-center md:justify-between">
+                <div class="tb-wrap flex w-full flex-col gap-1 text-xs text-[#607c9b] md:flex-row md:items-center md:justify-between">
                     <div>Copyright &copy; {{ date('Y') }} {{ config('twinbot.site.domain') }}. Built by TwinBot Innov Team.</div>
                     <div>Embedded control, inspection automation, and lifecycle engineering support.</div>
                 </div>
@@ -173,3 +173,4 @@
         @endif
     </body>
 </html>
+

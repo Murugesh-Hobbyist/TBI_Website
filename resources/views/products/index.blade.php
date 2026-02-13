@@ -9,7 +9,7 @@
     @endphp
 
     <section class="tb-section pt-6 md:pt-10">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             <div class="tb-panel p-6 md:p-10 tb-reveal">
                 <span class="tb-eyebrow">Product Portfolio</span>
                 <h1 class="tb-heading mt-4">Tools and systems designed for precision-driven industrial teams.</h1>
@@ -19,7 +19,7 @@
     </section>
 
     <section class="tb-section pb-16">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             @foreach (($groups ?? []) as $group)
                 @php
                     $items = collect($group['slugs'] ?? [])->map(fn ($slug) => $bySlug->get($slug))->filter()->values();
@@ -75,4 +75,5 @@
         </div>
     </section>
 @endsection
+
 

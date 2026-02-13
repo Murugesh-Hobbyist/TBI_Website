@@ -5,7 +5,7 @@
 
 @section('content')
     <section class="tb-section pt-6 md:pt-10 pb-16">
-        <div class="mx-auto max-w-6xl px-4">
+        <div class="tb-wrap">
             <div class="tb-panel p-6 md:p-10 tb-reveal">
                 <span class="tb-eyebrow">Video Library</span>
                 <h1 class="tb-heading mt-4">Automation stories you can see in action.</h1>
@@ -41,4 +41,5 @@
         </div>
     </section>
 @endsection
+
 
