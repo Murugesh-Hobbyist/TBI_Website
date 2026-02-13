@@ -30,9 +30,9 @@
                     ['title' => 'Data Visibility', 'desc' => 'Structured logs, diagnostics, and traceability that help teams resolve issues faster.'],
                 ] as $feature)
                     <article class="tb-card tb-reveal">
-                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#597696]">Feature</div>
-                        <h2 class="mt-2 font-display text-xl text-[#112743]">{{ $feature['title'] }}</h2>
-                        <p class="mt-2 text-sm leading-relaxed text-[#4C6686]">{{ $feature['desc'] }}</p>
+                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">Feature</div>
+                        <h2 class="mt-2 font-display text-xl text-[#122E53]">{{ $feature['title'] }}</h2>
+                        <p class="mt-2 text-sm leading-relaxed text-[#4F6890]">{{ $feature['desc'] }}</p>
                     </article>
                 @endforeach
             </div>
@@ -65,7 +65,7 @@
                             'Actionable production reporting',
                             'Reliable after-sales support',
                         ] as $benefit)
-                            <div class="tb-panel-soft p-4 text-sm font-semibold text-[#294B70]">{{ $benefit }}</div>
+                            <div class="tb-panel-soft p-4 text-sm font-semibold text-[#2D537A]">{{ $benefit }}</div>
                         @endforeach
                     </div>
                 </div>
@@ -87,3 +87,4 @@
         </div>
     </section>
 @endsection
+

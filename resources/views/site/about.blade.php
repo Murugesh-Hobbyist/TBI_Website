@@ -24,8 +24,8 @@
                     ['k' => '5+', 'v' => 'ECS-based industrial projects running in production'],
                 ] as $metric)
                     <article class="tb-card tb-reveal">
-                        <div class="font-display text-3xl text-[#0B6ECD]">{{ $metric['k'] }}</div>
-                        <p class="mt-2 text-sm leading-relaxed text-[#4C6686]">{{ $metric['v'] }}</p>
+                        <div class="font-display text-3xl text-[#1F6FD0]">{{ $metric['k'] }}</div>
+                        <p class="mt-2 text-sm leading-relaxed text-[#4F6890]">{{ $metric['v'] }}</p>
                     </article>
                 @endforeach
             </div>
@@ -52,8 +52,8 @@
                             ['title' => 'Innovation', 'desc' => 'We prioritize useful innovation that solves operational pain, not hype.'],
                         ] as $value)
                             <div class="tb-panel-soft p-4">
-                                <div class="font-semibold text-[#173D68]">{{ $value['title'] }}</div>
-                                <p class="mt-1 text-sm text-[#4C6686]">{{ $value['desc'] }}</p>
+                                <div class="font-semibold text-[#1B4A74]">{{ $value['title'] }}</div>
+                                <p class="mt-1 text-sm text-[#4F6890]">{{ $value['desc'] }}</p>
                             </div>
                         @endforeach
                     </div>
@@ -75,15 +75,15 @@
                             ['name' => 'Karthikeyan', 'role' => 'Seed Investor'],
                         ] as $member)
                             <div class="tb-panel-soft p-4">
-                                <div class="font-semibold text-[#173D68]">{{ $member['name'] }}</div>
-                                <div class="mt-1 text-xs font-semibold uppercase tracking-[0.1em] text-[#5C7797]">{{ $member['role'] }}</div>
+                                <div class="font-semibold text-[#1B4A74]">{{ $member['name'] }}</div>
+                                <div class="mt-1 text-xs font-semibold uppercase tracking-[0.1em] text-[#64809D]">{{ $member['role'] }}</div>
                             </div>
                         @endforeach
                     </div>
 
-                    <blockquote class="mt-6 rounded-2xl border border-[#C8DDED] bg-[#F4FAFF] p-5 text-sm leading-relaxed text-[#3F5F82]">
-                        <div class="font-semibold text-[#173D68]">"Innovation is valuable only when it solves a real production problem with clarity and reliability."</div>
-                        <div class="mt-2 text-xs font-bold uppercase tracking-[0.08em] text-[#557393]">Murugesh, Founder</div>
+                    <blockquote class="mt-6 rounded-2xl border border-[#C6DCEF] bg-[#F2F9FF] p-5 text-sm leading-relaxed text-[#4A678A]">
+                        <div class="font-semibold text-[#1B4A74]">"Innovation is valuable only when it solves a real production problem with clarity and reliability."</div>
+                        <div class="mt-2 text-xs font-bold uppercase tracking-[0.08em] text-[#607E9C]">Murugesh, Founder</div>
                     </blockquote>
                 </div>
 
@@ -108,3 +108,4 @@
         </div>
     </section>
 @endsection
+

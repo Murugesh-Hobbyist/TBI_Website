@@ -12,7 +12,7 @@
 
     <section class="tb-section pt-6 md:pt-10 pb-16">
         <div class="mx-auto max-w-6xl px-4">
-            <a href="{{ route('products.index') }}" class="text-sm font-semibold text-[#0B6ECD] hover:text-[#0957A6]">&larr; Back to Products</a>
+            <a href="{{ route('products.index') }}" class="text-sm font-semibold text-[#1F6FD0] hover:text-[#16589F]">&larr; Back to Products</a>
 
             <div class="grid gap-5 mt-5 md:grid-cols-[1.05fr_0.95fr] md:items-start">
                 <article class="tb-panel p-6 md:p-8 tb-reveal">
@@ -30,8 +30,8 @@
 
                     @if (!empty($product['body']))
                         <div class="mt-6 tb-panel-soft p-5">
-                            <h2 class="font-display text-xl text-[#112743]">Product Overview</h2>
-                            <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#4C6686]">{{ $product['body'] }}</p>
+                            <h2 class="font-display text-xl text-[#122E53]">Product Overview</h2>
+                            <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#4F6890]">{{ $product['body'] }}</p>
                         </div>
                     @endif
                 </article>
@@ -82,11 +82,11 @@
                     </div>
 
                     <div class="tb-panel-soft p-5 tb-reveal">
-                        <div class="text-sm font-semibold text-[#173D68]">Prefer direct communication?</div>
-                        <div class="mt-3 text-sm leading-relaxed text-[#4C6686]">
-                            Phone: <a class="font-semibold text-[#0B6ECD] hover:text-[#0957A6]" href="tel:{{ $c['phone_tel'] }}">{{ $c['phone_display'] }}</a><br>
-                            Email: <a class="font-semibold text-[#0B6ECD] hover:text-[#0957A6]" href="mailto:{{ $c['email_primary'] }}">{{ $c['email_primary'] }}</a><br>
-                            WhatsApp: <a class="font-semibold text-[#0B6ECD] hover:text-[#0957A6]" href="{{ $c['whatsapp_url'] }}">Start chat</a>
+                        <div class="text-sm font-semibold text-[#1B4A74]">Prefer direct communication?</div>
+                        <div class="mt-3 text-sm leading-relaxed text-[#4F6890]">
+                            Phone: <a class="font-semibold text-[#1F6FD0] hover:text-[#16589F]" href="tel:{{ $c['phone_tel'] }}">{{ $c['phone_display'] }}</a><br>
+                            Email: <a class="font-semibold text-[#1F6FD0] hover:text-[#16589F]" href="mailto:{{ $c['email_primary'] }}">{{ $c['email_primary'] }}</a><br>
+                            WhatsApp: <a class="font-semibold text-[#1F6FD0] hover:text-[#16589F]" href="{{ $c['whatsapp_url'] }}">Start chat</a>
                         </div>
                     </div>
                 </aside>
@@ -94,3 +94,4 @@
         </div>
     </section>
 @endsection
+

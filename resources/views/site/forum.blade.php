@@ -13,16 +13,16 @@
 
                 <div class="mt-7 grid gap-4 md:grid-cols-3">
                     <div class="tb-card">
-                        <h2 class="font-display text-xl text-[#112743]">Technical Queries</h2>
-                        <p class="mt-2 text-sm text-[#4C6686]">Get support on integration, sensors, communication, and diagnostics.</p>
+                        <h2 class="font-display text-xl text-[#122E53]">Technical Queries</h2>
+                        <p class="mt-2 text-sm text-[#4F6890]">Get support on integration, sensors, communication, and diagnostics.</p>
                     </div>
                     <div class="tb-card">
-                        <h2 class="font-display text-xl text-[#112743]">Product Selection</h2>
-                        <p class="mt-2 text-sm text-[#4C6686]">Find the right TwinBot platform based on your process and quality requirements.</p>
+                        <h2 class="font-display text-xl text-[#122E53]">Product Selection</h2>
+                        <p class="mt-2 text-sm text-[#4F6890]">Find the right TwinBot platform based on your process and quality requirements.</p>
                     </div>
                     <div class="tb-card">
-                        <h2 class="font-display text-xl text-[#112743]">Project Planning</h2>
-                        <p class="mt-2 text-sm text-[#4C6686]">Discuss timelines, deployment strategy, and phased scaling approach.</p>
+                        <h2 class="font-display text-xl text-[#122E53]">Project Planning</h2>
+                        <p class="mt-2 text-sm text-[#4F6890]">Discuss timelines, deployment strategy, and phased scaling approach.</p>
                     </div>
                 </div>
 
@@ -34,3 +34,4 @@
         </div>
     </section>
 @endsection
+

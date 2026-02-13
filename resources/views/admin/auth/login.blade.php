@@ -4,6 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Admin Login | {{ config('app.name') }}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
@@ -14,7 +17,7 @@
                         extend: {
                             fontFamily: {
                                 sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                                display: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+                                display: ['Sora', 'ui-sans-serif', 'system-ui', 'sans-serif'],
                             },
                         },
                     },
@@ -25,7 +28,7 @@
             <script src="{{ asset('assets/app.js') }}" defer></script>
         @endif
     </head>
-    <body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
+    <body class="tb-admin min-h-screen antialiased">
         <div class="mx-auto flex min-h-screen max-w-md items-center px-4">
             <div class="card w-full p-6">
                 <div class="font-display text-2xl">Admin Login</div>
@@ -53,3 +56,4 @@
         </div>
     </body>
 </html>
+

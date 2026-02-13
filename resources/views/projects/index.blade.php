@@ -21,23 +21,24 @@
             <div class="mt-5 grid gap-4 md:grid-cols-3">
                 @foreach ($projects as $project)
                     <a href="{{ route('projects.show', $project) }}" class="tb-card tb-reveal">
-                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#597696]">Project</div>
-                        <h2 class="mt-2 font-display text-xl text-[#112743]">{{ $project->title }}</h2>
+                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">Project</div>
+                        <h2 class="mt-2 font-display text-xl text-[#122E53]">{{ $project->title }}</h2>
                         @if ($project->summary)
-                            <p class="mt-2 text-sm leading-relaxed text-[#4C6686]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $project->summary), 140) }}</p>
+                            <p class="mt-2 text-sm leading-relaxed text-[#4F6890]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $project->summary), 140) }}</p>
                         @endif
-                        <div class="mt-4 text-sm font-bold text-[#0B6ECD]">Read case details</div>
+                        <div class="mt-4 text-sm font-bold text-[#1F6FD0]">Read case details</div>
                     </a>
                 @endforeach
 
                 @if (($dbOk ?? true) && $projects->count() === 0)
-                    <div class="tb-panel p-6 text-sm text-[#4C6686] md:col-span-3 tb-reveal">No published projects yet.</div>
+                    <div class="tb-panel p-6 text-sm text-[#4F6890] md:col-span-3 tb-reveal">No published projects yet.</div>
                 @endif
             </div>
 
-            <div class="mt-8 text-sm text-[#4C6686]">
+            <div class="mt-8 text-sm text-[#4F6890]">
                 {{ $projects->links() }}
             </div>
         </div>
     </section>
 @endsection
+

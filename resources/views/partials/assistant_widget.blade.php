@@ -8,10 +8,10 @@
         <div class="overflow-hidden rounded-3xl border border-[#C5DAED] bg-white shadow-2xl">
             <div class="flex items-start justify-between border-b border-[#D4E3F1] px-4 py-3">
                 <div>
-                    <div class="font-display text-lg text-[#112743]">{{ config('twinbot.site.name') }} Assistant</div>
-                    <div class="text-xs text-[#547091]">Ask about products, use cases, and TwinBot capabilities.</div>
+                    <div class="font-display text-lg text-[#122E53]">{{ config('twinbot.site.name') }} Assistant</div>
+                    <div class="text-xs text-[#5B789A]">Ask about products, use cases, and TwinBot capabilities.</div>
                 </div>
-                <button id="assistant-close" type="button" class="rounded-xl px-3 py-2 text-sm font-semibold text-[#4C6686] hover:bg-[#EEF6FF] hover:text-[#143357]">Close</button>
+                <button id="assistant-close" type="button" class="rounded-xl px-3 py-2 text-sm font-semibold text-[#4F6890] hover:bg-[#EEF6FF] hover:text-[#1A476F]">Close</button>
             </div>
 
             <div class="px-4 py-3">
@@ -23,8 +23,9 @@
                         <button id="assistant-ptt" type="button" class="btn btn-ghost">Push-to-talk</button>
                     </div>
                 </div>
-                <div class="mt-2 text-xs text-[#607A99]">Voice is push-to-talk (record, transcribe, then reply).</div>
+                <div class="mt-2 text-xs text-[#6683A2]">Voice is push-to-talk (record, transcribe, then reply).</div>
             </div>
         </div>
     </div>
 </div>
+

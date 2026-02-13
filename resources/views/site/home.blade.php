@@ -22,7 +22,7 @@
                         <span class="tb-eyebrow">Industrial Automation, Reframed</span>
                         <h1 class="tb-heading mt-5">
                             Better than legacy PLC stacks.
-                            <span class="block text-[#0B6ECD]">Purpose-built ECS platforms for faster, cleaner execution.</span>
+                            <span class="block text-[#1F6FD0]">Purpose-built ECS platforms for faster, cleaner execution.</span>
                         </h1>
                         <p class="tb-lead mt-5 max-w-2xl">
                             TwinBot builds embedded control systems that remove unnecessary hardware complexity, make operator workflows clearer,
@@ -44,7 +44,7 @@
 
                     <div class="space-y-4">
                         <div class="tb-panel-soft p-5">
-                            <div class="text-sm font-extrabold tracking-wide text-[#184D85]">What You Get</div>
+                            <div class="text-sm font-extrabold tracking-wide text-[#216197]">What You Get</div>
                             <ul class="tb-list mt-2 text-sm">
                                 <li>Application-specific hardware and firmware designed around your production reality.</li>
                                 <li>Operator-friendly interfaces focused on speed, traceability, and reduced manual error.</li>
@@ -140,7 +140,7 @@
                             'Low-friction operator UX',
                             'Ready for IoT and analytics',
                         ] as $item)
-                            <div class="tb-panel-soft p-4 text-sm font-semibold text-[#274B73]">{{ $item }}</div>
+                            <div class="tb-panel-soft p-4 text-sm font-semibold text-[#2E5680]">{{ $item }}</div>
                         @endforeach
                     </div>
 
@@ -176,12 +176,12 @@
                                     <img src="{{ $src }}" alt="{{ $p['title'] }}" class="h-full w-full object-contain transition duration-200 group-hover:scale-[1.03]" />
                                 </div>
                             @endif
-                            <div class="mt-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#5B7698]">{{ $p['series'] ?? 'Product' }}</div>
-                            <div class="mt-2 font-display text-xl text-[#0F1F38]">{{ $p['title'] }}</div>
+                            <div class="mt-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#607B9B]">{{ $p['series'] ?? 'Product' }}</div>
+                            <div class="mt-2 font-display text-xl text-[#132B4D]">{{ $p['title'] }}</div>
                             @if (!empty($p['summary']))
-                                <p class="mt-2 text-sm leading-relaxed text-[#4C6686]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $p['summary']), 130) }}</p>
+                                <p class="mt-2 text-sm leading-relaxed text-[#4F6890]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $p['summary']), 130) }}</p>
                             @endif
-                            <div class="mt-4 text-sm font-bold text-[#0B6ECD]">Explore details</div>
+                            <div class="mt-4 text-sm font-bold text-[#1F6FD0]">Explore details</div>
                         </a>
                     @endforeach
                 </div>
@@ -217,3 +217,4 @@
         </div>
     </section>
 @endsection
+

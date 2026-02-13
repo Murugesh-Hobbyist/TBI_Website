@@ -47,12 +47,12 @@
                                         <img src="{{ $src }}" alt="{{ $product['title'] }}" class="h-full w-full object-contain transition duration-200 group-hover:scale-[1.03]" />
                                     </div>
                                 @endif
-                                <div class="mt-4 text-xs font-extrabold uppercase tracking-[0.12em] text-[#597696]">{{ $product['series'] ?? 'Product' }}</div>
-                                <div class="mt-2 font-display text-xl text-[#112743]">{{ $product['title'] }}</div>
+                                <div class="mt-4 text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">{{ $product['series'] ?? 'Product' }}</div>
+                                <div class="mt-2 font-display text-xl text-[#122E53]">{{ $product['title'] }}</div>
                                 @if (!empty($product['summary']))
-                                    <p class="mt-2 text-sm leading-relaxed text-[#4C6686]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $product['summary']), 150) }}</p>
+                                    <p class="mt-2 text-sm leading-relaxed text-[#4F6890]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $product['summary']), 150) }}</p>
                                 @endif
-                                <div class="mt-4 text-sm font-bold text-[#0B6ECD]">View product details</div>
+                                <div class="mt-4 text-sm font-bold text-[#1F6FD0]">View product details</div>
                             </a>
                         @endforeach
                     </div>
@@ -60,7 +60,7 @@
             @endforeach
 
             @if (($products ?? collect())->count() === 0)
-                <div class="tb-panel p-6 text-sm text-[#4C6686] tb-reveal">No products available right now.</div>
+                <div class="tb-panel p-6 text-sm text-[#4F6890] tb-reveal">No products available right now.</div>
             @endif
 
             <div class="tb-cta mt-6 tb-reveal">
@@ -75,3 +75,4 @@
         </div>
     </section>
 @endsection
+

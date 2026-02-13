@@ -6,7 +6,7 @@
 @section('content')
     <section class="tb-section pt-6 md:pt-10 pb-16">
         <div class="mx-auto max-w-6xl px-4">
-            <a href="{{ route('videos.index') }}" class="text-sm font-semibold text-[#0B6ECD] hover:text-[#0957A6]">&larr; Back to Videos</a>
+            <a href="{{ route('videos.index') }}" class="text-sm font-semibold text-[#1F6FD0] hover:text-[#16589F]">&larr; Back to Videos</a>
 
             <article class="tb-panel p-6 md:p-10 mt-5 tb-reveal">
                 <span class="tb-eyebrow">Video Case</span>
@@ -18,7 +18,7 @@
 
             <section class="tb-panel p-4 md:p-6 mt-5 tb-reveal">
                 @if ($video->provider === 'youtube' && $video->provider_id)
-                    <div class="aspect-video w-full overflow-hidden rounded-2xl border border-[#C8DDED] bg-[#F5FAFF]">
+                    <div class="aspect-video w-full overflow-hidden rounded-2xl border border-[#C6DCEF] bg-[#F3FAFF]">
                         <iframe
                             class="h-full w-full"
                             src="https://www.youtube-nocookie.com/embed/{{ $video->provider_id }}"
@@ -29,7 +29,7 @@
                         ></iframe>
                     </div>
                 @elseif ($video->provider === 'vimeo' && $video->provider_id)
-                    <div class="aspect-video w-full overflow-hidden rounded-2xl border border-[#C8DDED] bg-[#F5FAFF]">
+                    <div class="aspect-video w-full overflow-hidden rounded-2xl border border-[#C6DCEF] bg-[#F3FAFF]">
                         <iframe
                             class="h-full w-full"
                             src="https://player.vimeo.com/video/{{ $video->provider_id }}"
@@ -40,7 +40,7 @@
                         ></iframe>
                     </div>
                 @else
-                    <div class="rounded-2xl border border-[#C8DDED] bg-[#F5FAFF] p-4 text-sm text-[#4C6686]">
+                    <div class="rounded-2xl border border-[#C6DCEF] bg-[#F3FAFF] p-4 text-sm text-[#4F6890]">
                         Configure provider and provider_id in Admin.
                     </div>
                 @endif
@@ -48,3 +48,4 @@
         </div>
     </section>
 @endsection
+

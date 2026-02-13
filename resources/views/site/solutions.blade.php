@@ -30,9 +30,9 @@
                     ['title' => 'Production Support', 'desc' => 'Deployment assistance, validation support, and iterative upgrades as your process matures.'],
                 ] as $solution)
                     <article class="tb-card tb-reveal">
-                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#597696]">Solution Track</div>
-                        <h2 class="mt-2 font-display text-xl text-[#112743]">{{ $solution['title'] }}</h2>
-                        <p class="mt-2 text-sm leading-relaxed text-[#4C6686]">{{ $solution['desc'] }}</p>
+                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">Solution Track</div>
+                        <h2 class="mt-2 font-display text-xl text-[#122E53]">{{ $solution['title'] }}</h2>
+                        <p class="mt-2 text-sm leading-relaxed text-[#4F6890]">{{ $solution['desc'] }}</p>
                     </article>
                 @endforeach
             </div>
@@ -75,9 +75,9 @@
                         <li>Engineering conversations stay focused on your goals, not generic templates.</li>
                     </ul>
 
-                    <div class="mt-6 rounded-2xl border border-[#C9DEEF] bg-[#F4FAFF] p-5">
-                        <div class="text-sm font-semibold text-[#23486F]">Need examples before kickoff?</div>
-                        <p class="mt-2 text-sm text-[#4C6686]">Reach out with your application context and we will share the closest comparable references in a professional discussion.</p>
+                    <div class="mt-6 rounded-2xl border border-[#C7DDF0] bg-[#F2F9FF] p-5">
+                        <div class="text-sm font-semibold text-[#285179]">Need examples before kickoff?</div>
+                        <p class="mt-2 text-sm text-[#4F6890]">Reach out with your application context and we will share the closest comparable references in a professional discussion.</p>
                         <a href="{{ route('contact') }}" class="btn btn-primary mt-4">Request Relevant References</a>
                     </div>
                 </div>
@@ -99,3 +99,4 @@
         </div>
     </section>
 @endsection
+

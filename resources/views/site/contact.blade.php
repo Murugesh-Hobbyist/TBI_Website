@@ -18,26 +18,26 @@
 
                     <div class="mt-6 grid gap-3">
                         <a href="tel:{{ $c['phone_tel'] }}" class="tb-panel-soft p-4 hover:border-[#9CC6EA]">
-                            <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#5B7698]">Phone</div>
-                            <div class="mt-1 font-semibold text-[#173D68]">{{ $c['phone_display'] }}</div>
+                            <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#607B9B]">Phone</div>
+                            <div class="mt-1 font-semibold text-[#1B4A74]">{{ $c['phone_display'] }}</div>
                         </a>
                         <a href="mailto:{{ $c['email_sales'] }}" class="tb-panel-soft p-4 hover:border-[#9CC6EA]">
-                            <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#5B7698]">Sales</div>
-                            <div class="mt-1 font-semibold text-[#173D68]">{{ $c['email_sales'] }}</div>
+                            <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#607B9B]">Sales</div>
+                            <div class="mt-1 font-semibold text-[#1B4A74]">{{ $c['email_sales'] }}</div>
                         </a>
                         <a href="mailto:{{ $c['email_primary'] }}" class="tb-panel-soft p-4 hover:border-[#9CC6EA]">
-                            <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#5B7698]">Support</div>
-                            <div class="mt-1 font-semibold text-[#173D68]">{{ $c['email_primary'] }}</div>
+                            <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#607B9B]">Support</div>
+                            <div class="mt-1 font-semibold text-[#1B4A74]">{{ $c['email_primary'] }}</div>
                         </a>
                         <a href="{{ $c['whatsapp_url'] }}" class="tb-panel-soft p-4 hover:border-[#9CC6EA]">
-                            <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#5B7698]">WhatsApp</div>
-                            <div class="mt-1 font-semibold text-[#173D68]">Chat with us instantly</div>
+                            <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#607B9B]">WhatsApp</div>
+                            <div class="mt-1 font-semibold text-[#1B4A74]">Chat with us instantly</div>
                         </a>
                     </div>
 
-                    <div class="mt-5 rounded-2xl border border-[#C8DDED] bg-[#F4FAFF] p-5">
-                        <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#5B7698]">Location</div>
-                        <div class="mt-1 text-sm font-semibold text-[#173D68]">{{ $c['location'] }}</div>
+                    <div class="mt-5 rounded-2xl border border-[#C6DCEF] bg-[#F2F9FF] p-5">
+                        <div class="text-xs font-bold uppercase tracking-[0.1em] text-[#607B9B]">Location</div>
+                        <div class="mt-1 text-sm font-semibold text-[#1B4A74]">{{ $c['location'] }}</div>
                     </div>
                 </div>
 
@@ -96,16 +96,16 @@
                     <h2 class="tb-subheading mt-3">What helps us respond faster</h2>
                     <div class="mt-5 grid gap-3">
                         <div class="tb-panel-soft p-4">
-                            <div class="font-semibold text-[#173D68]">Application context</div>
-                            <p class="mt-1 text-sm text-[#4C6686]">Machine type, environment, product profile, and throughput expectation.</p>
+                            <div class="font-semibold text-[#1B4A74]">Application context</div>
+                            <p class="mt-1 text-sm text-[#4F6890]">Machine type, environment, product profile, and throughput expectation.</p>
                         </div>
                         <div class="tb-panel-soft p-4">
-                            <div class="font-semibold text-[#173D68]">Technical signals</div>
-                            <p class="mt-1 text-sm text-[#4C6686]">Channels, probes/sensors, communication protocols, and integration points.</p>
+                            <div class="font-semibold text-[#1B4A74]">Technical signals</div>
+                            <p class="mt-1 text-sm text-[#4F6890]">Channels, probes/sensors, communication protocols, and integration points.</p>
                         </div>
                         <div class="tb-panel-soft p-4">
-                            <div class="font-semibold text-[#173D68]">Delivery timeline</div>
-                            <p class="mt-1 text-sm text-[#4C6686]">Desired pilot date, production date, and support expectations.</p>
+                            <div class="font-semibold text-[#1B4A74]">Delivery timeline</div>
+                            <p class="mt-1 text-sm text-[#4F6890]">Desired pilot date, production date, and support expectations.</p>
                         </div>
                     </div>
                 </div>
@@ -144,3 +144,4 @@
         </div>
     </section>
 @endsection
+

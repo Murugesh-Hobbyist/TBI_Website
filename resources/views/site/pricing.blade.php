@@ -27,9 +27,9 @@
                     ['title' => 'Scale Package', 'desc' => 'Expansion model for multi-line and multi-station deployments with staged rollout economics.'],
                 ] as $plan)
                     <article class="tb-card tb-reveal">
-                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#597696]">Model</div>
-                        <h2 class="mt-2 font-display text-xl text-[#112743]">{{ $plan['title'] }}</h2>
-                        <p class="mt-2 text-sm leading-relaxed text-[#4C6686]">{{ $plan['desc'] }}</p>
+                        <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">Model</div>
+                        <h2 class="mt-2 font-display text-xl text-[#122E53]">{{ $plan['title'] }}</h2>
+                        <p class="mt-2 text-sm leading-relaxed text-[#4F6890]">{{ $plan['desc'] }}</p>
                     </article>
                 @endforeach
             </div>
@@ -62,7 +62,7 @@
                             'Enclosure and protection planning',
                             'Documentation for operations team',
                         ] as $item)
-                            <div class="tb-panel-soft p-4 text-sm font-semibold text-[#294B70]">{{ $item }}</div>
+                            <div class="tb-panel-soft p-4 text-sm font-semibold text-[#2D537A]">{{ $item }}</div>
                         @endforeach
                     </div>
                 </div>
@@ -84,3 +84,4 @@
         </div>
     </section>
 @endsection
+

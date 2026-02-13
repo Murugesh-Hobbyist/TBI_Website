@@ -6,7 +6,7 @@
 @section('content')
     <section class="tb-section pt-6 md:pt-10 pb-16">
         <div class="mx-auto max-w-6xl px-4">
-            <a href="{{ route('projects.index') }}" class="text-sm font-semibold text-[#0B6ECD] hover:text-[#0957A6]">&larr; Back to Projects</a>
+            <a href="{{ route('projects.index') }}" class="text-sm font-semibold text-[#1F6FD0] hover:text-[#16589F]">&larr; Back to Projects</a>
 
             <article class="tb-panel p-6 md:p-10 mt-5 tb-reveal">
                 <span class="tb-eyebrow">Project Case</span>
@@ -19,7 +19,7 @@
             @if ($project->body)
                 <section class="tb-panel p-6 md:p-8 mt-5 tb-reveal">
                     <h2 class="tb-subheading">Overview</h2>
-                    <p class="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-[#4C6686]">{{ $project->body }}</p>
+                    <p class="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-[#4F6890]">{{ $project->body }}</p>
                 </section>
             @endif
 
@@ -29,9 +29,9 @@
                     <div class="mt-5 grid gap-4 md:grid-cols-3">
                         @foreach ($project->media as $media)
                             <article class="tb-card">
-                                <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#597696]">{{ strtoupper($media->type) }}</div>
+                                <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">{{ strtoupper($media->type) }}</div>
                                 @if ($media->title)
-                                    <h3 class="mt-2 font-semibold text-[#173D68]">{{ $media->title }}</h3>
+                                    <h3 class="mt-2 font-semibold text-[#1B4A74]">{{ $media->title }}</h3>
                                 @endif
 
                                 @if ($media->type === 'image' && $media->path)
@@ -39,7 +39,7 @@
                                         <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($media->path) }}" alt="Project media" class="h-full w-full object-cover rounded-lg" />
                                     </div>
                                 @elseif ($media->external_url)
-                                    <p class="mt-3 break-words text-sm text-[#4C6686]">{{ $media->external_url }}</p>
+                                    <p class="mt-3 break-words text-sm text-[#4F6890]">{{ $media->external_url }}</p>
                                 @endif
                             </article>
                         @endforeach
@@ -49,3 +49,4 @@
         </div>
     </section>
 @endsection
+
