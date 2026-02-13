@@ -298,6 +298,7 @@ import './bootstrap';
     }
 
     const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    const IS_MOBILE = /android|iphone|ipad|ipod|mobile/i.test(String(navigator.userAgent || '').toLowerCase());
     const VOICE_RATE = 1.35;
     const VOICE_PITCH = 0.96;
     const OPENAI_VOICE = 'onyx';
@@ -338,6 +339,8 @@ import './bootstrap';
       monitorSpeechHits: 0,
       monitorNoiseFloor: 0.012,
       monitorLastInterruptAt: 0,
+      currentSpokenText: '',
+      recognitionRetryDelayMs: IS_MOBILE ? 650 : 120,
       lastVoiceText: '',
       lastVoiceAt: 0,
     };
@@ -511,6 +514,9 @@ import './bootstrap';
     };
 
     const startInterruptMonitor = async function () {
+      if (IS_MOBILE) {
+        return;
+      }
       if (state.monitorInterval || state.monitorStarting) {
         return;
       }
@@ -568,11 +574,10 @@ import './bootstrap';
           }
           const rms = Math.sqrt(energy / state.monitorData.length);
 
-          // Continuously adapt to ambient noise so interruption works on different mics.
-          state.monitorNoiseFloor = state.monitorNoiseFloor * 0.9 + rms * 0.1;
-
           if (!shouldContinueVoice() || !state.speaking || state.processingVoice) {
             state.monitorSpeechHits = 0;
+            // Learn room noise when assistant is not speaking.
+            state.monitorNoiseFloor = state.monitorNoiseFloor * 0.92 + rms * 0.08;
             return;
           }
 
@@ -580,7 +585,7 @@ import './bootstrap';
             return;
           }
 
-          const threshold = Math.max(0.018, state.monitorNoiseFloor * 2.2);
+          const threshold = Math.max(0.016, state.monitorNoiseFloor * 1.8);
           if (rms > threshold) {
             state.monitorSpeechHits += 1;
           } else {
@@ -596,9 +601,8 @@ import './bootstrap';
             state.monitorSpeechHits = 0;
             stopCurrentPlayback();
             setVoiceStatus('Listening...');
-            stopRecognition();
-            if (!startRecognitionNow()) {
-              scheduleRecognitionRestart(40);
+            if (!state.recognitionRunning && !startRecognitionNow()) {
+              scheduleRecognitionRestart(IS_MOBILE ? 650 : 40);
             }
           }
         }, 50);
@@ -616,6 +620,7 @@ import './bootstrap';
 
       try {
         state.recognition.start();
+        state.recognitionRetryDelayMs = IS_MOBILE ? 650 : 120;
         return true;
       } catch (e) {
         const msg = String((e && e.message) || e || '').toLowerCase();
@@ -633,18 +638,31 @@ import './bootstrap';
         clearTimeout(state.recognitionRestartTimer);
       }
 
+      const waitMs =
+        typeof delayMs === 'number'
+          ? delayMs
+          : IS_MOBILE
+            ? Math.max(450, state.recognitionRetryDelayMs)
+            : 120;
+
       state.recognitionRestartTimer = setTimeout(function () {
         if (!shouldContinueVoice() || state.processingVoice || state.speaking || state.recognitionRunning) {
           return;
         }
 
-        startRecognitionNow();
-      }, typeof delayMs === 'number' ? delayMs : 120);
+        const started = startRecognitionNow();
+        if (!started && shouldContinueVoice() && !state.processingVoice && !state.speaking) {
+          state.recognitionRetryDelayMs = Math.min(2600, Math.floor(state.recognitionRetryDelayMs * 1.35));
+          scheduleRecognitionRestart(state.recognitionRetryDelayMs);
+        }
+      }, waitMs);
     };
 
     const stopVoiceConversation = function (announce) {
       state.voiceActive = false;
       storeSet(assistantStore.voiceActive, '0');
+      state.currentSpokenText = '';
+      state.recognitionRetryDelayMs = IS_MOBILE ? 650 : 120;
 
       if (state.recognitionRestartTimer) {
         clearTimeout(state.recognitionRestartTimer);
@@ -673,6 +691,7 @@ import './bootstrap';
 
       state.voiceActive = true;
       storeSet(assistantStore.voiceActive, '1');
+      state.recognitionRetryDelayMs = IS_MOBILE ? 650 : 120;
       voiceToggleBtn.textContent = 'Stop voice';
       setVoiceStatus('Listening...');
 
@@ -685,10 +704,10 @@ import './bootstrap';
       if (immediateStart) {
         const started = startRecognitionNow();
         if (!started) {
-          scheduleRecognitionRestart(40);
+          scheduleRecognitionRestart(IS_MOBILE ? 650 : 40);
         }
       } else {
-        scheduleRecognitionRestart(40);
+        scheduleRecognitionRestart(IS_MOBILE ? 650 : 40);
       }
     };
 
@@ -802,7 +821,7 @@ import './bootstrap';
       stopCurrentPlayback();
       state.speaking = true;
       state.speakingStartedAt = Date.now();
-      stopRecognition();
+      state.currentSpokenText = String(text || '').toLowerCase();
       if (state.mode === 'voice') {
         setVoiceStatus('Speaking...');
       }
@@ -822,7 +841,11 @@ import './bootstrap';
         }
       } finally {
         state.speaking = false;
+        state.currentSpokenText = '';
         state.playbackController = null;
+        if (shouldContinueVoice() && !state.processingVoice && !state.recognitionRunning) {
+          scheduleRecognitionRestart(IS_MOBILE ? 650 : 100);
+        }
       }
     };
 
@@ -869,9 +892,9 @@ import './bootstrap';
         await maybeSpeak(reply);
       }
 
-      if (shouldContinueVoice() && !didNavigate && !state.processingVoice && !state.speaking) {
+      if (shouldContinueVoice() && !didNavigate && !state.processingVoice && !state.speaking && !state.recognitionRunning) {
         setVoiceStatus('Listening...');
-        scheduleRecognitionRestart(120);
+        scheduleRecognitionRestart(IS_MOBILE ? 650 : 120);
       }
     };
 
@@ -897,31 +920,81 @@ import './bootstrap';
 
     if (SpeechRecognitionCtor) {
       state.recognition = new SpeechRecognitionCtor();
-      state.recognition.continuous = false;
-      state.recognition.interimResults = false;
-      state.recognition.lang = 'en-US';
+      state.recognition.continuous = true;
+      state.recognition.interimResults = true;
+      state.recognition.lang = navigator.language || 'en-US';
 
       state.recognition.onstart = function () {
         state.recognitionRunning = true;
+        state.recognitionRetryDelayMs = IS_MOBILE ? 650 : 120;
         if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
           setVoiceStatus('Listening...');
         }
       };
 
       state.recognition.onresult = function (event) {
-        if (!shouldContinueVoice() || state.processingVoice || state.speaking) {
+        if (!shouldContinueVoice() || state.processingVoice) {
           return;
         }
 
         let transcript = '';
+        let interimTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i += 1) {
           const result = event.results[i];
-          if (result.isFinal && result[0] && result[0].transcript) {
+          if (!result[0] || !result[0].transcript) {
+            continue;
+          }
+          if (result.isFinal) {
             transcript += result[0].transcript + ' ';
+          } else {
+            interimTranscript += result[0].transcript + ' ';
           }
         }
 
         const finalText = transcript.trim();
+        const interimText = interimTranscript.trim();
+
+        if (state.speaking) {
+          // Mobile browsers can fail with dual mic capture; use recognizer text as fallback barge-in signal.
+          if (IS_MOBILE && finalText) {
+            const normalized = finalText.toLowerCase();
+            const currentSpoken = String(state.currentSpokenText || '');
+            const currentPrefix = currentSpoken.split(' ').slice(0, 6).join(' ');
+            const looksLikeEcho =
+              normalized.length < 4 ||
+              (currentSpoken !== '' &&
+                (currentSpoken.indexOf(normalized) >= 0 ||
+                  (currentPrefix !== '' && normalized.indexOf(currentPrefix) >= 0)));
+
+            if (!looksLikeEcho) {
+              state.processingVoice = true;
+              stopCurrentPlayback();
+              setVoiceStatus('Thinking...');
+
+              submitMessage(finalText, {
+                speakReply: true,
+                logUser: false,
+                logAssistant: false,
+              })
+                .catch(function (e) {
+                  appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
+                })
+                .finally(function () {
+                  state.processingVoice = false;
+                  if (shouldContinueVoice() && !state.speaking) {
+                    setVoiceStatus('Listening...');
+                    if (!state.recognitionRunning) {
+                      scheduleRecognitionRestart(IS_MOBILE ? 650 : 120);
+                    }
+                  }
+                });
+            } else if (interimText && shouldContinueVoice()) {
+              setVoiceStatus('Speaking...');
+            }
+          }
+          return;
+        }
+
         if (!finalText) return;
 
         const now = Date.now();
@@ -933,7 +1006,6 @@ import './bootstrap';
 
         state.processingVoice = true;
         setVoiceStatus('Thinking...');
-        stopRecognition();
 
         submitMessage(finalText, {
           speakReply: true,
@@ -947,7 +1019,9 @@ import './bootstrap';
             state.processingVoice = false;
             if (shouldContinueVoice() && !state.speaking) {
               setVoiceStatus('Listening...');
-              scheduleRecognitionRestart(120);
+              if (!state.recognitionRunning) {
+                scheduleRecognitionRestart(IS_MOBILE ? 650 : 120);
+              }
             }
           });
       };
@@ -965,14 +1039,16 @@ import './bootstrap';
         }
 
         if (!state.processingVoice && !state.speaking) {
-          scheduleRecognitionRestart(180);
+          state.recognitionRetryDelayMs = Math.min(2600, Math.floor(state.recognitionRetryDelayMs * 1.25));
+          scheduleRecognitionRestart(IS_MOBILE ? state.recognitionRetryDelayMs : 180);
         }
       };
 
       state.recognition.onend = function () {
         state.recognitionRunning = false;
         if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
-          scheduleRecognitionRestart(100);
+          state.recognitionRetryDelayMs = Math.min(2600, Math.floor(state.recognitionRetryDelayMs * 1.15));
+          scheduleRecognitionRestart(IS_MOBILE ? state.recognitionRetryDelayMs : 100);
         }
       };
     }
