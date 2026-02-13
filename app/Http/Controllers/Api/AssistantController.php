@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 class AssistantController extends Controller
 {
-    public function chat(Request $request, OpenAiClient $openai)
+    public function chat(Request $request)
     {
         $data = $request->validate([
             'message' => ['required', 'string', 'max:5000'],
@@ -22,6 +22,7 @@ class AssistantController extends Controller
         ]);
 
         try {
+            $openai = app(OpenAiClient::class);
             $query = trim($data['message']);
             $navigationAction = $this->detectNavigationAction($query);
             $context = $this->buildContext(
@@ -72,9 +73,10 @@ class AssistantController extends Controller
         }
     }
 
-    public function transcribe(Request $request, OpenAiClient $openai)
+    public function transcribe(Request $request)
     {
         try {
+            $openai = app(OpenAiClient::class);
             $request->validate([
                 'audio' => ['required', 'file', 'max:20480'], // 20MB
             ]);
@@ -101,9 +103,10 @@ class AssistantController extends Controller
         }
     }
 
-    public function speak(Request $request, OpenAiClient $openai)
+    public function speak(Request $request)
     {
         try {
+            $openai = app(OpenAiClient::class);
             $data = $request->validate([
                 'text' => ['required', 'string', 'max:4000'],
                 'voice' => ['nullable', 'string', 'max:64'],
