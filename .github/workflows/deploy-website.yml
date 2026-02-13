@@ -14,12 +14,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-via-webhook:
-    name: Deploy via Webhook
+  deploy:
     runs-on: ubuntu-latest
-    if: ${{ secrets.DEPLOY_WEBHOOK_URL != '' }}
     steps:
+      - name: Select deployment target
+        id: target
+        shell: bash
+        env:
+          DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_PATH: ${{ secrets.DEPLOY_SSH_PATH }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_PASSWORD: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          DEPLOY_FTP_SERVER: ${{ secrets.DEPLOY_FTP_SERVER }}
+          DEPLOY_FTP_USERNAME: ${{ secrets.DEPLOY_FTP_USERNAME }}
+          DEPLOY_FTP_PASSWORD: ${{ secrets.DEPLOY_FTP_PASSWORD }}
+          DEPLOY_FTP_SERVER_DIR: ${{ secrets.DEPLOY_FTP_SERVER_DIR }}
+        run: |
+          if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
+            echo "mode=webhook" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -n "$DEPLOY_SSH_HOST" ] && [ -n "$DEPLOY_SSH_USER" ] && [ -n "$DEPLOY_SSH_PATH" ] && { [ -n "$DEPLOY_SSH_KEY" ] || [ -n "$DEPLOY_SSH_PASSWORD" ]; }; then
+            echo "mode=ssh" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -n "$DEPLOY_FTP_SERVER" ] && [ -n "$DEPLOY_FTP_USERNAME" ] && [ -n "$DEPLOY_FTP_PASSWORD" ] && [ -n "$DEPLOY_FTP_SERVER_DIR" ]; then
+            echo "mode=ftp" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "No deployment target configured."
+          echo "Set one of: DEPLOY_WEBHOOK_URL, DEPLOY_SSH_* or DEPLOY_FTP_* repository secrets."
+          exit 1
+
       - name: Trigger deployment webhook
+        if: ${{ steps.target.outputs.mode == 'webhook' }}
+        shell: bash
         env:
           DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
           DEPLOY_WEBHOOK_TOKEN: ${{ secrets.DEPLOY_WEBHOOK_TOKEN }}
@@ -32,19 +66,14 @@ jobs:
             curl --fail --show-error --silent -X POST "$DEPLOY_WEBHOOK_URL"
           fi
 
-  deploy-via-ssh:
-    name: Deploy via SSH
-    runs-on: ubuntu-latest
-    if: ${{ secrets.DEPLOY_SSH_HOST != '' && secrets.DEPLOY_SSH_USER != '' && (secrets.DEPLOY_SSH_KEY != '' || secrets.DEPLOY_SSH_PASSWORD != '') && secrets.DEPLOY_SSH_PATH != '' }}
-    steps:
-      - name: Deploy on server
+      - name: Deploy on server via SSH
+        if: ${{ steps.target.outputs.mode == 'ssh' }}
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DEPLOY_SSH_HOST }}
           username: ${{ secrets.DEPLOY_SSH_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           password: ${{ secrets.DEPLOY_SSH_PASSWORD }}
-          port: ${{ secrets.DEPLOY_SSH_PORT != '' && secrets.DEPLOY_SSH_PORT || 22 }}
           script_stop: true
           script: |
             set -e
@@ -56,43 +85,17 @@ jobs:
               php artisan optimize:clear || true
             fi
 
-  deploy-via-ftp:
-    name: Deploy via FTP
-    runs-on: ubuntu-latest
-    if: ${{ secrets.DEPLOY_FTP_SERVER != '' && secrets.DEPLOY_FTP_USERNAME != '' && secrets.DEPLOY_FTP_PASSWORD != '' && secrets.DEPLOY_FTP_SERVER_DIR != '' }}
-    steps:
       - name: Checkout
+        if: ${{ steps.target.outputs.mode == 'ftp' }}
         uses: actions/checkout@v4
 
-      - name: Sync files
+      - name: Sync via FTP
+        if: ${{ steps.target.outputs.mode == 'ftp' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.DEPLOY_FTP_SERVER }}
           username: ${{ secrets.DEPLOY_FTP_USERNAME }}
           password: ${{ secrets.DEPLOY_FTP_PASSWORD }}
-          protocol: ${{ secrets.DEPLOY_FTP_PROTOCOL != '' && secrets.DEPLOY_FTP_PROTOCOL || 'ftps' }}
-          port: ${{ secrets.DEPLOY_FTP_PORT != '' && secrets.DEPLOY_FTP_PORT || 21 }}
           local-dir: ./
           server-dir: ${{ secrets.DEPLOY_FTP_SERVER_DIR }}
           dangerous-clean-slate: false
-
-  ensure-configured:
-    name: Ensure Deployment Target Is Configured
-    runs-on: ubuntu-latest
-    needs:
-      - deploy-via-webhook
-      - deploy-via-ssh
-      - deploy-via-ftp
-    if: ${{ always() }}
-    steps:
-      - name: Validate at least one deploy path
-        env:
-          WEBHOOK_SET: ${{ secrets.DEPLOY_WEBHOOK_URL != '' }}
-          SSH_SET: ${{ secrets.DEPLOY_SSH_HOST != '' && secrets.DEPLOY_SSH_USER != '' && (secrets.DEPLOY_SSH_KEY != '' || secrets.DEPLOY_SSH_PASSWORD != '') && secrets.DEPLOY_SSH_PATH != '' }}
-          FTP_SET: ${{ secrets.DEPLOY_FTP_SERVER != '' && secrets.DEPLOY_FTP_USERNAME != '' && secrets.DEPLOY_FTP_PASSWORD != '' && secrets.DEPLOY_FTP_SERVER_DIR != '' }}
-        run: |
-          if [ "$WEBHOOK_SET" != "true" ] && [ "$SSH_SET" != "true" ] && [ "$FTP_SET" != "true" ]; then
-            echo "No deployment target configured."
-            echo "Set one of: DEPLOY_WEBHOOK_URL, DEPLOY_SSH_* or DEPLOY_FTP_* repository secrets."
-            exit 1
-          fi
