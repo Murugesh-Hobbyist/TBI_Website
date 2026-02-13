@@ -254,8 +254,8 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: text,
-        voice: opts.voice || 'shimmer',
-        speed: typeof opts.speed === 'number' ? opts.speed : 1.45,
+        voice: opts.voice || 'onyx',
+        speed: typeof opts.speed === 'number' ? opts.speed : 1.35,
       }),
     });
     if (!res.ok) return null;
@@ -297,21 +297,22 @@
     }
 
     const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-    const VOICE_RATE = 1.45;
-    const VOICE_PITCH = 1.04;
-    const OPENAI_VOICE = 'shimmer';
-    const PREFERRED_FEMALE_VOICE_HINTS = [
-      'female',
-      'woman',
-      'zira',
-      'samantha',
-      'victoria',
-      'karen',
-      'aria',
-      'ava',
-      'coral',
-      'shimmer',
-      'google us english',
+    const VOICE_RATE = 1.35;
+    const VOICE_PITCH = 0.96;
+    const OPENAI_VOICE = 'onyx';
+    const PREFERRED_MALE_VOICE_HINTS = [
+      'male',
+      'man',
+      'david',
+      'mark',
+      'guy',
+      'daniel',
+      'alex',
+      'ryan',
+      'tom',
+      'onyx',
+      'echo',
+      'fable',
       'english (india)',
     ];
 
@@ -334,6 +335,8 @@
       monitorStream: null,
       monitorData: null,
       monitorSpeechHits: 0,
+      monitorNoiseFloor: 0.012,
+      monitorLastInterruptAt: 0,
       lastVoiceText: '',
       lastVoiceAt: 0,
     };
@@ -375,7 +378,7 @@
         const voice = candidateVoices[i];
         const haystack = ((voice.name || '') + ' ' + (voice.lang || '')).toLowerCase();
         if (
-          PREFERRED_FEMALE_VOICE_HINTS.some(function (hint) {
+          PREFERRED_MALE_VOICE_HINTS.some(function (hint) {
             return haystack.indexOf(hint) >= 0;
           })
         ) {
@@ -485,6 +488,8 @@
       state.monitorAnalyser = null;
       state.monitorData = null;
       state.monitorSpeechHits = 0;
+      state.monitorNoiseFloor = 0.012;
+      state.monitorLastInterruptAt = 0;
 
       if (state.monitorAudioContext && typeof state.monitorAudioContext.close === 'function') {
         try {
@@ -546,16 +551,11 @@
         state.monitorAnalyser = analyser;
         state.monitorData = new Uint8Array(analyser.fftSize);
         state.monitorSpeechHits = 0;
+        state.monitorNoiseFloor = 0.012;
+        state.monitorLastInterruptAt = 0;
 
         state.monitorInterval = setInterval(function () {
           if (!state.monitorAnalyser || !state.monitorData) {
-            return;
-          }
-          if (!shouldContinueVoice() || !state.speaking || state.processingVoice) {
-            state.monitorSpeechHits = 0;
-            return;
-          }
-          if (Date.now() - state.speakingStartedAt < 250) {
             return;
           }
 
@@ -567,18 +567,37 @@
           }
           const rms = Math.sqrt(energy / state.monitorData.length);
 
-          if (rms > 0.04) {
+          // Continuously adapt to ambient noise so interruption works on different mics.
+          state.monitorNoiseFloor = state.monitorNoiseFloor * 0.9 + rms * 0.1;
+
+          if (!shouldContinueVoice() || !state.speaking || state.processingVoice) {
+            state.monitorSpeechHits = 0;
+            return;
+          }
+
+          if (Date.now() - state.speakingStartedAt < 140) {
+            return;
+          }
+
+          const threshold = Math.max(0.018, state.monitorNoiseFloor * 2.2);
+          if (rms > threshold) {
             state.monitorSpeechHits += 1;
           } else {
             state.monitorSpeechHits = Math.max(0, state.monitorSpeechHits - 1);
           }
 
           if (state.monitorSpeechHits >= 2) {
+            const now = Date.now();
+            if (now - state.monitorLastInterruptAt < 240) {
+              return;
+            }
+            state.monitorLastInterruptAt = now;
             state.monitorSpeechHits = 0;
             stopCurrentPlayback();
             setVoiceStatus('Listening...');
+            stopRecognition();
             if (!startRecognitionNow()) {
-              scheduleRecognitionRestart(30);
+              scheduleRecognitionRestart(40);
             }
           }
         }, 50);
@@ -693,6 +712,7 @@
           }
           utterance.rate = VOICE_RATE;
           utterance.pitch = VOICE_PITCH;
+          utterance.volume = 1;
 
           let done = false;
           const finish = function () {
