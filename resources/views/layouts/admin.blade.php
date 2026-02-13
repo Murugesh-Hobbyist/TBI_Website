@@ -10,7 +10,7 @@
         <title>@yield('title', 'Admin').' | '.config('app.name')</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
@@ -20,8 +20,8 @@
                     theme: {
                         extend: {
                             fontFamily: {
-                                sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                                display: ['Sora', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                                sans: ['Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                                display: ['Chakra Petch', 'ui-sans-serif', 'system-ui', 'sans-serif'],
                             },
                         },
                     },
@@ -72,5 +72,6 @@
         </div>
     </body>
 </html>
+
 
 

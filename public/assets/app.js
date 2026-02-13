@@ -1,3 +1,5 @@
+import './bootstrap';
+
 (function () {
   'use strict';
 
@@ -5,73 +7,128 @@
     return document.getElementById(id);
   }
 
-  function forceLightThemeIfNeeded() {
+  function parseRgbColor(value) {
+    if (!value) return null;
+
+    const match = String(value)
+      .trim()
+      .match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+
+    if (!match) return null;
+
+    return {
+      r: Number(match[1]),
+      g: Number(match[2]),
+      b: Number(match[3]),
+    };
+  }
+
+  function luminance(rgb) {
+    if (!rgb) return null;
+    return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+  }
+
+  function isThemeBeingDarkForced() {
+    if (!document.body || !document.body.classList.contains('tb-site')) return false;
+
+    const rootStyle = window.getComputedStyle(document.documentElement);
+    const bodyStyle = window.getComputedStyle(document.body);
+
+    const rootFilter = String(rootStyle.filter || '').toLowerCase();
+    const bodyFilter = String(bodyStyle.filter || '').toLowerCase();
+    const hasInvertFilter = rootFilter.includes('invert(') || bodyFilter.includes('invert(');
+
+    const rootClass = String(document.documentElement.className || '').toLowerCase();
+    const bodyClass = String(document.body.className || '').toLowerCase();
+
+    const hasDarkReaderMarkers = Boolean(
+      document.querySelector('[data-darkreader-mode]') ||
+        document.querySelector('style.darkreader') ||
+        rootClass.includes('darkreader') ||
+        bodyClass.includes('darkreader')
+    );
+
+    const bgLum = luminance(parseRgbColor(bodyStyle.backgroundColor));
+    const textLum = luminance(parseRgbColor(bodyStyle.color));
+    const contrastLooksInverted = bgLum !== null && textLum !== null && bgLum < 0.45 && textLum > 0.72;
+
+    return hasInvertFilter || hasDarkReaderMarkers || contrastLooksInverted;
+  }
+
+  function recoverLightThemeIfNeeded() {
     if (!document.body || !document.body.classList.contains('tb-site')) return;
 
-    if (el('tb-force-light-style')) return;
+    const existing = el('tb-light-recovery-style');
+    const needsRecovery = isThemeBeingDarkForced();
+
+    if (!needsRecovery) {
+      if (existing) {
+        existing.remove();
+      }
+      return;
+    }
+
+    if (existing) return;
 
     const style = document.createElement('style');
-    style.id = 'tb-force-light-style';
+    style.id = 'tb-light-recovery-style';
     style.textContent = `
       html, body {
         color-scheme: only light !important;
         forced-color-adjust: none !important;
       }
-      html, body.tb-site {
+      html {
         filter: none !important;
-        background: #fff7ef !important;
-        color: #10274b !important;
+        background: #f7fbff !important;
       }
-      body.tb-site::before,
-      .tb-background,
-      .tb-orb { opacity: 0 !important; }
-      .tb-header,
-      .tb-topline,
-      #tb-mobile-nav,
-      .tb-panel,
-      .tb-panel-soft,
-      .tb-card,
-      .tb-compare,
-      .tb-compare-item,
-      .tb-cta,
-      .tb-stat,
-      .tb-logo-card,
-      .tb-product-thumb {
-        background: #ffffff !important;
-        color: #10274b !important;
-        border-color: #e4cbb0 !important;
+      body.tb-site {
+        filter: none !important;
+        color: #0f2744 !important;
+        background:
+          radial-gradient(920px 520px at -8% -18%, rgba(255, 106, 61, 0.24), transparent 67%),
+          radial-gradient(860px 520px at 108% -4%, rgba(0, 166, 255, 0.25), transparent 64%),
+          radial-gradient(740px 500px at 52% 122%, rgba(38, 201, 126, 0.2), transparent 66%),
+          linear-gradient(170deg, #fcfeff 0%, #f7fbff 58%, #edf5ff 100%) !important;
       }
-      .tb-lead,
-      .tb-muted,
-      .tb-compare-copy,
-      .tb-form-label,
-      .tb-nav-link,
-      .tb-mini-link,
-      .tb-step p,
-      .tb-list li {
-        color: #35587e !important;
+      body.tb-site::before {
+        opacity: 0.2 !important;
       }
-      body.tb-site h1,
-      body.tb-site h2,
-      body.tb-site h3,
-      body.tb-site p,
-      body.tb-site li,
-      body.tb-site a,
-      body.tb-site span {
+      .tb-site h1,
+      .tb-site h2,
+      .tb-site h3,
+      .tb-site p,
+      .tb-site li,
+      .tb-site span,
+      .tb-site a,
+      .tb-site label,
+      .tb-site small {
         opacity: 1 !important;
-      }
-      .btn-primary {
-        background: linear-gradient(125deg, #ff6b35, #ff3d7a 48%, #1a67d4) !important;
-        color: #ffffff !important;
-      }
-      .btn-ghost {
-        background: #fff8ef !important;
-        color: #254f79 !important;
-        border-color: #e0c4a4 !important;
       }
     `;
 
     document.head.appendChild(style);
+  }
+
+  function watchThemeForOverrides() {
+    if (!document.body || !document.body.classList.contains('tb-site')) return;
+
+    const observer = new MutationObserver(function () {
+      recoverLightThemeIfNeeded();
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'style', 'data-darkreader-mode'],
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class', 'style'],
+    });
+
+    setTimeout(function () {
+      recoverLightThemeIfNeeded();
+    }, 320);
   }
 
   function appendLog(role, text) {
@@ -334,11 +391,15 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    forceLightThemeIfNeeded();
+    recoverLightThemeIfNeeded();
+    watchThemeForOverrides();
     initMobileMenu();
     initRevealMotion();
     initAssistantWidget();
   });
 
-  window.addEventListener('load', forceLightThemeIfNeeded);
+  window.addEventListener('load', function () {
+    recoverLightThemeIfNeeded();
+    setTimeout(recoverLightThemeIfNeeded, 320);
+  });
 })();
