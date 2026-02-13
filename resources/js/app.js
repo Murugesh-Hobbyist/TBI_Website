@@ -363,6 +363,7 @@ import './bootstrap';
   function initRevealMotion() {
     const revealItems = document.querySelectorAll('.tb-reveal');
     if (!revealItems.length) return;
+    document.body.classList.add('tb-motion-ready');
 
     if (!('IntersectionObserver' in window)) {
       revealItems.forEach(function (item) {

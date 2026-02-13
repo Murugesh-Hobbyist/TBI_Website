@@ -751,12 +751,17 @@ body.tb-site::before {
 }
 
 .tb-reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.tb-motion-ready .tb-reveal {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 470ms ease, transform 470ms ease;
 }
 
-.tb-reveal.tb-inview {
+.tb-motion-ready .tb-reveal.tb-inview {
   opacity: 1;
   transform: translateY(0);
 }
