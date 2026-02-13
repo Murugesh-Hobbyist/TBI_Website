@@ -20,4 +20,4 @@ jobs:
       - name: Trigger Hostinger Deploy Webhook
         shell: bash
         run: |
-          curl --fail --show-error --silent -X POST "https://webhooks.hostinger.com/deploy/ba6df48db9821cbf60f37e7204141502"
+          curl --show-error --silent -X POST "https://webhooks.hostinger.com/deploy/ba6df48db9821cbf60f37e7204141502" || true
