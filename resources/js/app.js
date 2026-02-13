@@ -256,7 +256,7 @@ import './bootstrap';
       body: JSON.stringify({
         text: text,
         voice: opts.voice || 'shimmer',
-        speed: typeof opts.speed === 'number' ? opts.speed : 1.28,
+        speed: typeof opts.speed === 'number' ? opts.speed : 1.45,
       }),
     });
     if (!res.ok) return null;
@@ -298,8 +298,8 @@ import './bootstrap';
     }
 
     const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-    const VOICE_RATE = 1.28;
-    const VOICE_PITCH = 1.03;
+    const VOICE_RATE = 1.45;
+    const VOICE_PITCH = 1.04;
     const OPENAI_VOICE = 'shimmer';
     const PREFERRED_FEMALE_VOICE_HINTS = [
       'female',
@@ -556,7 +556,7 @@ import './bootstrap';
             state.monitorSpeechHits = 0;
             return;
           }
-          if (Date.now() - state.speakingStartedAt < 650) {
+          if (Date.now() - state.speakingStartedAt < 250) {
             return;
           }
 
@@ -568,21 +568,21 @@ import './bootstrap';
           }
           const rms = Math.sqrt(energy / state.monitorData.length);
 
-          if (rms > 0.055) {
+          if (rms > 0.04) {
             state.monitorSpeechHits += 1;
           } else {
             state.monitorSpeechHits = Math.max(0, state.monitorSpeechHits - 1);
           }
 
-          if (state.monitorSpeechHits >= 3) {
+          if (state.monitorSpeechHits >= 2) {
             state.monitorSpeechHits = 0;
             stopCurrentPlayback();
             setVoiceStatus('Listening...');
             if (!startRecognitionNow()) {
-              scheduleRecognitionRestart(80);
+              scheduleRecognitionRestart(30);
             }
           }
-        }, 90);
+        }, 50);
       } catch (e) {
         // If monitor permission fails, voice mode still works without barge-in detection.
       } finally {
@@ -620,7 +620,7 @@ import './bootstrap';
         }
 
         startRecognitionNow();
-      }, typeof delayMs === 'number' ? delayMs : 250);
+      }, typeof delayMs === 'number' ? delayMs : 120);
     };
 
     const stopVoiceConversation = function (announce) {
@@ -666,10 +666,10 @@ import './bootstrap';
       if (immediateStart) {
         const started = startRecognitionNow();
         if (!started) {
-          scheduleRecognitionRestart(120);
+          scheduleRecognitionRestart(40);
         }
       } else {
-        scheduleRecognitionRestart(100);
+        scheduleRecognitionRestart(40);
       }
     };
 
@@ -788,11 +788,11 @@ import './bootstrap';
       }
 
       try {
-        // Voice mode prioritizes OpenAI audio so the voice stays consistent.
+        // Voice mode prioritizes browser TTS for low latency; falls back to OpenAI audio.
         if (state.mode === 'voice') {
-          const serverSuccess = await speakWithServerVoice();
-          if (!serverSuccess) {
-            await speakWithBrowserVoice();
+          const browserSuccess = await speakWithBrowserVoice();
+          if (!browserSuccess) {
+            await speakWithServerVoice();
           }
         } else {
           const browserSuccess = await speakWithBrowserVoice();
@@ -824,7 +824,7 @@ import './bootstrap';
 
       setTimeout(function () {
         window.location.assign(action.url);
-      }, state.mode === 'voice' ? 180 : 450);
+      }, state.mode === 'voice' ? 80 : 450);
 
       return true;
     };
@@ -851,7 +851,7 @@ import './bootstrap';
 
       if (shouldContinueVoice() && !didNavigate && !state.processingVoice && !state.speaking) {
         setVoiceStatus('Listening...');
-        scheduleRecognitionRestart(300);
+        scheduleRecognitionRestart(120);
       }
     };
 
@@ -877,8 +877,8 @@ import './bootstrap';
 
     if (SpeechRecognitionCtor) {
       state.recognition = new SpeechRecognitionCtor();
-      state.recognition.continuous = true;
-      state.recognition.interimResults = true;
+      state.recognition.continuous = false;
+      state.recognition.interimResults = false;
       state.recognition.lang = 'en-US';
 
       state.recognition.onstart = function () {
@@ -905,7 +905,7 @@ import './bootstrap';
         if (!finalText) return;
 
         const now = Date.now();
-        if (state.lastVoiceText === finalText && now - state.lastVoiceAt < 1400) {
+        if (state.lastVoiceText === finalText && now - state.lastVoiceAt < 800) {
           return;
         }
         state.lastVoiceText = finalText;
@@ -927,7 +927,7 @@ import './bootstrap';
             state.processingVoice = false;
             if (shouldContinueVoice() && !state.speaking) {
               setVoiceStatus('Listening...');
-              scheduleRecognitionRestart(320);
+              scheduleRecognitionRestart(120);
             }
           });
       };
@@ -945,14 +945,14 @@ import './bootstrap';
         }
 
         if (!state.processingVoice && !state.speaking) {
-          scheduleRecognitionRestart(900);
+          scheduleRecognitionRestart(180);
         }
       };
 
       state.recognition.onend = function () {
         state.recognitionRunning = false;
         if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
-          scheduleRecognitionRestart(420);
+          scheduleRecognitionRestart(100);
         }
       };
     }
