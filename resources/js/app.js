@@ -131,10 +131,54 @@ import './bootstrap';
     }, 320);
   }
 
-  function appendLog(role, text) {
+  const assistantStore = {
+    open: 'tb.assistant.open',
+    mode: 'tb.assistant.mode',
+    voiceActive: 'tb.assistant.voiceActive',
+    log: 'tb.assistant.log',
+  };
+
+  function storeGet(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function storeSet(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (e) {}
+  }
+
+  function readAssistantLogHistory() {
+    const raw = storeGet(assistantStore.log);
+    if (!raw) return [];
+
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter(function (entry) {
+          return entry && typeof entry.role === 'string' && typeof entry.text === 'string';
+        })
+        .slice(-60);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeAssistantLogHistory(entries) {
+    const limited = Array.isArray(entries) ? entries.slice(-60) : [];
+    storeSet(assistantStore.log, JSON.stringify(limited));
+  }
+
+  function appendLog(role, text, options) {
     const log = el('assistant-log');
     if (!log) return;
 
+    const opts = options || {};
     const wrap = document.createElement('div');
     const isUser = role === 'user';
     const isSystem = role === 'system';
@@ -158,6 +202,12 @@ import './bootstrap';
     wrap.appendChild(body);
     log.appendChild(wrap);
     log.scrollTop = log.scrollHeight;
+
+    if (!opts.skipPersist) {
+      const history = readAssistantLogHistory();
+      history.push({ role: role, text: text });
+      writeAssistantLogHistory(history);
+    }
   }
 
   async function assistantChat(message) {
@@ -213,11 +263,60 @@ import './bootstrap';
     const openBtn = el('assistant-open');
     const panel = el('assistant-panel');
     const closeBtn = el('assistant-close');
+    const modeChatBtn = el('assistant-mode-chat');
+    const modeVoiceBtn = el('assistant-mode-voice');
+    const chatControls = el('assistant-chat-controls');
+    const voiceControls = el('assistant-voice-controls');
+    const voiceToggleBtn = el('assistant-voice-toggle');
+    const voiceStatus = el('assistant-voice-status');
+    const log = el('assistant-log');
     const input = el('assistant-input');
     const sendBtn = el('assistant-send');
     const pttBtn = el('assistant-ptt');
 
-    if (!openBtn || !panel || !closeBtn || !input || !sendBtn || !pttBtn) return;
+    if (
+      !openBtn ||
+      !panel ||
+      !closeBtn ||
+      !modeChatBtn ||
+      !modeVoiceBtn ||
+      !chatControls ||
+      !voiceControls ||
+      !voiceToggleBtn ||
+      !voiceStatus ||
+      !log ||
+      !input ||
+      !sendBtn ||
+      !pttBtn
+    ) {
+      return;
+    }
+
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    const state = {
+      mode: storeGet(assistantStore.mode) === 'voice' ? 'voice' : 'chat',
+      voiceActive: storeGet(assistantStore.voiceActive) === '1',
+      recognition: null,
+      recognitionRunning: false,
+      recognitionRestartTimer: null,
+      processingVoice: false,
+      speaking: false,
+      lastVoiceText: '',
+      lastVoiceAt: 0,
+    };
+
+    const setVoiceStatus = function (text) {
+      voiceStatus.textContent = text;
+    };
+
+    const applyModeButtonState = function (button, isActive) {
+      button.classList.remove('bg-[#1f6fd0]', 'text-white', 'shadow', 'text-[#365B82]', 'hover:bg-white');
+      if (isActive) {
+        button.classList.add('bg-[#1f6fd0]', 'text-white', 'shadow');
+      } else {
+        button.classList.add('text-[#365B82]', 'hover:bg-white');
+      }
+    };
 
     const setPanelOpen = function (shouldOpen) {
       if (shouldOpen) {
@@ -228,9 +327,13 @@ import './bootstrap';
         openBtn.classList.remove('hidden');
       }
 
+      storeSet(assistantStore.open, shouldOpen ? '1' : '0');
+
       if (shouldOpen) {
         setTimeout(function () {
-          input.focus();
+          if (state.mode === 'chat') {
+            input.focus();
+          }
         }, 0);
       }
     };
@@ -243,23 +346,123 @@ import './bootstrap';
       setPanelOpen(false);
     };
 
+    const shouldContinueVoice = function () {
+      return state.mode === 'voice' && state.voiceActive;
+    };
+
+    const stopRecognition = function () {
+      if (!state.recognition || !state.recognitionRunning) return;
+      try {
+        state.recognition.stop();
+      } catch (e) {}
+      state.recognitionRunning = false;
+    };
+
+    const scheduleRecognitionRestart = function (delayMs) {
+      if (!state.recognition) return;
+
+      if (state.recognitionRestartTimer) {
+        clearTimeout(state.recognitionRestartTimer);
+      }
+
+      state.recognitionRestartTimer = setTimeout(function () {
+        if (!shouldContinueVoice() || state.processingVoice || state.speaking || state.recognitionRunning) {
+          return;
+        }
+
+        try {
+          state.recognition.start();
+        } catch (e) {
+          const msg = String((e && e.message) || e || '').toLowerCase();
+          if (msg.indexOf('already') === -1) {
+            setVoiceStatus('Tap Start voice to continue.');
+          }
+        }
+      }, typeof delayMs === 'number' ? delayMs : 250);
+    };
+
+    const stopVoiceConversation = function (announce) {
+      state.voiceActive = false;
+      storeSet(assistantStore.voiceActive, '0');
+
+      if (state.recognitionRestartTimer) {
+        clearTimeout(state.recognitionRestartTimer);
+        state.recognitionRestartTimer = null;
+      }
+
+      stopRecognition();
+      voiceToggleBtn.textContent = 'Start voice';
+      setVoiceStatus('Voice mode idle.');
+
+      if (announce) {
+        appendLog('system', 'Voice mode disabled.');
+      }
+    };
+
+    const startVoiceConversation = function (silentMessage) {
+      if (!SpeechRecognitionCtor) {
+        state.voiceActive = false;
+        storeSet(assistantStore.voiceActive, '0');
+        setVoiceStatus('Continuous voice not supported in this browser.');
+        appendLog('system', 'Continuous voice mode is not supported in this browser. Use Chat mode or Hold to talk.');
+        return;
+      }
+
+      state.voiceActive = true;
+      storeSet(assistantStore.voiceActive, '1');
+      voiceToggleBtn.textContent = 'Stop voice';
+      setVoiceStatus('Listening...');
+
+      if (!silentMessage) {
+        appendLog('system', 'Voice mode enabled. I will keep listening until you stop voice mode.');
+      }
+
+      scheduleRecognitionRestart(100);
+    };
+
     const maybeSpeak = async function (text) {
       if (!text) return;
+
       const audioBlob = await assistantSpeak(text);
       if (!audioBlob) return;
+
+      state.speaking = true;
+      stopRecognition();
+      if (state.mode === 'voice') {
+        setVoiceStatus('Speaking...');
+      }
+
       const url = URL.createObjectURL(audioBlob);
-      const audio = new Audio(url);
-      audio.play().catch(function () {});
-      audio.addEventListener('ended', function () {
+      try {
+        await new Promise(function (resolve) {
+          const audio = new Audio(url);
+          let done = false;
+          const finish = function () {
+            if (done) return;
+            done = true;
+            resolve();
+          };
+
+          audio.addEventListener('ended', finish, { once: true });
+          audio.addEventListener('error', finish, { once: true });
+          const playPromise = audio.play();
+          if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(finish);
+          }
+        });
+      } finally {
         URL.revokeObjectURL(url);
-      });
+        state.speaking = false;
+      }
     };
 
     const runAssistantAction = function (action) {
       if (!action || action.type !== 'navigate' || !action.url) return false;
 
-      const label = action.label || 'requested page';
-      appendLog('system', 'Opening ' + label + '...');
+      appendLog('system', 'Opening ' + (action.label || 'requested page') + '...');
+      storeSet(assistantStore.open, '1');
+      storeSet(assistantStore.mode, state.mode);
+      storeSet(assistantStore.voiceActive, state.voiceActive ? '1' : '0');
 
       setTimeout(function () {
         window.location.assign(action.url);
@@ -268,24 +471,152 @@ import './bootstrap';
       return true;
     };
 
-    const submitMessage = async function (message, shouldSpeak) {
+    const submitMessage = async function (message, options) {
+      const opts = options || {};
       const msg = String(message || '').trim();
       if (!msg) return;
 
-      appendLog('user', msg);
+      if (opts.logUser !== false) {
+        appendLog('user', msg);
+      }
 
       const result = await assistantChat(msg);
       const reply = (result && result.text ? result.text : '').trim();
       appendLog('assistant', reply || '(no response)');
 
       const didNavigate = runAssistantAction(result ? result.action : null);
-      if (!didNavigate && shouldSpeak && reply) {
+      if (!didNavigate && opts.speakReply && reply) {
         await maybeSpeak(reply);
+      }
+
+      if (shouldContinueVoice() && !didNavigate && !state.processingVoice && !state.speaking) {
+        setVoiceStatus('Listening...');
+        scheduleRecognitionRestart(300);
       }
     };
 
+    const applyMode = function (mode) {
+      state.mode = mode === 'voice' ? 'voice' : 'chat';
+      storeSet(assistantStore.mode, state.mode);
+
+      applyModeButtonState(modeChatBtn, state.mode === 'chat');
+      applyModeButtonState(modeVoiceBtn, state.mode === 'voice');
+      chatControls.classList.toggle('hidden', state.mode !== 'chat');
+      voiceControls.classList.toggle('hidden', state.mode !== 'voice');
+
+      if (state.mode === 'chat') {
+        stopVoiceConversation(false);
+      } else if (state.voiceActive) {
+        startVoiceConversation(true);
+      } else if (SpeechRecognitionCtor) {
+        setVoiceStatus('Voice mode ready. Tap Start voice.');
+      } else {
+        setVoiceStatus('Continuous voice not supported in this browser.');
+      }
+    };
+
+    if (SpeechRecognitionCtor) {
+      state.recognition = new SpeechRecognitionCtor();
+      state.recognition.continuous = true;
+      state.recognition.interimResults = true;
+      state.recognition.lang = 'en-US';
+
+      state.recognition.onstart = function () {
+        state.recognitionRunning = true;
+        if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
+          setVoiceStatus('Listening...');
+        }
+      };
+
+      state.recognition.onresult = function (event) {
+        if (!shouldContinueVoice() || state.processingVoice || state.speaking) {
+          return;
+        }
+
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const result = event.results[i];
+          if (result.isFinal && result[0] && result[0].transcript) {
+            transcript += result[0].transcript + ' ';
+          }
+        }
+
+        const finalText = transcript.trim();
+        if (!finalText) return;
+
+        const now = Date.now();
+        if (state.lastVoiceText === finalText && now - state.lastVoiceAt < 1400) {
+          return;
+        }
+        state.lastVoiceText = finalText;
+        state.lastVoiceAt = now;
+
+        state.processingVoice = true;
+        setVoiceStatus('Thinking...');
+        stopRecognition();
+
+        submitMessage(finalText, { speakReply: true })
+          .catch(function (e) {
+            appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
+          })
+          .finally(function () {
+            state.processingVoice = false;
+            if (shouldContinueVoice() && !state.speaking) {
+              setVoiceStatus('Listening...');
+              scheduleRecognitionRestart(320);
+            }
+          });
+      };
+
+      state.recognition.onerror = function (event) {
+        state.recognitionRunning = false;
+        if (!shouldContinueVoice()) return;
+
+        const error = (event && event.error) || 'unknown';
+        if (error === 'not-allowed' || error === 'service-not-allowed') {
+          stopVoiceConversation(false);
+          setVoiceStatus('Microphone permission blocked. Allow mic and start voice.');
+          appendLog('system', 'Microphone permission is blocked. Please allow microphone access and start voice again.');
+          return;
+        }
+
+        if (!state.processingVoice && !state.speaking) {
+          scheduleRecognitionRestart(900);
+        }
+      };
+
+      state.recognition.onend = function () {
+        state.recognitionRunning = false;
+        if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
+          scheduleRecognitionRestart(420);
+        }
+      };
+    }
+
     openBtn.addEventListener('click', open);
     closeBtn.addEventListener('click', close);
+    modeChatBtn.addEventListener('click', function () {
+      applyMode('chat');
+    });
+    modeVoiceBtn.addEventListener('click', function () {
+      const wasActive = state.voiceActive;
+      state.voiceActive = false;
+      applyMode('voice');
+      startVoiceConversation(wasActive);
+      setPanelOpen(true);
+    });
+    voiceToggleBtn.addEventListener('click', function () {
+      if (state.mode !== 'voice') {
+        state.mode = 'voice';
+        applyMode('voice');
+      }
+
+      if (state.voiceActive) {
+        stopVoiceConversation(true);
+      } else {
+        startVoiceConversation(false);
+      }
+    });
 
     const send = async function () {
       const msg = (input.value || '').trim();
@@ -293,7 +624,7 @@ import './bootstrap';
       input.value = '';
 
       try {
-        await submitMessage(msg, true);
+        await submitMessage(msg, { speakReply: true });
       } catch (e) {
         appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
       }
@@ -334,21 +665,21 @@ import './bootstrap';
             return;
           }
 
-          await submitMessage(text, true);
+          await submitMessage(text, { speakReply: true });
         } catch (e) {
           appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
         }
       };
 
       recorder.start();
-      pttBtn.textContent = 'Recording...';
+      pttBtn.textContent = 'Listening...';
     };
 
     const stopRecording = async function () {
       if (!recorder) return;
       const r = recorder;
       recorder = null;
-      pttBtn.textContent = 'Push-to-talk';
+      pttBtn.textContent = 'Hold to talk';
       r.stop();
     };
 
@@ -388,7 +719,28 @@ import './bootstrap';
       }
     });
 
-    appendLog('assistant', 'Hi. Ask about products, projects, pricing, or say "go to products page" and I will open it.');
+    log.innerHTML = '';
+    const history = readAssistantLogHistory();
+    if (history.length) {
+      history.forEach(function (entry) {
+        appendLog(entry.role, entry.text, { skipPersist: true });
+      });
+    } else {
+      appendLog(
+        'assistant',
+        'Hi. Ask about products, projects, pricing, or say "go to products page" and I will open it.'
+      );
+    }
+
+    applyMode(state.mode);
+
+    if (storeGet(assistantStore.open) === '1') {
+      setPanelOpen(true);
+    }
+
+    if (state.mode === 'voice' && state.voiceActive) {
+      setPanelOpen(true);
+    }
   }
 
   function initMobileMenu() {

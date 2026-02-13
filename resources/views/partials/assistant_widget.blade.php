@@ -13,16 +13,30 @@
         </div>
 
         <div class="space-y-3 px-4 py-3">
-            <div id="assistant-log" class="h-72 space-y-3 overflow-auto rounded-2xl border border-[#D1E2F2] bg-[#F8FCFF] p-3 text-sm"></div>
-
-            <div class="flex gap-2">
-                <input id="assistant-input" type="text" class="tb-input flex-1" placeholder="Try: Go to products page or ask any question..." />
-                <button id="assistant-send" type="button" class="btn btn-primary">Send</button>
+            <div class="grid grid-cols-2 gap-2 rounded-xl border border-[#CFE0F0] bg-[#F3F9FF] p-1">
+                <button id="assistant-mode-chat" type="button" class="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#365B82]">Chat mode</button>
+                <button id="assistant-mode-voice" type="button" class="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#365B82]">Voice mode</button>
             </div>
 
-            <div class="flex items-center justify-between gap-2">
-                <button id="assistant-ptt" type="button" class="btn btn-ghost text-xs">Hold to talk</button>
-                <div class="text-[11px] text-[#5F7F9F]">AI can answer + navigate pages.</div>
+            <div id="assistant-log" class="h-72 space-y-3 overflow-auto rounded-2xl border border-[#D1E2F2] bg-[#F8FCFF] p-3 text-sm"></div>
+
+            <div id="assistant-chat-controls" class="space-y-2">
+                <div class="flex gap-2">
+                    <input id="assistant-input" type="text" class="tb-input flex-1" placeholder="Try: Go to products page or ask any question..." />
+                    <button id="assistant-send" type="button" class="btn btn-primary">Send</button>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <button id="assistant-ptt" type="button" class="btn btn-ghost text-xs">Hold to talk</button>
+                    <div class="text-[11px] text-[#5F7F9F]">Chat mode: type or hold-to-talk.</div>
+                </div>
+            </div>
+
+            <div id="assistant-voice-controls" class="hidden rounded-2xl border border-[#CFE1F3] bg-[#F2F9FF] p-3">
+                <div id="assistant-voice-status" class="text-xs font-semibold text-[#2D5986]">Voice mode ready.</div>
+                <div class="mt-2 flex items-center justify-between gap-2">
+                    <button id="assistant-voice-toggle" type="button" class="btn btn-primary text-xs">Start voice</button>
+                    <div class="text-[11px] text-[#5F7F9F]">Continuous listen + reply + page control.</div>
+                </div>
             </div>
         </div>
     </div>
