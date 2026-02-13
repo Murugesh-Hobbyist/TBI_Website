@@ -28,10 +28,24 @@ Home + Products pages render using `config/twinbot.php` if the database is unava
 - On first request (non-local host), the app will auto-create `.env` from `.env.example` and generate `APP_KEY` if missing.
 - Configure database credentials (`DB_*`) and (optional) `OPENAI_API_KEY` in `.env`.
 
+## Automatic Deployment (GitHub Actions)
+- Workflow: `.github/workflows/deploy-website.yml`
+- Triggers on pushes to `main`
+- Configure one target using repository secrets:
+  - Webhook deploy (recommended for Hostinger Git deploy hook):
+    - `DEPLOY_WEBHOOK_URL`
+    - optional `DEPLOY_WEBHOOK_TOKEN`
+  - SSH deploy:
+    - `DEPLOY_SSH_HOST`, `DEPLOY_SSH_USER`, `DEPLOY_SSH_PATH`
+    - and either `DEPLOY_SSH_KEY` or `DEPLOY_SSH_PASSWORD`
+    - optional `DEPLOY_SSH_PORT`
+  - FTP deploy:
+    - `DEPLOY_FTP_SERVER`, `DEPLOY_FTP_USERNAME`, `DEPLOY_FTP_PASSWORD`, `DEPLOY_FTP_SERVER_DIR`
+    - optional `DEPLOY_FTP_PROTOCOL`, `DEPLOY_FTP_PORT`
+
 ## AI Assistant
 - Widget is controlled by `ASSISTANT_WIDGET_ENABLED` (default: false).
 - API endpoints:
   - `POST /api/assistant/chat`
   - `POST /api/assistant/transcribe`
   - `POST /api/assistant/speak`
-
