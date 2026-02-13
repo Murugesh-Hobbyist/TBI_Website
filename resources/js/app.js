@@ -79,18 +79,19 @@ import './bootstrap';
       }
       html {
         filter: none !important;
-        background: #eef3f9 !important;
+        background: #f7fbff !important;
       }
       body.tb-site {
         filter: none !important;
-        color: #112740 !important;
+        color: #0f2744 !important;
         background:
-          radial-gradient(640px 360px at -8% 6%, rgba(255, 122, 24, 0.18), transparent 68%),
-          radial-gradient(620px 340px at 104% 14%, rgba(15, 157, 154, 0.16), transparent 66%),
-          linear-gradient(170deg, #f9fcff 0%, #eef3f9 54%, #e9f0f8 100%) !important;
+          radial-gradient(920px 520px at -8% -18%, rgba(255, 106, 61, 0.24), transparent 67%),
+          radial-gradient(860px 520px at 108% -4%, rgba(0, 166, 255, 0.25), transparent 64%),
+          radial-gradient(740px 500px at 52% 122%, rgba(38, 201, 126, 0.2), transparent 66%),
+          linear-gradient(170deg, #fcfeff 0%, #f7fbff 58%, #edf5ff 100%) !important;
       }
       body.tb-site::before {
-        opacity: 0.14 !important;
+        opacity: 0.2 !important;
       }
       .tb-site h1,
       .tb-site h2,

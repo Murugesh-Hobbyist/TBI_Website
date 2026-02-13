@@ -5,7 +5,7 @@
 
 @section('content')
     <section class="tb-section pt-6 md:pt-10">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="tb-panel p-6 md:p-10 tb-reveal">
                 <span class="tb-eyebrow">Commercial Clarity</span>
                 <h1 class="tb-heading mt-4">Transparent value, engineered for industrial ROI.</h1>
@@ -19,7 +19,7 @@
     </section>
 
     <section class="tb-section">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="grid gap-4 md:grid-cols-3">
                 @foreach ([
                     ['title' => 'Pilot Package', 'desc' => 'Fast validation package for teams testing feasibility, data flow, and process fit before full rollout.'],
@@ -37,7 +37,7 @@
     </section>
 
     <section class="tb-section">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="grid gap-5 md:grid-cols-2">
                 <div class="tb-panel p-6 md:p-8 tb-reveal">
                     <span class="tb-eyebrow">Value Drivers</span>
@@ -71,7 +71,7 @@
     </section>
 
     <section class="tb-section pb-16">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="tb-cta tb-reveal">
                 <span class="tb-eyebrow">Estimate</span>
                 <h2 class="tb-subheading mt-3">Share your requirement, get a realistic commercial path.</h2>
@@ -84,5 +84,4 @@
         </div>
     </section>
 @endsection
-
 

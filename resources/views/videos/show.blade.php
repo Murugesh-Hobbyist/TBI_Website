@@ -5,7 +5,7 @@
 
 @section('content')
     <section class="tb-section pt-6 md:pt-10 pb-16">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <a href="{{ route('videos.index') }}" class="text-sm font-semibold text-[#1F6FD0] hover:text-[#16589F]">&larr; Back to Videos</a>
 
             <article class="tb-panel p-6 md:p-10 mt-5 tb-reveal">
@@ -48,5 +48,4 @@
         </div>
     </section>
 @endsection
-
 

@@ -5,7 +5,7 @@
 
 @section('content')
     <section class="tb-section pt-6 md:pt-10">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="tb-panel p-6 md:p-10 tb-reveal">
                 <span class="tb-eyebrow">Capabilities</span>
                 <h1 class="tb-heading mt-4">Everything your automation stack needs, without the clutter.</h1>
@@ -19,7 +19,7 @@
     </section>
 
     <section class="tb-section">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="grid gap-4 md:grid-cols-3">
                 @foreach ([
                     ['title' => 'Native System Integration', 'desc' => 'Connect sensors, dials, HMIs, and enterprise workflows without fragile patchwork layers.'],
@@ -40,7 +40,7 @@
     </section>
 
     <section class="tb-section">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="grid gap-5 md:grid-cols-2">
                 <div class="tb-panel p-6 md:p-8 tb-reveal">
                     <span class="tb-eyebrow">Engineering Backbone</span>
@@ -74,7 +74,7 @@
     </section>
 
     <section class="tb-section pb-16">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="tb-cta tb-reveal">
                 <span class="tb-eyebrow">Ready To Build</span>
                 <h2 class="tb-subheading mt-3">Tell us your process. We will map the right feature stack.</h2>
@@ -87,5 +87,4 @@
         </div>
     </section>
 @endsection
-
 

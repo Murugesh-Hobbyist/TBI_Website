@@ -5,7 +5,7 @@
 
 @section('content')
     <section class="tb-section pt-6 md:pt-10">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="tb-panel p-6 md:p-10 tb-reveal">
                 <span class="tb-eyebrow">Solution Architecture</span>
                 <h1 class="tb-heading mt-4">Custom systems, engineered around your production reality.</h1>
@@ -19,7 +19,7 @@
     </section>
 
     <section class="tb-section">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="grid gap-4 md:grid-cols-3">
                 @foreach ([
                     ['title' => 'Inspection Automation', 'desc' => 'Dimensional measurement, tolerance logic, and pass/fail traceability built for throughput and consistency.'],
@@ -40,7 +40,7 @@
     </section>
 
     <section class="tb-section">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="grid gap-5 md:grid-cols-2">
                 <div class="tb-panel p-6 md:p-8 tb-reveal">
                     <span class="tb-eyebrow">Engagement Flow</span>
@@ -86,7 +86,7 @@
     </section>
 
     <section class="tb-section pb-16">
-        <div class="tb-wrap">
+        <div class="mx-auto max-w-6xl px-4">
             <div class="tb-cta tb-reveal">
                 <span class="tb-eyebrow">Execution Partner</span>
                 <h2 class="tb-subheading mt-3">Bring your toughest automation problem.</h2>
@@ -99,5 +99,4 @@
         </div>
     </section>
 @endsection
-
 

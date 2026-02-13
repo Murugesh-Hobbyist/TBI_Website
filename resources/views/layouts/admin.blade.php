@@ -10,7 +10,7 @@
         <title>@yield('title', 'Admin').' | '.config('app.name')</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
@@ -24,8 +24,8 @@
                     theme: {
                         extend: {
                             fontFamily: {
-                                sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                                display: ['Exo 2', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                                sans: ['Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                                display: ['Chakra Petch', 'ui-sans-serif', 'system-ui', 'sans-serif'],
                             },
                         },
                     },
@@ -38,7 +38,7 @@
     </head>
     <body class="tb-admin min-h-screen antialiased">
         <header class="border-b border-white/10">
-            <div class="tb-wrap flex items-center justify-between py-4">
+            <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
                 <a href="{{ route('admin.dashboard') }}" class="font-display text-xl">{{ config('app.name') }} Admin</a>
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
@@ -47,7 +47,7 @@
             </div>
         </header>
 
-        <div class="tb-wrap grid gap-6 py-8 md:grid-cols-4">
+        <div class="mx-auto grid max-w-6xl gap-6 px-4 py-8 md:grid-cols-4">
             <aside class="md:col-span-1">
                 <nav class="card p-4 text-sm text-white/80 space-y-1">
                     <a class="block rounded-lg px-3 py-2 hover:bg-white/10" href="{{ route('admin.dashboard') }}">Dashboard</a>
@@ -76,8 +76,5 @@
         </div>
     </body>
 </html>
-
-
-
 
 
