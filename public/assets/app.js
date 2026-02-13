@@ -1,3 +1,4 @@
+﻿
 (function () {
   'use strict';
 
@@ -135,11 +136,18 @@
 
     const wrap = document.createElement('div');
     const isUser = role === 'user';
-    wrap.className = 'rounded-2xl border border-black/10 p-3 ' + (isUser ? 'bg-[#E7F4FF]' : 'bg-white');
+    const isSystem = role === 'system';
+    wrap.className =
+      'rounded-2xl border p-3 ' +
+      (isUser
+        ? 'border-[#B8D8F4] bg-[#E7F4FF]'
+        : isSystem
+          ? 'border-[#D2DFEE] bg-[#F1F7FF]'
+          : 'border-[#D6E3F1] bg-white');
 
     const meta = document.createElement('div');
     meta.className = 'text-xs text-[#4A6587]';
-    meta.textContent = isUser ? 'You' : 'AI';
+    meta.textContent = isUser ? 'You' : isSystem ? 'System' : 'TwinBot AI';
 
     const body = document.createElement('div');
     body.className = 'mt-1 whitespace-pre-wrap text-[#142847]';
@@ -155,7 +163,11 @@
     const res = await fetch('/api/assistant/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: message }),
+      body: JSON.stringify({
+        message: message,
+        current_path: window.location.pathname,
+        current_title: document.title,
+      }),
     });
 
     const json = await res.json().catch(function () {
@@ -166,7 +178,10 @@
       throw new Error((json && json.message) || 'Assistant request failed.');
     }
 
-    return json.text || '';
+    return {
+      text: json.text || '',
+      action: json.action || null,
+    };
   }
 
   async function assistantTranscribe(blob) {
@@ -195,49 +210,89 @@
 
   function initAssistantWidget() {
     const openBtn = el('assistant-open');
-    const modal = el('assistant-modal');
+    const panel = el('assistant-panel');
     const closeBtn = el('assistant-close');
-    const backdrop = el('assistant-backdrop');
     const input = el('assistant-input');
     const sendBtn = el('assistant-send');
     const pttBtn = el('assistant-ptt');
 
-    if (!openBtn || !modal || !closeBtn || !backdrop || !input || !sendBtn || !pttBtn) return;
+    if (!openBtn || !panel || !closeBtn || !input || !sendBtn || !pttBtn) return;
+
+    const setPanelOpen = function (shouldOpen) {
+      if (shouldOpen) {
+        panel.classList.remove('hidden');
+        openBtn.classList.add('hidden');
+      } else {
+        panel.classList.add('hidden');
+        openBtn.classList.remove('hidden');
+      }
+
+      if (shouldOpen) {
+        setTimeout(function () {
+          input.focus();
+        }, 0);
+      }
+    };
 
     const open = function () {
-      modal.classList.remove('hidden');
-      setTimeout(function () {
-        input.focus();
-      }, 0);
+      setPanelOpen(true);
     };
 
     const close = function () {
-      modal.classList.add('hidden');
+      setPanelOpen(false);
+    };
+
+    const maybeSpeak = async function (text) {
+      if (!text) return;
+      const audioBlob = await assistantSpeak(text);
+      if (!audioBlob) return;
+      const url = URL.createObjectURL(audioBlob);
+      const audio = new Audio(url);
+      audio.play().catch(function () {});
+      audio.addEventListener('ended', function () {
+        URL.revokeObjectURL(url);
+      });
+    };
+
+    const runAssistantAction = function (action) {
+      if (!action || action.type !== 'navigate' || !action.url) return false;
+
+      const label = action.label || 'requested page';
+      appendLog('system', 'Opening ' + label + '...');
+
+      setTimeout(function () {
+        window.location.assign(action.url);
+      }, 450);
+
+      return true;
+    };
+
+    const submitMessage = async function (message, shouldSpeak) {
+      const msg = String(message || '').trim();
+      if (!msg) return;
+
+      appendLog('user', msg);
+
+      const result = await assistantChat(msg);
+      const reply = (result && result.text ? result.text : '').trim();
+      appendLog('assistant', reply || '(no response)');
+
+      const didNavigate = runAssistantAction(result ? result.action : null);
+      if (!didNavigate && shouldSpeak && reply) {
+        await maybeSpeak(reply);
+      }
     };
 
     openBtn.addEventListener('click', open);
     closeBtn.addEventListener('click', close);
-    backdrop.addEventListener('click', close);
 
     const send = async function () {
       const msg = (input.value || '').trim();
       if (!msg) return;
       input.value = '';
-      appendLog('user', msg);
 
       try {
-        const reply = await assistantChat(msg);
-        appendLog('assistant', reply || '(no response)');
-
-        const audioBlob = await assistantSpeak(reply);
-        if (audioBlob) {
-          const url = URL.createObjectURL(audioBlob);
-          const audio = new Audio(url);
-          audio.play().catch(function () {});
-          audio.addEventListener('ended', function () {
-            URL.revokeObjectURL(url);
-          });
-        }
+        await submitMessage(msg, true);
       } catch (e) {
         appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
       }
@@ -278,19 +333,7 @@
             return;
           }
 
-          appendLog('user', text);
-          const reply = await assistantChat(text);
-          appendLog('assistant', reply || '(no response)');
-
-          const audioBlob = await assistantSpeak(reply);
-          if (audioBlob) {
-            const url = URL.createObjectURL(audioBlob);
-            const audio = new Audio(url);
-            audio.play().catch(function () {});
-            audio.addEventListener('ended', function () {
-              URL.revokeObjectURL(url);
-            });
-          }
+          await submitMessage(text, true);
         } catch (e) {
           appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
         }
@@ -338,7 +381,13 @@
       { passive: false }
     );
 
-    appendLog('assistant', 'Hi. Ask me about products, projects, or automation capabilities.');
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        close();
+      }
+    });
+
+    appendLog('assistant', 'Hi. Ask about products, projects, pricing, or say "go to products page" and I will open it.');
   }
 
   function initMobileMenu() {

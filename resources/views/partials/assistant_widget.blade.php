@@ -1,31 +1,34 @@
-<div class="fixed bottom-5 right-5 z-50">
-    <button id="assistant-open" type="button" class="btn btn-primary shadow-lg">Ask TwinBot AI</button>
-</div>
-
-<div id="assistant-modal" class="fixed inset-0 z-50 hidden">
-    <div id="assistant-backdrop" class="absolute inset-0 bg-black/50"></div>
-    <div class="absolute bottom-0 left-0 right-0 mx-auto max-w-2xl p-4 md:bottom-8">
-        <div class="overflow-hidden rounded-3xl border border-[#C5DAED] bg-white shadow-2xl">
-            <div class="flex items-start justify-between border-b border-[#D4E3F1] px-4 py-3">
+<div id="assistant-dock" class="fixed bottom-4 right-4 z-[70] flex flex-col items-end gap-3">
+    <div id="assistant-panel" class="hidden w-[min(92vw,390px)] overflow-hidden rounded-3xl border border-[#C5DAED] bg-white/95 shadow-2xl backdrop-blur">
+        <div class="bg-gradient-to-r from-[#eef7ff] via-[#eaf7f3] to-[#edf1ff] px-4 py-3">
+            <div class="flex items-start justify-between gap-3">
                 <div>
-                    <div class="font-display text-lg text-[#122E53]">{{ config('twinbot.site.name') }} Assistant</div>
-                    <div class="text-xs text-[#5B789A]">Ask about products, use cases, and TwinBot capabilities.</div>
+                    <div class="font-display text-base text-[#122E53]">{{ config('twinbot.site.name') }} AI</div>
+                    <div class="text-xs text-[#4F6E91]">Ask anything and I can open pages for you.</div>
                 </div>
-                <button id="assistant-close" type="button" class="rounded-xl px-3 py-2 text-sm font-semibold text-[#4F6890] hover:bg-[#EEF6FF] hover:text-[#1A476F]">Close</button>
+                <button id="assistant-close" type="button" class="rounded-xl border border-[#C9DCEF] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#315980] hover:bg-[#F3F9FF]">
+                    Minimize
+                </button>
+            </div>
+        </div>
+
+        <div class="space-y-3 px-4 py-3">
+            <div id="assistant-log" class="h-72 space-y-3 overflow-auto rounded-2xl border border-[#D1E2F2] bg-[#F8FCFF] p-3 text-sm"></div>
+
+            <div class="flex gap-2">
+                <input id="assistant-input" type="text" class="tb-input flex-1" placeholder="Try: Go to products page or ask any question..." />
+                <button id="assistant-send" type="button" class="btn btn-primary">Send</button>
             </div>
 
-            <div class="px-4 py-3">
-                <div id="assistant-log" class="h-64 space-y-3 overflow-auto rounded-2xl border border-[#D1E2F2] p-3 text-sm"></div>
-                <div class="mt-3 flex flex-col gap-2 md:flex-row">
-                    <input id="assistant-input" type="text" class="tb-input" placeholder="Ask about products, automation, or support..." />
-                    <div class="flex gap-2">
-                        <button id="assistant-send" type="button" class="btn btn-primary">Send</button>
-                        <button id="assistant-ptt" type="button" class="btn btn-ghost">Push-to-talk</button>
-                    </div>
-                </div>
-                <div class="mt-2 text-xs text-[#6683A2]">Voice is push-to-talk (record, transcribe, then reply).</div>
+            <div class="flex items-center justify-between gap-2">
+                <button id="assistant-ptt" type="button" class="btn btn-ghost text-xs">Hold to talk</button>
+                <div class="text-[11px] text-[#5F7F9F]">AI can answer + navigate pages.</div>
             </div>
         </div>
     </div>
-</div>
 
+    <button id="assistant-open" type="button" class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#ff7a33] via-[#18bf8d] to-[#2e6bff] px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-[#1b3a6733]">
+        <span class="inline-block h-2.5 w-2.5 rounded-full bg-white/90"></span>
+        Ask TwinBot AI
+    </button>
+</div>

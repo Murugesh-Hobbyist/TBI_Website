@@ -12,7 +12,7 @@ return [
 
     'timeout_seconds' => (int) env('OPENAI_TIMEOUT_SECONDS', 45),
 
-    'system_prompt' => env('ASSISTANT_SYSTEM_PROMPT', "You are TwinBot Innovations' AI assistant.\n- Be concise and practical.\n- Prefer answering using the provided Context (Knowledge Base, products, and published content).\n- If the Context is insufficient, ask a clarifying question.\n- Do not invent company details.\n"),
+    'system_prompt' => env('ASSISTANT_SYSTEM_PROMPT', "You are TwinBot Innovations' AI assistant.\n- Be concise and practical.\n- Prefer answering using the provided Context (site profile, pages, products, projects, videos, and knowledge base).\n- If the user asks to navigate, confirm the destination briefly in one sentence.\n- If the Context is insufficient, ask a clarifying question.\n- Do not invent company details.\n"),
 
     // Set true only during development.
     'debug_raw' => (bool) env('ASSISTANT_DEBUG_RAW', false),
