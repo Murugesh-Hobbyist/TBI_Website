@@ -272,6 +272,7 @@
     const chatControls = el('assistant-chat-controls');
     const voiceControls = el('assistant-voice-controls');
     const voiceToggleBtn = el('assistant-voice-toggle');
+    const stopSpeakBtn = el('assistant-stop-speech');
     const voiceStatus = el('assistant-voice-status');
     const log = el('assistant-log');
     const input = el('assistant-input');
@@ -473,6 +474,20 @@
       }
 
       state.speaking = false;
+    };
+
+    const stopAssistantSpeech = function (announce) {
+      const wasSpeaking = state.speaking;
+      stopCurrentPlayback();
+      setVoiceStatus(shouldContinueVoice() ? 'Listening...' : 'Voice mode ready. Tap Start voice.');
+
+      if (shouldContinueVoice() && !state.processingVoice && !state.recognitionRunning) {
+        scheduleRecognitionRestart(IS_MOBILE ? 650 : 80);
+      }
+
+      if (announce && wasSpeaking) {
+        appendLog('system', 'Assistant speech stopped.');
+      }
     };
 
     const stopInterruptMonitor = function () {
@@ -849,26 +864,64 @@
     };
 
     const runAssistantAction = async function (action) {
-      if (!action || action.type !== 'navigate' || !action.url) return false;
+      if (!action || typeof action !== 'object' || !action.type) return false;
 
-      const label = action.label || 'requested page';
-      const openingText = 'Switching to ' + label + '.';
-      if (state.mode === 'voice') {
-        setVoiceStatus(openingText);
-        await maybeSpeak(openingText);
-      } else {
-        appendLog('system', openingText);
+      if (action.type === 'navigate' && action.url) {
+        const label = action.label || 'requested page';
+        const openingText = 'Switching to ' + label + '.';
+        if (state.mode === 'voice') {
+          setVoiceStatus(openingText);
+          await maybeSpeak(openingText);
+        } else {
+          appendLog('system', openingText);
+        }
+
+        storeSet(assistantStore.open, '1');
+        storeSet(assistantStore.mode, state.mode);
+        storeSet(assistantStore.voiceActive, state.voiceActive ? '1' : '0');
+
+        setTimeout(function () {
+          window.location.assign(action.url);
+        }, state.mode === 'voice' ? 80 : 450);
+
+        return true;
       }
 
-      storeSet(assistantStore.open, '1');
-      storeSet(assistantStore.mode, state.mode);
-      storeSet(assistantStore.voiceActive, state.voiceActive ? '1' : '0');
+      if (action.type === 'scroll') {
+        const mode = String(action.mode || '').toLowerCase();
+        const direction = String(action.direction || '').toLowerCase() === 'up' ? 'up' : 'down';
+        const ratioRaw = Number(action.ratio);
+        const ratio = Number.isFinite(ratioRaw) ? Math.max(0.15, Math.min(1.6, ratioRaw)) : 0.75;
 
-      setTimeout(function () {
-        window.location.assign(action.url);
-      }, state.mode === 'voice' ? 80 : 450);
+        let openingText = 'Scrolling ' + direction + '.';
+        if (mode === 'top') {
+          openingText = 'Scrolling to top.';
+        } else if (mode === 'bottom') {
+          openingText = 'Scrolling to bottom.';
+        }
 
-      return true;
+        if (state.mode === 'voice') {
+          await maybeSpeak(openingText);
+        } else {
+          appendLog('system', openingText);
+        }
+
+        if (mode === 'top') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return true;
+        }
+
+        if (mode === 'bottom') {
+          window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+          return true;
+        }
+
+        const delta = Math.round(window.innerHeight * ratio);
+        window.scrollBy({ top: direction === 'up' ? -delta : delta, behavior: 'smooth' });
+        return true;
+      }
+
+      return false;
     };
 
     const submitMessage = async function (message, options) {
@@ -1076,6 +1129,11 @@
         startVoiceConversation(false, true);
       }
     });
+    if (stopSpeakBtn) {
+      stopSpeakBtn.addEventListener('click', function () {
+        stopAssistantSpeech(true);
+      });
+    }
 
     const send = async function () {
       const msg = (input.value || '').trim();
@@ -1188,7 +1246,7 @@
     } else {
       appendLog(
         'assistant',
-        'Hi. Ask about products, projects, pricing, or say "go to products page" and I will open it.'
+        'Hi. Ask about TwinBot, say "go to products page", or say "scroll down / top / bottom".'
       );
     }
 

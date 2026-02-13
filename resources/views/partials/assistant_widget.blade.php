@@ -37,6 +37,9 @@
                     <button id="assistant-voice-toggle" type="button" class="btn btn-primary text-xs">Start voice</button>
                     <div class="text-[11px] text-[#5F7F9F]">Continuous listen + reply + page control.</div>
                 </div>
+                <div class="mt-2">
+                    <button id="assistant-stop-speech" type="button" class="btn btn-ghost w-full text-xs">Stop speaking</button>
+                </div>
             </div>
         </div>
     </div>

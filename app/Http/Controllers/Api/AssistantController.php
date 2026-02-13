@@ -24,7 +24,7 @@ class AssistantController extends Controller
         try {
             $openai = app(OpenAiClient::class);
             $query = trim($data['message']);
-            $navigationAction = $this->detectNavigationAction($query);
+            $assistantAction = $this->detectAssistantAction($query);
             $context = $this->buildContext(
                 $query,
                 $data['current_path'] ?? null,
@@ -34,8 +34,9 @@ class AssistantController extends Controller
             $instructions = trim((string) config('assistant.system_prompt'));
             $instructions .= "\n- Prefer TwinBot-specific answers with concrete details from Context (products, services, pricing approach, deployments, and contact channels).";
             $instructions .= "\n- If user asks a general technical term (for example API, IIoT, PLC, MQTT), answer clearly in plain language and relate it to TwinBot when useful.";
-            if ($navigationAction) {
-                $instructions .= "\n- User asked to navigate. Confirm destination briefly and continue helping.";
+            $instructions .= "\n- Scroll commands are supported: scroll down/up, scroll to top, scroll to bottom.";
+            if ($assistantAction) {
+                $instructions .= "\n- If an action is requested (navigate or scroll), confirm briefly and continue helping.";
             }
 
             $resp = $openai->responsesCreate([
@@ -57,14 +58,18 @@ class AssistantController extends Controller
             ]);
 
             $text = trim((string) ($resp['output_text'] ?? $this->extractText($resp)));
-            if ($text === '' && $navigationAction) {
-                $text = 'Opening '.$navigationAction['label'].' now.';
+            if ($text === '' && $assistantAction) {
+                if (($assistantAction['type'] ?? null) === 'navigate') {
+                    $text = 'Opening '.$assistantAction['label'].' now.';
+                } elseif (($assistantAction['type'] ?? null) === 'scroll') {
+                    $text = 'Scrolling now.';
+                }
             }
 
             return response()->json([
                 'ok' => true,
                 'text' => $text,
-                'action' => $navigationAction,
+                'action' => $assistantAction,
                 'raw' => config('assistant.debug_raw') ? $resp : null,
             ]);
         } catch (\Throwable $e) {
@@ -234,6 +239,12 @@ class AssistantController extends Controller
         $lines[] = "Business Primer:";
         foreach ($this->buildBusinessPrimer() as $primerLine) {
             $lines[] = $primerLine;
+        }
+        $knowledgeDoc = $this->loadKnowledgeDocument();
+        if ($knowledgeDoc !== '') {
+            $lines[] = "";
+            $lines[] = "TwinBot Knowledge Document:";
+            $lines[] = $knowledgeDoc;
         }
         if ($dbUnavailable) {
             $lines[] = "- Published database content unavailable on this environment; using static site data.";
@@ -423,6 +434,105 @@ class AssistantController extends Controller
         }
 
         return $lines;
+    }
+
+    private function loadKnowledgeDocument(): string
+    {
+        static $cached = null;
+        if (is_string($cached)) {
+            return $cached;
+        }
+
+        $path = base_path('docs/twinbot-ai-knowledge.md');
+        if (!is_file($path)) {
+            $cached = '';
+            return $cached;
+        }
+
+        $raw = @file_get_contents($path);
+        if ($raw === false) {
+            $cached = '';
+            return $cached;
+        }
+
+        $text = trim(strip_tags((string) $raw));
+        $cached = Str::limit($text, 12000);
+
+        return $cached;
+    }
+
+    private function detectAssistantAction(string $query): ?array
+    {
+        $scrollAction = $this->detectScrollAction($query);
+        if ($scrollAction !== null) {
+            return $scrollAction;
+        }
+
+        return $this->detectNavigationAction($query);
+    }
+
+    private function detectScrollAction(string $query): ?array
+    {
+        $normalized = Str::of($query)->lower()->squish()->toString();
+        if ($normalized === '') {
+            return null;
+        }
+
+        $scrollIntentWords = [
+            'scroll',
+            'page down',
+            'page up',
+            'move down',
+            'move up',
+            'go down',
+            'go up',
+            'down a bit',
+            'up a bit',
+            'next section',
+            'previous section',
+            'to top',
+            'to bottom',
+        ];
+
+        if (!Str::contains($normalized, $scrollIntentWords)) {
+            return null;
+        }
+
+        if (Str::contains($normalized, ['top', 'start of page', 'beginning'])) {
+            return [
+                'type' => 'scroll',
+                'mode' => 'top',
+                'label' => 'top',
+            ];
+        }
+
+        if (Str::contains($normalized, ['bottom', 'end of page'])) {
+            return [
+                'type' => 'scroll',
+                'mode' => 'bottom',
+                'label' => 'bottom',
+            ];
+        }
+
+        $direction = Str::contains($normalized, ['up', 'previous']) ? 'up' : 'down';
+        $ratio = 0.75;
+        if (Str::contains($normalized, ['little', 'bit', 'small', 'slightly'])) {
+            $ratio = 0.35;
+        } elseif (Str::contains($normalized, ['section', 'screen', 'page'])) {
+            $ratio = 0.95;
+        } elseif (Str::contains($normalized, ['half'])) {
+            $ratio = 0.5;
+        } elseif (Str::contains($normalized, ['more', 'lot', 'far', 'further'])) {
+            $ratio = 1.25;
+        }
+
+        return [
+            'type' => 'scroll',
+            'mode' => 'delta',
+            'direction' => $direction,
+            'ratio' => $ratio,
+            'label' => $direction,
+        ];
     }
 
     private function detectNavigationAction(string $query): ?array
