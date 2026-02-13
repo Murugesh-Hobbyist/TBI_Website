@@ -49,20 +49,25 @@ class OpenAiClient
     }
 
     /**
-     * @param array{model:string,voice:string,input:string,format?:string} $payload
+     * @param array{model:string,voice:string,input:string,format?:string,speed?:float|null} $payload
      */
     public function audioSpeech(array $payload): string
     {
         $format = $payload['format'] ?? 'mp3';
+        $request = [
+            'model' => $payload['model'],
+            'voice' => $payload['voice'],
+            'input' => $payload['input'],
+            'format' => $format,
+        ];
+
+        if (isset($payload['speed']) && is_numeric($payload['speed'])) {
+            $request['speed'] = max(0.7, min(1.6, (float) $payload['speed']));
+        }
 
         $resp = $this->client()
             ->withHeaders(['Accept' => 'audio/mpeg'])
-            ->post('/v1/audio/speech', [
-                'model' => $payload['model'],
-                'voice' => $payload['voice'],
-                'input' => $payload['input'],
-                'format' => $format,
-            ]);
+            ->post('/v1/audio/speech', $request);
 
         if ($resp->status() >= 400) {
             $decoded = json_decode($resp->body(), true);
@@ -109,4 +114,3 @@ class OpenAiClient
             ->retry(1, 200);
     }
 }
-

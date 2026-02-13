@@ -32,6 +32,8 @@ class AssistantController extends Controller
             );
 
             $instructions = trim((string) config('assistant.system_prompt'));
+            $instructions .= "\n- Prefer TwinBot-specific answers with concrete details from Context (products, services, pricing approach, deployments, and contact channels).";
+            $instructions .= "\n- If user asks a general technical term (for example API, IIoT, PLC, MQTT), answer clearly in plain language and relate it to TwinBot when useful.";
             if ($navigationAction) {
                 $instructions .= "\n- User asked to navigate. Confirm destination briefly and continue helping.";
             }
@@ -110,15 +112,18 @@ class AssistantController extends Controller
             $data = $request->validate([
                 'text' => ['required', 'string', 'max:4000'],
                 'voice' => ['nullable', 'string', 'max:64'],
+                'speed' => ['nullable', 'numeric', 'min:0.7', 'max:1.6'],
             ]);
 
             $voice = $data['voice'] ?: (string) config('assistant.tts_voice');
+            $speed = isset($data['speed']) ? (float) $data['speed'] : null;
 
             $audioBytes = $openai->audioSpeech([
                 'model' => (string) config('assistant.tts_model'),
                 'voice' => $voice,
                 'input' => $data['text'],
                 'format' => 'mp3',
+                'speed' => $speed,
             ]);
 
             return response($audioBytes, 200, [
@@ -225,6 +230,11 @@ class AssistantController extends Controller
         $lines[] = "- Primary phone: ".config('twinbot.contact.phone_display');
         $lines[] = "- WhatsApp: ".config('twinbot.contact.whatsapp_url');
         $lines[] = "- Location: ".config('twinbot.contact.location');
+        $lines[] = "";
+        $lines[] = "Business Primer:";
+        foreach ($this->buildBusinessPrimer() as $primerLine) {
+            $lines[] = $primerLine;
+        }
         if ($dbUnavailable) {
             $lines[] = "- Published database content unavailable on this environment; using static site data.";
         }
@@ -325,6 +335,94 @@ class AssistantController extends Controller
         }
 
         return trim(implode("\n", $lines));
+    }
+
+    private function buildBusinessPrimer(): array
+    {
+        $lines = [];
+
+        $siteName = (string) config('twinbot.site.name');
+        $tagline = (string) config('twinbot.site.tagline');
+        if ($siteName !== '' || $tagline !== '') {
+            $lines[] = '- Brand summary: '.trim($siteName.' - '.$tagline, ' -');
+        }
+
+        $lines[] = '- Core focus: practical embedded control systems, inspection automation, industrial traceability, and custom electronics.';
+        $lines[] = '- Positioning: ECS alternatives to rigid PLC stacks, with faster deployment and lower ownership cost for targeted production lines.';
+
+        $productMap = collect(config('twinbot.products', []))
+            ->filter(fn ($item) => is_array($item))
+            ->mapWithKeys(function (array $item) {
+                $slug = (string) ($item['slug'] ?? '');
+                $title = (string) ($item['title'] ?? '');
+
+                return $slug !== '' && $title !== '' ? [$slug => $title] : [];
+            });
+
+        $groups = config('twinbot.product_groups', []);
+        if (is_array($groups) && $groups !== []) {
+            $lines[] = '- Product families:';
+            foreach (array_slice($groups, 0, 6) as $group) {
+                if (!is_array($group)) {
+                    continue;
+                }
+
+                $groupTitle = trim((string) ($group['title'] ?? ''));
+                $slugs = array_values(array_filter((array) ($group['slugs'] ?? []), fn ($slug) => is_string($slug) && trim($slug) !== ''));
+                if ($groupTitle === '' || $slugs === []) {
+                    continue;
+                }
+
+                $titles = collect($slugs)
+                    ->map(function (string $slug) use ($productMap) {
+                        $slug = trim($slug);
+                        return (string) ($productMap[$slug] ?? $slug);
+                    })
+                    ->filter(fn ($title) => trim((string) $title) !== '')
+                    ->values()
+                    ->all();
+
+                if ($titles !== []) {
+                    $lines[] = '- '.$groupTitle.': '.Str::limit(implode(', ', $titles), 220);
+                }
+            }
+        }
+
+        $comparisonRows = config('twinbot.home.plc_vs_ecs', []);
+        if (is_array($comparisonRows) && $comparisonRows !== []) {
+            $lines[] = '- PLC vs ECS highlights:';
+            foreach (array_slice($comparisonRows, 0, 6) as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+
+                $aspect = trim((string) ($row['aspect'] ?? ''));
+                $ecs = trim((string) ($row['ecs'] ?? ''));
+                if ($aspect === '' || $ecs === '') {
+                    continue;
+                }
+
+                $lines[] = '- '.$aspect.': '.Str::limit($ecs, 180);
+            }
+        }
+
+        $faqRows = config('twinbot.faqs', []);
+        if (is_array($faqRows) && $faqRows !== []) {
+            $lines[] = '- Common customer questions:';
+            foreach (array_slice($faqRows, 0, 10) as $faq) {
+                if (!is_array($faq)) {
+                    continue;
+                }
+                $question = trim((string) ($faq['q'] ?? ''));
+                $answer = trim((string) ($faq['a'] ?? ''));
+                if ($question === '' || $answer === '') {
+                    continue;
+                }
+                $lines[] = '- '.Str::limit($question, 130).': '.Str::limit($answer, 180);
+            }
+        }
+
+        return $lines;
     }
 
     private function detectNavigationAction(string $query): ?array
