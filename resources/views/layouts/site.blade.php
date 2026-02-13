@@ -168,8 +168,6 @@
             </div>
         </footer>
 
-        @if (env('ASSISTANT_WIDGET_ENABLED', false))
-            @include('partials.assistant_widget')
-        @endif
+        @include('partials.assistant_widget')
     </body>
 </html>
