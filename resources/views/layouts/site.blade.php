@@ -6,10 +6,10 @@
         <meta name="color-scheme" content="light">
         <meta name="supported-color-schemes" content="light">
         <meta name="darkreader-lock">
-        <meta name="theme-color" content="#f7fbff">
+        <meta name="theme-color" content="#eef3f9">
         <style id="tb-theme-lock">
             html { color-scheme: only light !important; forced-color-adjust: none; }
-            body.tb-site { color: #0f2744 !important; background-color: #f7fbff !important; }
+            body.tb-site { color: #112740 !important; background-color: #eef3f9 !important; }
         </style>
         <script>
             (function () {
@@ -28,7 +28,7 @@
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -39,8 +39,8 @@
                     theme: {
                         extend: {
                             fontFamily: {
-                                sans: ['Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                                display: ['Chakra Petch', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                                sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                                display: ['Exo 2', 'ui-sans-serif', 'system-ui', 'sans-serif'],
                             },
                         },
                     },
@@ -60,15 +60,15 @@
 
         <header class="tb-header">
             <div class="tb-topline">
-                <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-2 text-xs font-semibold text-[#214b78]">
-                    <div class="hidden sm:block">Industrial automation studio for control, traceability, and production-scale reliability.</div>
+                <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-2 text-[11px] font-semibold text-[#1e456f]">
+                    <div class="hidden sm:block">Embedded automation for measurable uptime, traceability, and faster operator decisions.</div>
                     <a href="{{ route('contact') }}" class="tb-mini-link">Start technical discussion</a>
                 </div>
             </div>
 
-            <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4">
+            <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3">
                 <a href="{{ route('home') }}" class="tb-brand-badge" aria-label="{{ config('twinbot.site.domain') }}">
-                    <img src="{{ asset(config('twinbot.assets.logo')) }}" alt="{{ config('twinbot.site.name') }}" class="h-10 w-auto" />
+                    <img src="{{ asset(config('twinbot.assets.logo')) }}" alt="{{ config('twinbot.site.name') }}" class="h-9 w-auto" />
                 </a>
 
                 <nav class="tb-nav-rail hidden items-center text-sm font-semibold md:inline-flex">
@@ -82,10 +82,10 @@
                     <a class="tb-nav-link @if(request()->routeIs('about')) tb-nav-link-active @endif" href="{{ route('about') }}">About</a>
                 </nav>
 
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('contact') }}" class="btn btn-ghost hidden lg:inline-flex">Need quick quote?</a>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('contact') }}" class="btn btn-ghost hidden lg:inline-flex">Quick quote</a>
                     <a href="{{ route('contact') }}" class="btn btn-primary hidden md:inline-flex">Book Consultation</a>
-                    <button id="tb-menu-toggle" type="button" class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#c6d8ee] bg-white text-[#1b456f]" aria-label="Open menu" aria-expanded="false">
+                    <button id="tb-menu-toggle" type="button" class="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#ccd8e6] bg-white text-[#234a72]" aria-label="Open menu" aria-expanded="false">
                         <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                             <path d="M4 7h16M4 12h16M4 17h16"></path>
                         </svg>
@@ -93,9 +93,9 @@
                 </div>
             </div>
 
-            <div id="tb-mobile-nav" class="hidden border-t border-[#d5e3f3] bg-white/95 md:hidden">
-                <div class="mx-auto max-w-6xl px-4 py-4">
-                    <nav class="flex flex-col gap-2 text-sm font-semibold text-[#214a76]">
+            <div id="tb-mobile-nav" class="hidden border-t border-[#d7e0eb] bg-white/95 md:hidden">
+                <div class="mx-auto max-w-6xl px-4 py-3">
+                    <nav class="flex flex-col gap-1.5 text-sm font-semibold text-[#21496f]">
                         <a href="{{ route('home') }}" class="tb-mobile-link">Home</a>
                         <a href="{{ route('products.index') }}" class="tb-mobile-link">Products</a>
                         <a href="{{ route('features') }}" class="tb-mobile-link">Features</a>
@@ -106,15 +106,15 @@
                         <a href="{{ route('about') }}" class="tb-mobile-link">About</a>
                         <a href="{{ route('contact') }}" class="tb-mobile-link">Contact</a>
                     </nav>
-                    <a href="{{ route('contact') }}" class="mt-4 inline-flex btn btn-primary">Book Consultation</a>
+                    <a href="{{ route('contact') }}" class="mt-3 inline-flex btn btn-primary">Book Consultation</a>
                 </div>
             </div>
         </header>
 
         <main class="relative z-10">
             @if (session('status'))
-                <div class="mx-auto max-w-6xl px-4 pt-6">
-                    <div class="rounded-2xl border border-[#b8d4eb] bg-[#ecf7ff] px-4 py-3 text-sm font-semibold text-[#1d4e7a]">
+                <div class="mx-auto max-w-6xl px-4 pt-4">
+                    <div class="rounded-xl border border-[#bdd0e4] bg-[#eef7ff] px-4 py-2 text-sm font-semibold text-[#1d4d78]">
                         {{ session('status') }}
                     </div>
                 </div>
@@ -123,12 +123,12 @@
             @yield('content')
         </main>
 
-        <footer class="relative z-10 mt-20 border-t border-[#cfdff1] bg-white/95 backdrop-blur">
-            <div class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 md:grid-cols-4">
+        <footer class="relative z-10 mt-12 border-t border-[#d3ddea] bg-white/92">
+            <div class="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 md:grid-cols-4">
                 <div class="md:col-span-2">
-                    <img src="{{ asset(config('twinbot.assets.logo')) }}" alt="{{ config('twinbot.site.name') }}" class="h-10 w-auto" />
-                    <p class="mt-4 max-w-lg text-sm leading-relaxed text-[#41658d]">{{ config('twinbot.site.tagline') }} We design robust embedded control systems that balance uptime, operator clarity, and practical deployment speed.</p>
-                    <div class="mt-5 flex flex-wrap gap-2">
+                    <img src="{{ asset(config('twinbot.assets.logo')) }}" alt="{{ config('twinbot.site.name') }}" class="h-9 w-auto" />
+                    <p class="mt-3 max-w-lg text-sm leading-relaxed text-[#4b6585]">{{ config('twinbot.site.tagline') }} We engineer practical embedded control systems focused on uptime, traceability, and easier operations.</p>
+                    <div class="mt-4 flex flex-wrap gap-2">
                         <a href="{{ route('projects.index') }}" class="tb-mini-link">Projects</a>
                         <a href="{{ route('videos.index') }}" class="tb-mini-link">Videos</a>
                         <a href="{{ route('forum') }}" class="tb-mini-link">Forum</a>
@@ -137,29 +137,29 @@
 
                 <div>
                     <div class="tb-footer-title">Explore</div>
-                    <div class="mt-3 grid gap-2 text-sm text-[#36577e]">
-                        <a href="{{ route('products.index') }}" class="hover:text-[#1c5c93]">Products</a>
-                        <a href="{{ route('features') }}" class="hover:text-[#1c5c93]">Features</a>
-                        <a href="{{ route('solutions') }}" class="hover:text-[#1c5c93]">Solutions</a>
-                        <a href="{{ route('pricing') }}" class="hover:text-[#1c5c93]">Pricing</a>
+                    <div class="mt-2.5 grid gap-1.5 text-sm text-[#446180]">
+                        <a href="{{ route('products.index') }}" class="hover:text-[#1f4f7b]">Products</a>
+                        <a href="{{ route('features') }}" class="hover:text-[#1f4f7b]">Features</a>
+                        <a href="{{ route('solutions') }}" class="hover:text-[#1f4f7b]">Solutions</a>
+                        <a href="{{ route('pricing') }}" class="hover:text-[#1f4f7b]">Pricing</a>
                     </div>
                 </div>
 
                 <div>
                     <div class="tb-footer-title">Connect</div>
-                    <div class="mt-3 grid gap-2 text-sm text-[#36577e]">
-                        <a href="tel:{{ config('twinbot.contact.phone_tel') }}" class="hover:text-[#1c5c93]">{{ config('twinbot.contact.phone_display') }}</a>
-                        <a href="mailto:{{ config('twinbot.contact.email_primary') }}" class="hover:text-[#1c5c93]">{{ config('twinbot.contact.email_primary') }}</a>
-                        <a href="{{ config('twinbot.contact.whatsapp_url') }}" class="hover:text-[#1c5c93]">Whatsapp</a>
+                    <div class="mt-2.5 grid gap-1.5 text-sm text-[#446180]">
+                        <a href="tel:{{ config('twinbot.contact.phone_tel') }}" class="hover:text-[#1f4f7b]">{{ config('twinbot.contact.phone_display') }}</a>
+                        <a href="mailto:{{ config('twinbot.contact.email_primary') }}" class="hover:text-[#1f4f7b]">{{ config('twinbot.contact.email_primary') }}</a>
+                        <a href="{{ config('twinbot.contact.whatsapp_url') }}" class="hover:text-[#1f4f7b]">Whatsapp</a>
                         <span>{{ config('twinbot.contact.location') }}</span>
                     </div>
                 </div>
             </div>
 
-            <div class="border-t border-[#d9e6f5] py-4">
-                <div class="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 text-xs text-[#5a7a9e] md:flex-row md:items-center md:justify-between">
+            <div class="border-t border-[#dbe4ee] py-3">
+                <div class="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 text-xs text-[#607c9b] md:flex-row md:items-center md:justify-between">
                     <div>Copyright &copy; {{ date('Y') }} {{ config('twinbot.site.domain') }}. Built by TwinBot Innov Team.</div>
-                    <div>Embedded control engineering, inspection automation, and production lifecycle support.</div>
+                    <div>Embedded control, inspection automation, and lifecycle engineering support.</div>
                 </div>
             </div>
         </footer>
