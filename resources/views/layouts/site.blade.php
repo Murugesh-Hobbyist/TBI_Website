@@ -6,7 +6,17 @@
         <meta name="color-scheme" content="light">
         <meta name="supported-color-schemes" content="light">
         <meta name="darkreader-lock">
-        <meta name="theme-color" content="#f6fbff">
+        <meta name="theme-color" content="#fff7ef">
+        <style id="tb-theme-lock">
+            html { color-scheme: only light !important; forced-color-adjust: none; }
+            body.tb-site { color: #10274b !important; background-color: #fff7ef !important; }
+        </style>
+        <script>
+            (function () {
+                document.documentElement.style.colorScheme = 'only light';
+                document.documentElement.setAttribute('data-tb-theme', 'light');
+            })();
+        </script>
         <title>@yield('title', config('twinbot.site.domain'))</title>
         <meta name="description" content="@yield('meta_description', config('twinbot.site.tagline'))">
         <link rel="canonical" href="@yield('canonical', url()->current())">
@@ -50,14 +60,14 @@
 
         <header class="tb-header">
             <div class="tb-topline">
-                <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-2 text-xs font-semibold text-[#1F446F]/80">
+                <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-2 text-xs font-semibold text-[#1F446F]">
                     <div>Embedded automation studio for production-grade control, traceability, and measurable uptime.</div>
                     <a href="{{ route('contact') }}" class="hidden tb-mini-link md:inline-flex">Start technical discussion</a>
                 </div>
             </div>
 
             <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4">
-                <a href="{{ route('home') }}" class="flex items-center gap-3 rounded-xl border border-white/70 bg-white/75 px-3 py-2 shadow-sm" aria-label="{{ config('twinbot.site.domain') }}">
+                <a href="{{ route('home') }}" class="flex items-center gap-3 rounded-xl border border-[#E0C4A4] bg-white px-3 py-2 shadow-sm" aria-label="{{ config('twinbot.site.domain') }}">
                     <img src="{{ asset(config('twinbot.assets.logo')) }}" alt="{{ config('twinbot.site.name') }}" class="h-10 w-auto" />
                 </a>
 
@@ -73,7 +83,7 @@
 
                 <div class="flex items-center gap-3">
                     <a href="{{ route('contact') }}" class="hidden md:inline-flex btn btn-primary">Book Consultation</a>
-                    <button id="tb-menu-toggle" type="button" class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#BCD4EA] bg-white/90 text-[#1C3D68]" aria-label="Open menu" aria-expanded="false">
+                    <button id="tb-menu-toggle" type="button" class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#E3CBB0] bg-white text-[#1C3D68]" aria-label="Open menu" aria-expanded="false">
                         <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                             <path d="M4 7h16M4 12h16M4 17h16"></path>
                         </svg>
@@ -81,7 +91,7 @@
                 </div>
             </div>
 
-            <div id="tb-mobile-nav" class="hidden border-t border-[#D4E4F2] bg-white/95 md:hidden">
+            <div id="tb-mobile-nav" class="hidden border-t border-[#E4CCB1] bg-white md:hidden">
                 <div class="mx-auto max-w-6xl px-4 py-4">
                     <nav class="flex flex-col gap-2 text-sm font-semibold text-[#2C4D74]">
                         <a href="{{ route('home') }}" class="rounded-lg px-2 py-2 hover:bg-[#F0F6FD]">Home</a>
@@ -111,7 +121,7 @@
             @yield('content')
         </main>
 
-        <footer class="relative z-10 mt-20 border-t border-[#D4E4F2] bg-white/86 backdrop-blur">
+        <footer class="relative z-10 mt-20 border-t border-[#E4CCB1] bg-white backdrop-blur">
             <div class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 md:grid-cols-4">
                 <div class="md:col-span-2">
                     <img src="{{ asset(config('twinbot.assets.logo')) }}" alt="{{ config('twinbot.site.name') }}" class="h-10 w-auto" />

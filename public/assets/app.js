@@ -5,30 +5,22 @@
     return document.getElementById(id);
   }
 
-  function luminance(rgb) {
-    const m = rgb.match(/\d+/g);
-    if (!m || m.length < 3) return 255;
-    const r = Number(m[0]);
-    const g = Number(m[1]);
-    const b = Number(m[2]);
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }
-
   function forceLightThemeIfNeeded() {
     if (!document.body || !document.body.classList.contains('tb-site')) return;
-
-    const bg = window.getComputedStyle(document.body).backgroundColor;
-    if (luminance(bg) > 85) return;
 
     if (el('tb-force-light-style')) return;
 
     const style = document.createElement('style');
     style.id = 'tb-force-light-style';
     style.textContent = `
+      html, body {
+        color-scheme: only light !important;
+        forced-color-adjust: none !important;
+      }
       html, body.tb-site {
-        color-scheme: light !important;
-        background: #f6fbff !important;
-        color: #11284a !important;
+        filter: none !important;
+        background: #fff7ef !important;
+        color: #10274b !important;
       }
       body.tb-site::before,
       .tb-background,
@@ -46,8 +38,8 @@
       .tb-logo-card,
       .tb-product-thumb {
         background: #ffffff !important;
-        color: #11284a !important;
-        border-color: #c8d9eb !important;
+        color: #10274b !important;
+        border-color: #e4cbb0 !important;
       }
       .tb-lead,
       .tb-muted,
@@ -57,16 +49,25 @@
       .tb-mini-link,
       .tb-step p,
       .tb-list li {
-        color: #4f6890 !important;
+        color: #35587e !important;
+      }
+      body.tb-site h1,
+      body.tb-site h2,
+      body.tb-site h3,
+      body.tb-site p,
+      body.tb-site li,
+      body.tb-site a,
+      body.tb-site span {
+        opacity: 1 !important;
       }
       .btn-primary {
-        background: linear-gradient(130deg, #0f7c8a, #1f6fd0 55%, #3687dc) !important;
+        background: linear-gradient(125deg, #ff6b35, #ff3d7a 48%, #1a67d4) !important;
         color: #ffffff !important;
       }
       .btn-ghost {
-        background: #f0f7ff !important;
-        color: #2c5688 !important;
-        border-color: #b7d2ea !important;
+        background: #fff8ef !important;
+        color: #254f79 !important;
+        border-color: #e0c4a4 !important;
       }
     `;
 
