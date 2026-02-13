@@ -33,6 +33,10 @@
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
+            @php
+                $tbCssVersion = file_exists(public_path('assets/app.css')) ? filemtime(public_path('assets/app.css')) : time();
+                $tbJsVersion = file_exists(public_path('assets/app.js')) ? filemtime(public_path('assets/app.js')) : time();
+            @endphp
             <script>
                 window.tailwind = window.tailwind || {};
                 window.tailwind.config = {
@@ -47,8 +51,8 @@
                 };
             </script>
             <script src="https://cdn.tailwindcss.com"></script>
-            <link rel="stylesheet" href="{{ asset('assets/app.css') }}">
-            <script src="{{ asset('assets/app.js') }}" defer></script>
+            <link rel="stylesheet" href="{{ asset('assets/app.css') }}?v={{ $tbCssVersion }}">
+            <script src="{{ asset('assets/app.js') }}?v={{ $tbJsVersion }}" defer></script>
         @endif
     </head>
     <body class="tb-site min-h-screen antialiased">
