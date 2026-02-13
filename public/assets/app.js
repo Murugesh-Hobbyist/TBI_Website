@@ -135,6 +135,7 @@
     mode: 'tb.assistant.mode',
     voiceActive: 'tb.assistant.voiceActive',
     log: 'tb.assistant.log',
+    pendingNavLabel: 'tb.assistant.pendingNavLabel',
   };
 
   function storeGet(key) {
@@ -371,6 +372,23 @@
       state.recognitionRunning = false;
     };
 
+    const startRecognitionNow = function () {
+      if (!state.recognition || state.recognitionRunning || !shouldContinueVoice() || state.processingVoice || state.speaking) {
+        return false;
+      }
+
+      try {
+        state.recognition.start();
+        return true;
+      } catch (e) {
+        const msg = String((e && e.message) || e || '').toLowerCase();
+        if (msg.indexOf('already') === -1) {
+          setVoiceStatus('Tap Start voice to continue.');
+        }
+        return false;
+      }
+    };
+
     const scheduleRecognitionRestart = function (delayMs) {
       if (!state.recognition) return;
 
@@ -383,14 +401,7 @@
           return;
         }
 
-        try {
-          state.recognition.start();
-        } catch (e) {
-          const msg = String((e && e.message) || e || '').toLowerCase();
-          if (msg.indexOf('already') === -1) {
-            setVoiceStatus('Tap Start voice to continue.');
-          }
-        }
+        startRecognitionNow();
       }, typeof delayMs === 'number' ? delayMs : 250);
     };
 
@@ -412,7 +423,7 @@
       }
     };
 
-    const startVoiceConversation = function (silentMessage) {
+    const startVoiceConversation = function (silentMessage, immediateStart) {
       if (!SpeechRecognitionCtor) {
         state.voiceActive = false;
         storeSet(assistantStore.voiceActive, '0');
@@ -430,7 +441,14 @@
         appendLog('system', 'Voice mode enabled. I will keep listening until you stop voice mode.');
       }
 
-      scheduleRecognitionRestart(100);
+      if (immediateStart) {
+        const started = startRecognitionNow();
+        if (!started) {
+          scheduleRecognitionRestart(120);
+        }
+      } else {
+        scheduleRecognitionRestart(100);
+      }
     };
 
     const maybeSpeak = async function (text) {
@@ -438,7 +456,7 @@
 
       const speakWithBrowserVoice = async function () {
         if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
-          return;
+          return false;
         }
 
         await new Promise(function (resolve) {
@@ -452,7 +470,15 @@
           window.speechSynthesis.cancel();
           window.speechSynthesis.speak(utterance);
         });
+        return true;
       };
+
+      if (state.mode === 'voice') {
+        const spokenByBrowser = await speakWithBrowserVoice();
+        if (spokenByBrowser) {
+          return;
+        }
+      }
 
       const audioBlob = await assistantSpeak(text);
       if (!audioBlob) {
@@ -505,22 +531,26 @@
       }
     };
 
-    const runAssistantAction = function (action) {
+    const runAssistantAction = async function (action) {
       if (!action || action.type !== 'navigate' || !action.url) return false;
 
-      const openingText = 'Opening ' + (action.label || 'requested page') + '...';
+      const label = action.label || 'requested page';
+      const openingText = 'Switching to ' + label + '.';
       if (state.mode === 'voice') {
         setVoiceStatus(openingText);
+        await maybeSpeak(openingText);
       } else {
         appendLog('system', openingText);
       }
+
       storeSet(assistantStore.open, '1');
       storeSet(assistantStore.mode, state.mode);
       storeSet(assistantStore.voiceActive, state.voiceActive ? '1' : '0');
+      storeSet(assistantStore.pendingNavLabel, String(label));
 
       setTimeout(function () {
         window.location.assign(action.url);
-      }, 450);
+      }, state.mode === 'voice' ? 180 : 450);
 
       return true;
     };
@@ -540,7 +570,7 @@
         appendLog('assistant', reply || '(no response)');
       }
 
-      const didNavigate = runAssistantAction(result ? result.action : null);
+      const didNavigate = await runAssistantAction(result ? result.action : null);
       if (!didNavigate && opts.speakReply && reply) {
         await maybeSpeak(reply);
       }
@@ -563,7 +593,7 @@
       if (state.mode === 'chat') {
         stopVoiceConversation(false);
       } else if (state.voiceActive) {
-        startVoiceConversation(true);
+        startVoiceConversation(true, false);
       } else if (SpeechRecognitionCtor) {
         setVoiceStatus('Voice mode ready. Tap Start voice.');
       } else {
@@ -662,7 +692,7 @@
       const wasActive = state.voiceActive;
       state.voiceActive = false;
       applyMode('voice');
-      startVoiceConversation(wasActive);
+      startVoiceConversation(wasActive, true);
       setPanelOpen(true);
     });
     voiceToggleBtn.addEventListener('click', function () {
@@ -674,7 +704,7 @@
       if (state.voiceActive) {
         stopVoiceConversation(true);
       } else {
-        startVoiceConversation(false);
+        startVoiceConversation(false, true);
       }
     });
 
@@ -801,6 +831,28 @@
 
     if (state.mode === 'voice' && state.voiceActive) {
       setPanelOpen(true);
+    }
+
+    const pendingNavLabel = storeGet(assistantStore.pendingNavLabel);
+    if (pendingNavLabel) {
+      storeSet(assistantStore.pendingNavLabel, '');
+      const switchedText = 'Switched to ' + pendingNavLabel + '.';
+
+      if (state.mode === 'voice' && state.voiceActive) {
+        setVoiceStatus(switchedText);
+        setTimeout(function () {
+          maybeSpeak(switchedText)
+            .catch(function () {})
+            .finally(function () {
+              if (shouldContinueVoice() && !state.speaking) {
+                setVoiceStatus('Listening...');
+                scheduleRecognitionRestart(260);
+              }
+            });
+        }, 180);
+      } else {
+        appendLog('system', switchedText);
+      }
     }
   }
 
