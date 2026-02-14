@@ -34,6 +34,8 @@ class AssistantController extends Controller
             $instructions = trim((string) config('assistant.system_prompt'));
             $instructions .= "\n- Prefer TwinBot-specific answers with concrete details from Context (products, services, pricing approach, deployments, and contact channels).";
             $instructions .= "\n- If user asks a general technical term (for example API, IIoT, PLC, MQTT), answer clearly in plain language and relate it to TwinBot when useful.";
+            $instructions .= "\n- Follow the user's exact intent; do not drift to unrelated details.";
+            $instructions .= "\n- If the request appears unclear or transcription-like noise, ask one short clarification question.";
             $instructions .= "\n- Scroll commands are supported: scroll down/up, scroll to top, scroll to bottom.";
             if ($assistantAction) {
                 $instructions .= "\n- If an action is requested (navigate or scroll), confirm briefly and continue helping.";
@@ -89,12 +91,16 @@ class AssistantController extends Controller
             ]);
 
             $file = $request->file('audio');
+            $transcribeLanguage = trim((string) config('assistant.transcribe_language', 'en'));
+            $transcribePrompt = trim((string) config('assistant.transcribe_prompt', ''));
 
             $resp = $openai->audioTranscribe([
                 'model' => (string) config('assistant.transcribe_model'),
                 'file_path' => $file->getRealPath(),
                 'filename' => $file->getClientOriginalName() ?: 'audio.webm',
                 'mime' => $file->getMimeType() ?: 'application/octet-stream',
+                'language' => $transcribeLanguage !== '' ? $transcribeLanguage : null,
+                'prompt' => $transcribePrompt !== '' ? $transcribePrompt : null,
             ]);
 
             return response()->json([

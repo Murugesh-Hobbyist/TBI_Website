@@ -235,9 +235,9 @@ import './bootstrap';
     };
   }
 
-  async function assistantTranscribe(blob) {
+  async function assistantTranscribe(blob, filename) {
     const fd = new FormData();
-    fd.append('audio', blob, 'voice.webm');
+    fd.append('audio', blob, filename || 'voice.webm');
 
     const res = await fetch('/api/assistant/transcribe', { method: 'POST', body: fd });
     const json = await res.json().catch(function () {
@@ -300,6 +300,7 @@ import './bootstrap';
 
     const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
     const IS_MOBILE = /android|iphone|ipad|ipod|mobile/i.test(String(navigator.userAgent || '').toLowerCase());
+    const RECOGNITION_LANG = 'en-IN';
     const VOICE_RATE = 1.35;
     const VOICE_PITCH = 0.96;
     const OPENAI_VOICE = 'onyx';
@@ -348,6 +349,50 @@ import './bootstrap';
 
     const setVoiceStatus = function (text) {
       voiceStatus.textContent = text;
+    };
+
+    const normalizeUtterance = function (rawText) {
+      return String(rawText || '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+
+    const isLikelyNoisyUtterance = function (rawText) {
+      const text = normalizeUtterance(rawText);
+      if (!text) return false;
+      if (text.indexOf('\uFFFD') >= 0) return true;
+      if (text.length > 220) return true;
+
+      const chars = Array.from(text);
+      if (chars.length >= 10) {
+        const nonAscii = chars.filter(function (ch) {
+          return ch.charCodeAt(0) > 127;
+        }).length;
+        if (nonAscii / chars.length > 0.26) {
+          return true;
+        }
+      }
+
+      const words = text
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(function (w) {
+          return w.length > 1;
+        });
+
+      if (words.length >= 6) {
+        const freq = {};
+        let top = 0;
+        words.forEach(function (w) {
+          freq[w] = (freq[w] || 0) + 1;
+          if (freq[w] > top) top = freq[w];
+        });
+        if (top / words.length > 0.58) {
+          return true;
+        }
+      }
+
+      return false;
     };
 
     const applyModeButtonState = function (button, isActive) {
@@ -975,7 +1020,8 @@ import './bootstrap';
       state.recognition = new SpeechRecognitionCtor();
       state.recognition.continuous = true;
       state.recognition.interimResults = true;
-      state.recognition.lang = navigator.language || 'en-US';
+      state.recognition.maxAlternatives = 1;
+      state.recognition.lang = RECOGNITION_LANG;
 
       state.recognition.onstart = function () {
         state.recognitionRunning = true;
@@ -992,6 +1038,8 @@ import './bootstrap';
 
         let transcript = '';
         let interimTranscript = '';
+        let confidenceSum = 0;
+        let confidenceCount = 0;
         for (let i = event.resultIndex; i < event.results.length; i += 1) {
           const result = event.results[i];
           if (!result[0] || !result[0].transcript) {
@@ -999,13 +1047,21 @@ import './bootstrap';
           }
           if (result.isFinal) {
             transcript += result[0].transcript + ' ';
+            if (typeof result[0].confidence === 'number') {
+              confidenceSum += result[0].confidence;
+              confidenceCount += 1;
+            }
           } else {
             interimTranscript += result[0].transcript + ' ';
           }
         }
 
-        const finalText = transcript.trim();
+        const finalText = normalizeUtterance(transcript);
         const interimText = interimTranscript.trim();
+        const confidence = confidenceCount > 0 ? confidenceSum / confidenceCount : 1;
+        const lowConfidence = confidence < 0.34 && finalText.split(/\s+/).length >= 2;
+        const noisyTranscript = isLikelyNoisyUtterance(finalText);
+        const shouldReject = Boolean(finalText) && (lowConfidence || noisyTranscript);
 
         if (state.speaking) {
           // Mobile browsers can fail with dual mic capture; use recognizer text as fallback barge-in signal.
@@ -1019,7 +1075,7 @@ import './bootstrap';
                 (currentSpoken.indexOf(normalized) >= 0 ||
                   (currentPrefix !== '' && normalized.indexOf(currentPrefix) >= 0)));
 
-            if (!looksLikeEcho) {
+            if (!looksLikeEcho && !shouldReject) {
               state.processingVoice = true;
               stopCurrentPlayback();
               setVoiceStatus('Thinking...');
@@ -1041,6 +1097,13 @@ import './bootstrap';
                     }
                   }
                 });
+            } else if (shouldReject) {
+              setVoiceStatus('I could not catch that clearly. Please repeat.');
+              setTimeout(function () {
+                if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
+                  setVoiceStatus('Listening...');
+                }
+              }, 800);
             } else if (interimText && shouldContinueVoice()) {
               setVoiceStatus('Speaking...');
             }
@@ -1049,6 +1112,15 @@ import './bootstrap';
         }
 
         if (!finalText) return;
+        if (shouldReject) {
+          setVoiceStatus('I could not catch that clearly. Please repeat in English.');
+          setTimeout(function () {
+            if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
+              setVoiceStatus('Listening...');
+            }
+          }, 900);
+          return;
+        }
 
         const now = Date.now();
         if (state.lastVoiceText === finalText && now - state.lastVoiceAt < 800) {
@@ -1155,6 +1227,9 @@ import './bootstrap';
 
     let recorder = null;
     let chunks = [];
+    let recordingMimeType = 'audio/webm';
+    let recordingFilename = 'voice.webm';
+    let recordingStartedAt = 0;
 
     const startRecording = async function () {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -1162,24 +1237,63 @@ import './bootstrap';
         return;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+        },
+      });
       chunks = [];
-      recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const preferredMimes = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus'];
+      let selectedMime = '';
+      if (window.MediaRecorder && typeof window.MediaRecorder.isTypeSupported === 'function') {
+        for (let i = 0; i < preferredMimes.length; i += 1) {
+          if (window.MediaRecorder.isTypeSupported(preferredMimes[i])) {
+            selectedMime = preferredMimes[i];
+            break;
+          }
+        }
+      }
+
+      recordingMimeType = selectedMime || 'audio/webm';
+      if (recordingMimeType.indexOf('mp4') >= 0) {
+        recordingFilename = 'voice.m4a';
+      } else if (recordingMimeType.indexOf('ogg') >= 0) {
+        recordingFilename = 'voice.ogg';
+      } else {
+        recordingFilename = 'voice.webm';
+      }
+
+      recorder = selectedMime ? new MediaRecorder(stream, { mimeType: selectedMime }) : new MediaRecorder(stream);
       recorder.ondataavailable = function (e) {
-        chunks.push(e.data);
+        if (e.data && e.data.size > 0) {
+          chunks.push(e.data);
+        }
       };
       recorder.onstop = async function () {
         stream.getTracks().forEach(function (t) {
           t.stop();
         });
 
-        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const durationMs = Date.now() - recordingStartedAt;
+        if (durationMs < 280) {
+          appendLog('assistant', 'Voice input was too short. Hold and speak a bit longer.');
+          return;
+        }
+
+        const blob = new Blob(chunks, { type: recordingMimeType });
 
         try {
           appendLog('user', '[voice message]');
-          const text = await assistantTranscribe(blob);
-          if (String(text).trim() === '') {
+          const text = normalizeUtterance(await assistantTranscribe(blob, recordingFilename));
+          if (text === '') {
             appendLog('assistant', 'I could not transcribe that. Try again.');
+            return;
+          }
+          if (isLikelyNoisyUtterance(text)) {
+            appendLog('assistant', 'I could not catch that clearly. Please speak again in a short English sentence.');
             return;
           }
 
@@ -1189,6 +1303,7 @@ import './bootstrap';
         }
       };
 
+      recordingStartedAt = Date.now();
       recorder.start();
       pttBtn.textContent = 'Listening...';
     };

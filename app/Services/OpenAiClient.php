@@ -29,7 +29,7 @@ class OpenAiClient
     }
 
     /**
-     * @param array{model:string,file_path:string,filename:string,mime:string} $payload
+     * @param array{model:string,file_path:string,filename:string,mime:string,language?:string|null,prompt?:string|null} $payload
      */
     public function audioTranscribe(array $payload): array
     {
@@ -38,12 +38,20 @@ class OpenAiClient
             throw new RuntimeException('Failed to read audio file for transcription.');
         }
 
+        $request = [
+            'model' => $payload['model'],
+        ];
+        if (!empty($payload['language']) && is_string($payload['language'])) {
+            $request['language'] = $payload['language'];
+        }
+        if (!empty($payload['prompt']) && is_string($payload['prompt'])) {
+            $request['prompt'] = $payload['prompt'];
+        }
+
         $resp = $this->client()
             ->acceptJson()
             ->attach('file', $bytes, $payload['filename'])
-            ->post('/v1/audio/transcriptions', [
-                'model' => $payload['model'],
-            ]);
+            ->post('/v1/audio/transcriptions', $request);
 
         return $this->decodeJsonOrThrow($resp->status(), $resp->body());
     }
