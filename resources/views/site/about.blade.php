@@ -71,12 +71,12 @@
             ],
             [
                 'name' => 'Lingappan',
-                'role' => 'Co-Founder',
+                'role' => 'Hardware Engineer',
                 'image' => 'twinbot/about/leadership/lingappan.png',
             ],
             [
                 'name' => 'Karthikeyan',
-                'role' => 'Seed Investor',
+                'role' => 'Founder',
                 'image' => 'twinbot/about/leadership/karthikeyan.png',
             ],
         ];
