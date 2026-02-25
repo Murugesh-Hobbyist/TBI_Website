@@ -1,4 +1,3 @@
-﻿
 (function () {
   'use strict';
 
@@ -274,6 +273,8 @@
     const voiceToggleBtn = el('assistant-voice-toggle');
     const stopSpeakBtn = el('assistant-stop-speech');
     const voiceStatus = el('assistant-voice-status');
+    const voiceLastUser = el('assistant-voice-last-user');
+    const voiceLastAssistant = el('assistant-voice-last-assistant');
     const log = el('assistant-log');
     const input = el('assistant-input');
     const sendBtn = el('assistant-send');
@@ -299,10 +300,20 @@
 
     const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
     const IS_MOBILE = /android|iphone|ipad|ipod|mobile/i.test(String(navigator.userAgent || '').toLowerCase());
-    const RECOGNITION_LANG = 'en-IN';
+    const preferredLang =
+      (Array.isArray(navigator.languages) && navigator.languages.length ? navigator.languages[0] : navigator.language) ||
+      'en-US';
+    const RECOGNITION_LANG = /^en\b/i.test(String(preferredLang || '')) ? preferredLang : 'en-US';
     const VOICE_RATE = 1.35;
     const VOICE_PITCH = 0.96;
     const OPENAI_VOICE = 'onyx';
+    const PREFER_OPENAI_AUDIO_IN_VOICE_MODE = true;
+    const USE_RECORDER_VOICE_MODE = true;
+    const INTERIM_COMMIT_DELAY_MS = IS_MOBILE ? 1700 : 1200;
+    const VOICE_DUPLICATE_WINDOW_MS = 1500;
+    const VOICE_SEGMENT_MAX_MS = 8000;
+    const VOICE_SEGMENT_MIN_MS = 450;
+    const VOICE_SILENCE_COMMIT_MS = IS_MOBILE ? 950 : 700;
     const PREFERRED_MALE_VOICE_HINTS = [
       'male',
       'man',
@@ -324,6 +335,7 @@
       voiceActive: storeGet(assistantStore.voiceActive) === '1',
       recognition: null,
       recognitionRunning: false,
+      recognitionStopExpected: false,
       recognitionRestartTimer: null,
       processingVoice: false,
       speaking: false,
@@ -341,19 +353,74 @@
       monitorNoiseFloor: 0.012,
       monitorLastInterruptAt: 0,
       currentSpokenText: '',
+      pendingInterimText: '',
+      interimCommitTimer: null,
       recognitionRetryDelayMs: IS_MOBILE ? 650 : 120,
       lastVoiceText: '',
       lastVoiceAt: 0,
+      voiceRecorderStarting: false,
+      voiceRecorderStream: null,
+      voiceRecorder: null,
+      voiceRecorderChunks: [],
+      voiceRecorderMimeType: '',
+      voiceRecorderFilename: 'voice.webm',
+      voiceRecorderSegmentStartedAt: 0,
+      voiceRecorderSpeechSeen: false,
+      voiceRecorderLastSpeechAt: 0,
+      voiceRecorderDiscardSegment: false,
+      voiceRecorderAudioContext: null,
+      voiceRecorderAnalyser: null,
+      voiceRecorderSource: null,
+      voiceRecorderData: null,
+      voiceRecorderMonitorTimer: null,
+      voiceRecorderNoiseFloor: 0.008,
     };
 
     const setVoiceStatus = function (text) {
       voiceStatus.textContent = text;
     };
 
+    const setVoiceLastUser = function (text) {
+      if (!voiceLastUser) return;
+      const value = normalizeUtterance(text);
+      voiceLastUser.textContent = value || '-';
+    };
+
+    const setVoiceLastAssistant = function (text) {
+      if (!voiceLastAssistant) return;
+      const value = normalizeUtterance(text);
+      voiceLastAssistant.textContent = value || '-';
+    };
+
     const normalizeUtterance = function (rawText) {
       return String(rawText || '')
         .replace(/\s+/g, ' ')
         .trim();
+    };
+
+    const getPreferredRecordingFormat = function () {
+      const preferredMimes = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus'];
+      let selectedMime = '';
+      if (window.MediaRecorder && typeof window.MediaRecorder.isTypeSupported === 'function') {
+        for (let i = 0; i < preferredMimes.length; i += 1) {
+          if (window.MediaRecorder.isTypeSupported(preferredMimes[i])) {
+            selectedMime = preferredMimes[i];
+            break;
+          }
+        }
+      }
+
+      let filename = 'voice.webm';
+      if (selectedMime.indexOf('mp4') >= 0) {
+        filename = 'voice.m4a';
+      } else if (selectedMime.indexOf('ogg') >= 0) {
+        filename = 'voice.ogg';
+      }
+
+      return {
+        mimeType: selectedMime || 'audio/webm',
+        filename: filename,
+      };
     };
 
     const isLikelyNoisyUtterance = function (rawText) {
@@ -498,6 +565,7 @@
 
     const stopRecognition = function () {
       if (!state.recognition || !state.recognitionRunning) return;
+      state.recognitionStopExpected = true;
       try {
         state.recognition.stop();
       } catch (e) {}
@@ -526,8 +594,16 @@
       stopCurrentPlayback();
       setVoiceStatus(shouldContinueVoice() ? 'Listening...' : 'Voice mode ready. Tap Start voice.');
 
-      if (shouldContinueVoice() && !state.processingVoice && !state.recognitionRunning) {
-        scheduleRecognitionRestart(IS_MOBILE ? 650 : 80);
+      if (shouldContinueVoice() && !state.processingVoice) {
+        if (USE_RECORDER_VOICE_MODE) {
+          if (state.voiceRecorderStream) {
+            startVoiceRecorderSegment();
+          } else {
+            startVoiceRecorderLoop().catch(function () {});
+          }
+        } else if (!state.recognitionRunning) {
+          scheduleRecognitionRestart(IS_MOBILE ? 650 : 80);
+        }
       }
 
       if (announce && wasSpeaking) {
@@ -673,6 +749,9 @@
     };
 
     const startRecognitionNow = function () {
+      if (USE_RECORDER_VOICE_MODE) {
+        return false;
+      }
       if (!state.recognition || state.recognitionRunning || !shouldContinueVoice() || state.processingVoice || state.speaking) {
         return false;
       }
@@ -691,6 +770,9 @@
     };
 
     const scheduleRecognitionRestart = function (delayMs) {
+      if (USE_RECORDER_VOICE_MODE) {
+        return;
+      }
       if (!state.recognition) return;
 
       if (state.recognitionRestartTimer) {
@@ -717,10 +799,347 @@
       }, waitMs);
     };
 
+    const clearInterimCommitTimer = function () {
+      state.pendingInterimText = '';
+      if (state.interimCommitTimer) {
+        clearTimeout(state.interimCommitTimer);
+        state.interimCommitTimer = null;
+      }
+    };
+
+    const processVoiceInput = function (rawText) {
+      if (!shouldContinueVoice() || state.processingVoice) {
+        return;
+      }
+
+      const finalText = normalizeUtterance(rawText);
+      if (!finalText) {
+        return;
+      }
+
+      if (state.speaking) {
+        return;
+      }
+
+      const now = Date.now();
+      if (state.lastVoiceText === finalText && now - state.lastVoiceAt < VOICE_DUPLICATE_WINDOW_MS) {
+        return;
+      }
+      state.lastVoiceText = finalText;
+      state.lastVoiceAt = now;
+
+      setVoiceLastUser(finalText);
+      state.processingVoice = true;
+      setVoiceStatus('Thinking...');
+
+      submitMessage(finalText, {
+        speakReply: true,
+      })
+        .catch(function (e) {
+          appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
+        })
+        .finally(function () {
+          state.processingVoice = false;
+          if (shouldContinueVoice() && !state.speaking) {
+            setVoiceStatus('Listening...');
+            if (USE_RECORDER_VOICE_MODE) {
+              startVoiceRecorderSegment();
+            } else if (!state.recognitionRunning) {
+              scheduleRecognitionRestart(IS_MOBILE ? 650 : 120);
+            }
+          }
+        });
+    };
+
+    const scheduleInterimCommit = function (rawText) {
+      const text = normalizeUtterance(rawText);
+      if (!text || state.processingVoice || state.speaking) {
+        return;
+      }
+
+      state.pendingInterimText = text;
+
+      if (state.interimCommitTimer) {
+        clearTimeout(state.interimCommitTimer);
+      }
+
+      state.interimCommitTimer = setTimeout(function () {
+        const pending = normalizeUtterance(state.pendingInterimText);
+        clearInterimCommitTimer();
+        if (!pending || !shouldContinueVoice() || state.processingVoice || state.speaking) {
+          return;
+        }
+
+        processVoiceInput(pending);
+      }, INTERIM_COMMIT_DELAY_MS);
+    };
+
+    const stopVoiceRecorderLoop = function (discardSegment, keepStream) {
+      if (state.voiceRecorderMonitorTimer) {
+        clearInterval(state.voiceRecorderMonitorTimer);
+        state.voiceRecorderMonitorTimer = null;
+      }
+
+      if (discardSegment) {
+        state.voiceRecorderDiscardSegment = true;
+      }
+
+      if (state.voiceRecorder && state.voiceRecorder.state !== 'inactive') {
+        try {
+          state.voiceRecorder.stop();
+        } catch (e) {}
+      }
+      state.voiceRecorder = null;
+      state.voiceRecorderChunks = [];
+      state.voiceRecorderSpeechSeen = false;
+      state.voiceRecorderLastSpeechAt = 0;
+
+      if (keepStream) {
+        return;
+      }
+
+      if (state.voiceRecorderSource && typeof state.voiceRecorderSource.disconnect === 'function') {
+        try {
+          state.voiceRecorderSource.disconnect();
+        } catch (e) {}
+      }
+      state.voiceRecorderSource = null;
+      state.voiceRecorderAnalyser = null;
+      state.voiceRecorderData = null;
+
+      if (state.voiceRecorderAudioContext && typeof state.voiceRecorderAudioContext.close === 'function') {
+        try {
+          state.voiceRecorderAudioContext.close();
+        } catch (e) {}
+      }
+      state.voiceRecorderAudioContext = null;
+
+      if (state.voiceRecorderStream) {
+        try {
+          state.voiceRecorderStream.getTracks().forEach(function (track) {
+            track.stop();
+          });
+        } catch (e) {}
+      }
+      state.voiceRecorderStream = null;
+      state.voiceRecorderStarting = false;
+    };
+
+    const startVoiceRecorderSegment = function () {
+      if (
+        !USE_RECORDER_VOICE_MODE ||
+        !shouldContinueVoice() ||
+        !state.voiceRecorderStream ||
+        state.processingVoice ||
+        state.speaking ||
+        state.voiceRecorder ||
+        state.voiceRecorderStarting
+      ) {
+        return;
+      }
+
+      state.voiceRecorderDiscardSegment = false;
+      state.voiceRecorderChunks = [];
+      state.voiceRecorderSpeechSeen = false;
+      state.voiceRecorderLastSpeechAt = 0;
+      state.voiceRecorderSegmentStartedAt = Date.now();
+
+      const recorder = state.voiceRecorderMimeType
+        ? new MediaRecorder(state.voiceRecorderStream, { mimeType: state.voiceRecorderMimeType })
+        : new MediaRecorder(state.voiceRecorderStream);
+      state.voiceRecorder = recorder;
+
+      recorder.ondataavailable = function (event) {
+        if (event.data && event.data.size > 0) {
+          state.voiceRecorderChunks.push(event.data);
+        }
+      };
+
+      recorder.onerror = function () {
+        state.voiceRecorder = null;
+        if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
+          setTimeout(startVoiceRecorderSegment, 220);
+        }
+      };
+
+      recorder.onstop = async function () {
+        if (state.voiceRecorderMonitorTimer) {
+          clearInterval(state.voiceRecorderMonitorTimer);
+          state.voiceRecorderMonitorTimer = null;
+        }
+
+        state.voiceRecorder = null;
+        const segmentDuration = Date.now() - state.voiceRecorderSegmentStartedAt;
+        const discardSegment = state.voiceRecorderDiscardSegment;
+        state.voiceRecorderDiscardSegment = false;
+        const chunks = state.voiceRecorderChunks.slice();
+        state.voiceRecorderChunks = [];
+
+        let submittedFromSegment = false;
+        if (!discardSegment && chunks.length) {
+          const blob = new Blob(chunks, { type: state.voiceRecorderMimeType || 'audio/webm' });
+          const hadSpeech = state.voiceRecorderSpeechSeen || blob.size > 1200;
+
+          if (hadSpeech && segmentDuration >= VOICE_SEGMENT_MIN_MS && blob.size > 500) {
+            try {
+              const transcript = normalizeUtterance(await assistantTranscribe(blob, state.voiceRecorderFilename));
+              if (transcript !== '') {
+                submittedFromSegment = true;
+                processVoiceInput(transcript);
+              }
+            } catch (e) {
+              appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
+            }
+          }
+        }
+
+        if (!submittedFromSegment && shouldContinueVoice() && !state.processingVoice && !state.speaking) {
+          setVoiceStatus('Listening...');
+          setTimeout(startVoiceRecorderSegment, 120);
+        }
+      };
+
+      recorder.start(250);
+      setVoiceStatus('Listening...');
+
+      if (state.voiceRecorderAnalyser && state.voiceRecorderData) {
+        state.voiceRecorderMonitorTimer = setInterval(function () {
+          if (!state.voiceRecorder || state.voiceRecorder.state !== 'recording') {
+            return;
+          }
+
+          const now = Date.now();
+          const segmentAge = now - state.voiceRecorderSegmentStartedAt;
+          state.voiceRecorderAnalyser.getByteTimeDomainData(state.voiceRecorderData);
+
+          let energy = 0;
+          for (let i = 0; i < state.voiceRecorderData.length; i += 1) {
+            const sample = (state.voiceRecorderData[i] - 128) / 128;
+            energy += sample * sample;
+          }
+          const rms = Math.sqrt(energy / state.voiceRecorderData.length);
+
+          if (!state.voiceRecorderSpeechSeen) {
+            state.voiceRecorderNoiseFloor = state.voiceRecorderNoiseFloor * 0.92 + rms * 0.08;
+          }
+
+          const threshold = Math.max(0.008, state.voiceRecorderNoiseFloor * 1.35);
+          if (rms > threshold) {
+            state.voiceRecorderSpeechSeen = true;
+            state.voiceRecorderLastSpeechAt = now;
+          }
+
+          if (
+            state.voiceRecorderSpeechSeen &&
+            segmentAge >= VOICE_SEGMENT_MIN_MS &&
+            now - state.voiceRecorderLastSpeechAt >= VOICE_SILENCE_COMMIT_MS
+          ) {
+            try {
+              state.voiceRecorder.stop();
+            } catch (e) {}
+            return;
+          }
+
+          if (!state.voiceRecorderSpeechSeen && segmentAge >= 2600) {
+            try {
+              state.voiceRecorder.stop();
+            } catch (e) {}
+            return;
+          }
+
+          if (segmentAge >= VOICE_SEGMENT_MAX_MS) {
+            try {
+              state.voiceRecorder.stop();
+            } catch (e) {}
+          }
+        }, 90);
+      } else {
+        state.voiceRecorderMonitorTimer = setInterval(function () {
+          if (!state.voiceRecorder || state.voiceRecorder.state !== 'recording') {
+            return;
+          }
+          if (Date.now() - state.voiceRecorderSegmentStartedAt >= VOICE_SEGMENT_MAX_MS) {
+            try {
+              state.voiceRecorder.stop();
+            } catch (e) {}
+          }
+        }, 120);
+      }
+    };
+
+    const startVoiceRecorderLoop = async function () {
+      if (
+        !USE_RECORDER_VOICE_MODE ||
+        !shouldContinueVoice() ||
+        state.voiceRecorderStarting ||
+        state.voiceRecorderStream ||
+        state.processingVoice ||
+        state.speaking
+      ) {
+        return;
+      }
+
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia ||
+        typeof window.MediaRecorder !== 'function'
+      ) {
+        stopVoiceConversation(false);
+        setVoiceStatus('Continuous voice not supported in this browser.');
+        appendLog('system', 'Continuous voice mode is not supported in this browser. Use Chat mode or Hold to talk.');
+        return;
+      }
+
+      state.voiceRecorderStarting = true;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1,
+          },
+        });
+
+        const format = getPreferredRecordingFormat();
+        state.voiceRecorderMimeType = format.mimeType;
+        state.voiceRecorderFilename = format.filename;
+        state.voiceRecorderStream = stream;
+        state.voiceRecorderNoiseFloor = 0.008;
+
+        const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextCtor) {
+          const audioContext = new AudioContextCtor();
+          if (audioContext.state === 'suspended' && typeof audioContext.resume === 'function') {
+            try {
+              await audioContext.resume();
+            } catch (e) {}
+          }
+          const source = audioContext.createMediaStreamSource(stream);
+          const analyser = audioContext.createAnalyser();
+          analyser.fftSize = 1024;
+          source.connect(analyser);
+          state.voiceRecorderAudioContext = audioContext;
+          state.voiceRecorderSource = source;
+          state.voiceRecorderAnalyser = analyser;
+          state.voiceRecorderData = new Uint8Array(analyser.fftSize);
+        }
+
+        startVoiceRecorderSegment();
+      } catch (e) {
+        appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
+        stopVoiceRecorderLoop(true, false);
+      } finally {
+        state.voiceRecorderStarting = false;
+      }
+    };
+
     const stopVoiceConversation = function (announce) {
       state.voiceActive = false;
       storeSet(assistantStore.voiceActive, '0');
       state.currentSpokenText = '';
+      clearInterimCommitTimer();
+      state.recognitionStopExpected = false;
       state.recognitionRetryDelayMs = IS_MOBILE ? 650 : 120;
 
       if (state.recognitionRestartTimer) {
@@ -729,10 +1148,13 @@
       }
 
       stopRecognition();
+      stopVoiceRecorderLoop(true, false);
       stopCurrentPlayback();
       stopInterruptMonitor();
       voiceToggleBtn.textContent = 'Start voice';
       setVoiceStatus('Voice mode idle.');
+      setVoiceLastUser('');
+      setVoiceLastAssistant('');
 
       if (announce) {
         appendLog('system', 'Voice mode disabled.');
@@ -740,7 +1162,13 @@
     };
 
     const startVoiceConversation = function (silentMessage, immediateStart) {
-      if (!SpeechRecognitionCtor) {
+      const hasSpeechRecognition = Boolean(SpeechRecognitionCtor);
+      const hasRecorderSupport =
+        Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) &&
+        typeof window.MediaRecorder === 'function';
+      const isSupported = USE_RECORDER_VOICE_MODE ? hasRecorderSupport : hasSpeechRecognition;
+
+      if (!isSupported) {
         state.voiceActive = false;
         storeSet(assistantStore.voiceActive, '0');
         setVoiceStatus('Continuous voice not supported in this browser.');
@@ -758,9 +1186,20 @@
         appendLog('system', 'Voice mode enabled. I will keep listening until you stop voice mode.');
       }
 
-      startInterruptMonitor().catch(function () {});
+      clearInterimCommitTimer();
+      setVoiceLastUser('');
+      setVoiceLastAssistant('');
+      stopInterruptMonitor();
 
-      if (immediateStart) {
+      if (USE_RECORDER_VOICE_MODE) {
+        if (immediateStart) {
+          startVoiceRecorderLoop().catch(function () {});
+        } else {
+          setTimeout(function () {
+            startVoiceRecorderLoop().catch(function () {});
+          }, IS_MOBILE ? 450 : 40);
+        }
+      } else if (immediateStart) {
         const started = startRecognitionNow();
         if (!started) {
           scheduleRecognitionRestart(IS_MOBILE ? 650 : 40);
@@ -878,19 +1317,25 @@
       };
 
       stopCurrentPlayback();
+      if (USE_RECORDER_VOICE_MODE) {
+        stopVoiceRecorderLoop(true, true);
+      }
+      setVoiceLastAssistant(text);
       state.speaking = true;
       state.speakingStartedAt = Date.now();
       state.currentSpokenText = String(text || '').toLowerCase();
+      if (state.recognitionRunning) {
+        stopRecognition();
+      }
       if (state.mode === 'voice') {
         setVoiceStatus('Speaking...');
       }
 
       try {
-        // Voice mode prioritizes browser TTS for low latency; falls back to OpenAI audio.
-        if (state.mode === 'voice') {
-          const browserSuccess = await speakWithBrowserVoice();
-          if (!browserSuccess) {
-            await speakWithServerVoice();
+        if (state.mode === 'voice' && PREFER_OPENAI_AUDIO_IN_VOICE_MODE) {
+          const serverSuccess = await speakWithServerVoice();
+          if (!serverSuccess) {
+            await speakWithBrowserVoice();
           }
         } else {
           const browserSuccess = await speakWithBrowserVoice();
@@ -902,8 +1347,16 @@
         state.speaking = false;
         state.currentSpokenText = '';
         state.playbackController = null;
-        if (shouldContinueVoice() && !state.processingVoice && !state.recognitionRunning) {
-          scheduleRecognitionRestart(IS_MOBILE ? 650 : 100);
+        if (shouldContinueVoice() && !state.processingVoice) {
+          if (USE_RECORDER_VOICE_MODE) {
+            if (state.voiceRecorderStream) {
+              startVoiceRecorderSegment();
+            } else {
+              startVoiceRecorderLoop().catch(function () {});
+            }
+          } else if (!state.recognitionRunning) {
+            scheduleRecognitionRestart(IS_MOBILE ? 650 : 100);
+          }
         }
       }
     };
@@ -914,6 +1367,7 @@
       if (action.type === 'navigate' && action.url) {
         const label = action.label || 'requested page';
         const openingText = 'Switching to ' + label + '.';
+        setVoiceLastAssistant(openingText);
         if (state.mode === 'voice') {
           setVoiceStatus(openingText);
           await maybeSpeak(openingText);
@@ -944,6 +1398,7 @@
         } else if (mode === 'bottom') {
           openingText = 'Scrolling to bottom.';
         }
+        setVoiceLastAssistant(openingText);
 
         if (state.mode === 'voice') {
           await maybeSpeak(openingText);
@@ -973,6 +1428,7 @@
       const opts = options || {};
       const msg = String(message || '').trim();
       if (!msg) return;
+      setVoiceLastUser(msg);
 
       if (opts.logUser !== false) {
         appendLog('user', msg);
@@ -980,6 +1436,7 @@
 
       const result = await assistantChat(msg);
       const reply = (result && result.text ? result.text : '').trim();
+      setVoiceLastAssistant(reply || '(no response)');
       if (opts.logAssistant !== false) {
         appendLog('assistant', reply || '(no response)');
       }
@@ -989,9 +1446,13 @@
         await maybeSpeak(reply);
       }
 
-      if (shouldContinueVoice() && !didNavigate && !state.processingVoice && !state.speaking && !state.recognitionRunning) {
+      if (shouldContinueVoice() && !didNavigate && !state.processingVoice && !state.speaking) {
         setVoiceStatus('Listening...');
-        scheduleRecognitionRestart(IS_MOBILE ? 650 : 120);
+        if (USE_RECORDER_VOICE_MODE) {
+          startVoiceRecorderSegment();
+        } else if (!state.recognitionRunning) {
+          scheduleRecognitionRestart(IS_MOBILE ? 650 : 120);
+        }
       }
     };
 
@@ -1008,22 +1469,28 @@
         stopVoiceConversation(false);
       } else if (state.voiceActive) {
         startVoiceConversation(true, false);
-      } else if (SpeechRecognitionCtor) {
+      } else if (
+        (USE_RECORDER_VOICE_MODE &&
+          Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) &&
+          typeof window.MediaRecorder === 'function') ||
+        (!USE_RECORDER_VOICE_MODE && SpeechRecognitionCtor)
+      ) {
         setVoiceStatus('Voice mode ready. Tap Start voice.');
       } else {
         setVoiceStatus('Continuous voice not supported in this browser.');
       }
     };
 
-    if (SpeechRecognitionCtor) {
+    if (!USE_RECORDER_VOICE_MODE && SpeechRecognitionCtor) {
       state.recognition = new SpeechRecognitionCtor();
-      state.recognition.continuous = true;
+      state.recognition.continuous = !IS_MOBILE;
       state.recognition.interimResults = true;
       state.recognition.maxAlternatives = 1;
       state.recognition.lang = RECOGNITION_LANG;
 
       state.recognition.onstart = function () {
         state.recognitionRunning = true;
+        state.recognitionStopExpected = false;
         state.recognitionRetryDelayMs = IS_MOBILE ? 650 : 120;
         if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
           setVoiceStatus('Listening...');
@@ -1037,8 +1504,6 @@
 
         let transcript = '';
         let interimTranscript = '';
-        let confidenceSum = 0;
-        let confidenceCount = 0;
         for (let i = event.resultIndex; i < event.results.length; i += 1) {
           const result = event.results[i];
           if (!result[0] || !result[0].transcript) {
@@ -1046,119 +1511,49 @@
           }
           if (result.isFinal) {
             transcript += result[0].transcript + ' ';
-            if (typeof result[0].confidence === 'number') {
-              confidenceSum += result[0].confidence;
-              confidenceCount += 1;
-            }
           } else {
             interimTranscript += result[0].transcript + ' ';
           }
         }
 
         const finalText = normalizeUtterance(transcript);
-        const interimText = interimTranscript.trim();
-        const confidence = confidenceCount > 0 ? confidenceSum / confidenceCount : 1;
-        const lowConfidence = confidence < 0.34 && finalText.split(/\s+/).length >= 2;
-        const noisyTranscript = isLikelyNoisyUtterance(finalText);
-        const shouldReject = Boolean(finalText) && (lowConfidence || noisyTranscript);
+        const interimText = normalizeUtterance(interimTranscript);
 
-        if (state.speaking) {
-          // Mobile browsers can fail with dual mic capture; use recognizer text as fallback barge-in signal.
-          if (IS_MOBILE && finalText) {
-            const normalized = finalText.toLowerCase();
-            const currentSpoken = String(state.currentSpokenText || '');
-            const currentPrefix = currentSpoken.split(' ').slice(0, 6).join(' ');
-            const looksLikeEcho =
-              normalized.length < 4 ||
-              (currentSpoken !== '' &&
-                (currentSpoken.indexOf(normalized) >= 0 ||
-                  (currentPrefix !== '' && normalized.indexOf(currentPrefix) >= 0)));
+        if (!finalText && interimText && !state.speaking) {
+          setVoiceStatus('Listening...');
+          setVoiceLastUser(interimText + ' ...');
+          scheduleInterimCommit(interimText);
+        }
 
-            if (!looksLikeEcho && !shouldReject) {
-              state.processingVoice = true;
-              stopCurrentPlayback();
-              setVoiceStatus('Thinking...');
-
-              submitMessage(finalText, {
-                speakReply: true,
-                logUser: false,
-                logAssistant: false,
-              })
-                .catch(function (e) {
-                  appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
-                })
-                .finally(function () {
-                  state.processingVoice = false;
-                  if (shouldContinueVoice() && !state.speaking) {
-                    setVoiceStatus('Listening...');
-                    if (!state.recognitionRunning) {
-                      scheduleRecognitionRestart(IS_MOBILE ? 650 : 120);
-                    }
-                  }
-                });
-            } else if (shouldReject) {
-              setVoiceStatus('I could not catch that clearly. Please repeat.');
-              setTimeout(function () {
-                if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
-                  setVoiceStatus('Listening...');
-                }
-              }, 800);
-            } else if (interimText && shouldContinueVoice()) {
-              setVoiceStatus('Speaking...');
-            }
-          }
+        if (!finalText) {
           return;
         }
 
-        if (!finalText) return;
-        if (shouldReject) {
-          setVoiceStatus('I could not catch that clearly. Please repeat in English.');
-          setTimeout(function () {
-            if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
-              setVoiceStatus('Listening...');
-            }
-          }, 900);
-          return;
-        }
-
-        const now = Date.now();
-        if (state.lastVoiceText === finalText && now - state.lastVoiceAt < 800) {
-          return;
-        }
-        state.lastVoiceText = finalText;
-        state.lastVoiceAt = now;
-
-        state.processingVoice = true;
-        setVoiceStatus('Thinking...');
-
-        submitMessage(finalText, {
-          speakReply: true,
-          logUser: false,
-          logAssistant: false,
-        })
-          .catch(function (e) {
-            appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
-          })
-          .finally(function () {
-            state.processingVoice = false;
-            if (shouldContinueVoice() && !state.speaking) {
-              setVoiceStatus('Listening...');
-              if (!state.recognitionRunning) {
-                scheduleRecognitionRestart(IS_MOBILE ? 650 : 120);
-              }
-            }
-          });
+        clearInterimCommitTimer();
+        processVoiceInput(finalText);
       };
 
       state.recognition.onerror = function (event) {
         state.recognitionRunning = false;
+        const error = (event && event.error) || 'unknown';
+        const expectedStop = state.recognitionStopExpected;
+
+        if (expectedStop && error === 'aborted') {
+          return;
+        }
+
         if (!shouldContinueVoice()) return;
 
-        const error = (event && event.error) || 'unknown';
         if (error === 'not-allowed' || error === 'service-not-allowed') {
           stopVoiceConversation(false);
           setVoiceStatus('Microphone permission blocked. Allow mic and start voice.');
           appendLog('system', 'Microphone permission is blocked. Please allow microphone access and start voice again.');
+          return;
+        }
+
+        if (error === 'audio-capture') {
+          setVoiceStatus('Microphone device not found. Check mic and restart voice mode.');
+          appendLog('system', 'No active microphone was detected. Connect/select a mic and start voice again.');
           return;
         }
 
@@ -1170,6 +1565,13 @@
 
       state.recognition.onend = function () {
         state.recognitionRunning = false;
+        const expectedStop = state.recognitionStopExpected;
+        state.recognitionStopExpected = false;
+
+        if (expectedStop && state.speaking) {
+          return;
+        }
+
         if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
           state.recognitionRetryDelayMs = Math.min(2600, Math.floor(state.recognitionRetryDelayMs * 1.15));
           scheduleRecognitionRestart(IS_MOBILE ? state.recognitionRetryDelayMs : 100);
@@ -1245,27 +1647,11 @@
         },
       });
       chunks = [];
-      const preferredMimes = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus'];
-      let selectedMime = '';
-      if (window.MediaRecorder && typeof window.MediaRecorder.isTypeSupported === 'function') {
-        for (let i = 0; i < preferredMimes.length; i += 1) {
-          if (window.MediaRecorder.isTypeSupported(preferredMimes[i])) {
-            selectedMime = preferredMimes[i];
-            break;
-          }
-        }
-      }
+      const format = getPreferredRecordingFormat();
+      recordingMimeType = format.mimeType;
+      recordingFilename = format.filename;
 
-      recordingMimeType = selectedMime || 'audio/webm';
-      if (recordingMimeType.indexOf('mp4') >= 0) {
-        recordingFilename = 'voice.m4a';
-      } else if (recordingMimeType.indexOf('ogg') >= 0) {
-        recordingFilename = 'voice.ogg';
-      } else {
-        recordingFilename = 'voice.webm';
-      }
-
-      recorder = selectedMime ? new MediaRecorder(stream, { mimeType: selectedMime }) : new MediaRecorder(stream);
+      recorder = recordingMimeType ? new MediaRecorder(stream, { mimeType: recordingMimeType }) : new MediaRecorder(stream);
       recorder.ondataavailable = function (e) {
         if (e.data && e.data.size > 0) {
           chunks.push(e.data);
@@ -1285,14 +1671,9 @@
         const blob = new Blob(chunks, { type: recordingMimeType });
 
         try {
-          appendLog('user', '[voice message]');
           const text = normalizeUtterance(await assistantTranscribe(blob, recordingFilename));
           if (text === '') {
             appendLog('assistant', 'I could not transcribe that. Try again.');
-            return;
-          }
-          if (isLikelyNoisyUtterance(text)) {
-            appendLog('assistant', 'I could not catch that clearly. Please speak again in a short English sentence.');
             return;
           }
 
@@ -1438,3 +1819,4 @@
     setTimeout(recoverLightThemeIfNeeded, 320);
   });
 })();
+

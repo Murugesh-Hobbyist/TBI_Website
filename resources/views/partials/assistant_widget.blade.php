@@ -37,6 +37,12 @@
                     <button id="assistant-voice-toggle" type="button" class="btn btn-primary text-xs">Start voice</button>
                     <div class="text-[11px] text-[#5F7F9F]">Continuous listen + reply + page control.</div>
                 </div>
+                <div class="mt-2 space-y-1 rounded-xl border border-[#D5E4F3] bg-white/85 p-2">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#5F7F9F]">You said</div>
+                    <div id="assistant-voice-last-user" class="min-h-[1.15rem] text-xs text-[#1D446C]">-</div>
+                    <div class="pt-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#5F7F9F]">Assistant</div>
+                    <div id="assistant-voice-last-assistant" class="min-h-[1.15rem] text-xs text-[#1D446C]">-</div>
+                </div>
                 <div class="mt-2">
                     <button id="assistant-stop-speech" type="button" class="btn btn-ghost w-full text-xs">Stop speaking</button>
                 </div>

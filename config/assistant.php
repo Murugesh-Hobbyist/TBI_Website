@@ -13,7 +13,7 @@ return [
         'Transcribe clear spoken English commands for the TwinBot website assistant. Avoid guessing unclear words.'
     ),
     'tts_model' => env('OPENAI_TTS_MODEL', 'gpt-4o-mini-tts'),
-    'tts_voice' => env('OPENAI_TTS_VOICE', 'alloy'),
+    'tts_voice' => env('OPENAI_TTS_VOICE', 'onyx'),
 
     'timeout_seconds' => (int) env('OPENAI_TIMEOUT_SECONDS', 45),
 
