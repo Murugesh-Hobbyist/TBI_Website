@@ -344,7 +344,7 @@
     ];
 
     const state = {
-      mode: storeGet(assistantStore.mode) === 'voice' ? 'voice' : 'chat',
+      mode: 'chat',
       voiceActive: false,
       recognition: null,
       recognitionRunning: false,
