@@ -242,7 +242,9 @@
       return {};
     });
 
-    if (!res.ok || !json.ok) throw new Error('Transcription failed.');
+    if (!res.ok || !json.ok) {
+      throw new Error((json && json.message) || 'Transcription failed.');
+    }
     return json.text || '';
   }
 
@@ -553,6 +555,9 @@
     };
 
     const open = function () {
+      state.voiceActive = false;
+      storeSet(assistantStore.voiceActive, '0');
+      applyMode('chat');
       setPanelOpen(true);
     };
 
@@ -1665,8 +1670,100 @@
     let recordingMimeType = 'audio/webm';
     let recordingFilename = 'voice.webm';
     let recordingStartedAt = 0;
+    let pttRecognition = null;
+    let pttRecognitionText = '';
+    let pttRecognitionError = '';
+
+    const resetPttButton = function () {
+      pttBtn.textContent = 'Hold to talk';
+    };
+
+    const submitPttTranscript = async function (rawText) {
+      const text = normalizeUtterance(rawText);
+      if (text === '') {
+        appendLog('assistant', 'I could not hear that. Hold the button and speak clearly.');
+        return;
+      }
+
+      input.value = text;
+      await submitMessage(text, { speakReply: true });
+    };
+
+    const startBrowserPtt = function () {
+      if (!SpeechRecognitionCtor || pttRecognition || recorder) {
+        return false;
+      }
+
+      const recognition = new SpeechRecognitionCtor();
+      recognition.continuous = !IS_MOBILE;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      recognition.lang = RECOGNITION_LANG;
+      pttRecognition = recognition;
+      pttRecognitionText = '';
+      pttRecognitionError = '';
+
+      recognition.onresult = function (event) {
+        let finalText = '';
+        let interimText = '';
+
+        for (let i = 0; i < event.results.length; i += 1) {
+          const result = event.results[i];
+          if (!result[0] || !result[0].transcript) continue;
+          if (result.isFinal) {
+            finalText += result[0].transcript + ' ';
+          } else {
+            interimText += result[0].transcript + ' ';
+          }
+        }
+
+        const visibleTranscript = normalizeUtterance(finalText + ' ' + interimText);
+        if (visibleTranscript !== '') {
+          pttRecognitionText = visibleTranscript;
+          input.value = visibleTranscript;
+        }
+      };
+
+      recognition.onerror = function (event) {
+        pttRecognitionError = String((event && event.error) || 'speech recognition failed');
+      };
+
+      recognition.onend = function () {
+        if (pttRecognition !== recognition) return;
+        pttRecognition = null;
+        resetPttButton();
+
+        const transcript = pttRecognitionText;
+        const error = pttRecognitionError;
+        pttRecognitionText = '';
+        pttRecognitionError = '';
+
+        if (transcript !== '') {
+          submitPttTranscript(transcript).catch(function (e) {
+            appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
+          });
+        } else if (error && error !== 'aborted' && error !== 'no-speech') {
+          appendLog('assistant', 'Speech recognition error: ' + error + '.');
+        } else {
+          appendLog('assistant', 'I could not hear that. Hold the button and speak clearly.');
+        }
+      };
+
+      try {
+        recognition.start();
+        pttBtn.textContent = 'Listening...';
+        return true;
+      } catch (e) {
+        pttRecognition = null;
+        resetPttButton();
+        return false;
+      }
+    };
 
     const startRecording = async function () {
+      if (pttRecognition || recorder) return;
+      if (startBrowserPtt()) return;
+
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         appendLog('assistant', 'Voice recording not supported in this browser.');
         return;
@@ -1723,10 +1820,17 @@
     };
 
     const stopRecording = async function () {
+      if (pttRecognition) {
+        try {
+          pttRecognition.stop();
+        } catch (e) {}
+        return;
+      }
+
       if (!recorder) return;
       const r = recorder;
       recorder = null;
-      pttBtn.textContent = 'Hold to talk';
+      resetPttButton();
       r.stop();
     };
 
