@@ -77,7 +77,7 @@ class AssistantController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'ok' => false,
-                'message' => $e->getMessage(),
+                'message' => $this->assistantFailureMessage($e),
             ], 500);
         }
     }
@@ -111,7 +111,7 @@ class AssistantController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'ok' => false,
-                'message' => $e->getMessage(),
+                'message' => $this->assistantFailureMessage($e),
             ], 500);
         }
     }
@@ -144,9 +144,25 @@ class AssistantController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'ok' => false,
-                'message' => $e->getMessage(),
+                'message' => $this->assistantFailureMessage($e),
             ], 500);
         }
+    }
+
+    private function assistantFailureMessage(\Throwable $exception): string
+    {
+        $message = trim($exception->getMessage());
+        $normalized = Str::lower($message);
+
+        if (Str::contains($normalized, [
+            'no credits remaining',
+            'insufficient_quota',
+            'exceeded your current quota',
+        ])) {
+            return 'AI Feature is currently disabled.';
+        }
+
+        return $message !== '' ? $message : 'AI request failed.';
     }
 
     private function buildContext(string $query, ?string $currentPath, ?string $currentTitle): string

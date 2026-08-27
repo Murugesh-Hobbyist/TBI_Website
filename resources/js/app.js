@@ -178,6 +178,17 @@ import './bootstrap';
     const log = el('assistant-log');
     if (!log) return;
 
+    const normalizedMessage = String(text || '').toLowerCase();
+    if (
+      role === 'assistant' &&
+      (normalizedMessage.indexOf('ai feature is currently disabled') >= 0 ||
+        normalizedMessage.indexOf('no credits remaining') >= 0 ||
+        normalizedMessage.indexOf('insufficient_quota') >= 0 ||
+        normalizedMessage.indexOf('exceeded your current quota') >= 0)
+    ) {
+      text = 'AI Feature is currently disabled.';
+    }
+
     const opts = options || {};
     const wrap = document.createElement('div');
     const isUser = role === 'user';
