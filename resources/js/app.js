@@ -375,6 +375,7 @@ import './bootstrap';
       voiceRecorderSource: null,
       voiceRecorderData: null,
       voiceRecorderMonitorTimer: null,
+      voiceRecorderRestartTimer: null,
       voiceRecorderNoiseFloor: 0.008,
     };
 
@@ -876,7 +877,29 @@ import './bootstrap';
       }, INTERIM_COMMIT_DELAY_MS);
     };
 
+    const scheduleVoiceRecorderSegment = function (delayMs) {
+      if (state.voiceRecorderRestartTimer) {
+        clearTimeout(state.voiceRecorderRestartTimer);
+        state.voiceRecorderRestartTimer = null;
+      }
+
+      if (!shouldContinueVoice() || state.processingVoice || state.speaking || state.voiceRecorder || state.voiceRecorderStarting) {
+        return;
+      }
+
+      const waitMs = typeof delayMs === 'number' ? Math.max(0, delayMs) : 80;
+      state.voiceRecorderRestartTimer = setTimeout(function () {
+        state.voiceRecorderRestartTimer = null;
+        startVoiceRecorderSegment();
+      }, waitMs);
+    };
+
     const stopVoiceRecorderLoop = function (discardSegment, keepStream) {
+      if (state.voiceRecorderRestartTimer) {
+        clearTimeout(state.voiceRecorderRestartTimer);
+        state.voiceRecorderRestartTimer = null;
+      }
+
       if (state.voiceRecorderMonitorTimer) {
         clearInterval(state.voiceRecorderMonitorTimer);
         state.voiceRecorderMonitorTimer = null;
@@ -886,15 +909,18 @@ import './bootstrap';
         state.voiceRecorderDiscardSegment = true;
       }
 
-      if (state.voiceRecorder && state.voiceRecorder.state !== 'inactive') {
+      const activeRecorder = state.voiceRecorder;
+      if (activeRecorder && activeRecorder.state !== 'inactive') {
         try {
-          state.voiceRecorder.stop();
+          activeRecorder.stop();
         } catch (e) {}
       }
-      state.voiceRecorder = null;
-      state.voiceRecorderChunks = [];
-      state.voiceRecorderSpeechSeen = false;
-      state.voiceRecorderLastSpeechAt = 0;
+      if (!activeRecorder) {
+        state.voiceRecorder = null;
+        state.voiceRecorderChunks = [];
+        state.voiceRecorderSpeechSeen = false;
+        state.voiceRecorderLastSpeechAt = 0;
+      }
 
       if (keepStream) {
         return;
@@ -959,9 +985,7 @@ import './bootstrap';
 
       recorder.onerror = function () {
         state.voiceRecorder = null;
-        if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
-          setTimeout(startVoiceRecorderSegment, 220);
-        }
+        scheduleVoiceRecorderSegment(220);
       };
 
       recorder.onstop = async function () {
@@ -984,10 +1008,15 @@ import './bootstrap';
 
           if (hadSpeech && segmentDuration >= VOICE_SEGMENT_MIN_MS && blob.size > 500) {
             try {
+              if (shouldContinueVoice() && !state.speaking) {
+                setVoiceStatus('Transcribing...');
+              }
               const transcript = normalizeUtterance(await assistantTranscribe(blob, state.voiceRecorderFilename));
               if (transcript !== '') {
                 submittedFromSegment = true;
                 processVoiceInput(transcript);
+              } else if (shouldContinueVoice() && !state.processingVoice && !state.speaking) {
+                setVoiceStatus('Listening...');
               }
             } catch (e) {
               appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
@@ -997,14 +1026,15 @@ import './bootstrap';
 
         if (!submittedFromSegment && shouldContinueVoice() && !state.processingVoice && !state.speaking) {
           setVoiceStatus('Listening...');
-          setTimeout(startVoiceRecorderSegment, 120);
+          scheduleVoiceRecorderSegment(120);
         }
       };
 
-      recorder.start(250);
+      recorder.start(220);
       setVoiceStatus('Listening...');
 
       if (state.voiceRecorderAnalyser && state.voiceRecorderData) {
+        let speechHitCount = 0;
         state.voiceRecorderMonitorTimer = setInterval(function () {
           if (!state.voiceRecorder || state.voiceRecorder.state !== 'recording') {
             return;
@@ -1025,10 +1055,15 @@ import './bootstrap';
             state.voiceRecorderNoiseFloor = state.voiceRecorderNoiseFloor * 0.92 + rms * 0.08;
           }
 
-          const threshold = Math.max(0.008, state.voiceRecorderNoiseFloor * 1.35);
+          const threshold = Math.max(0.01, state.voiceRecorderNoiseFloor * 1.55);
           if (rms > threshold) {
-            state.voiceRecorderSpeechSeen = true;
-            state.voiceRecorderLastSpeechAt = now;
+            speechHitCount += 1;
+            if (speechHitCount >= 2) {
+              state.voiceRecorderSpeechSeen = true;
+              state.voiceRecorderLastSpeechAt = now;
+            }
+          } else {
+            speechHitCount = Math.max(0, speechHitCount - 1);
           }
 
           if (
@@ -1042,7 +1077,7 @@ import './bootstrap';
             return;
           }
 
-          if (!state.voiceRecorderSpeechSeen && segmentAge >= 2600) {
+          if (!state.voiceRecorderSpeechSeen && segmentAge >= (IS_MOBILE ? 3600 : 3000)) {
             try {
               state.voiceRecorder.stop();
             } catch (e) {}
@@ -1054,7 +1089,7 @@ import './bootstrap';
               state.voiceRecorder.stop();
             } catch (e) {}
           }
-        }, 90);
+        }, 80);
       } else {
         state.voiceRecorderMonitorTimer = setInterval(function () {
           if (!state.voiceRecorder || state.voiceRecorder.state !== 'recording') {
@@ -1070,14 +1105,16 @@ import './bootstrap';
     };
 
     const startVoiceRecorderLoop = async function () {
-      if (
-        !USE_RECORDER_VOICE_MODE ||
-        !shouldContinueVoice() ||
-        state.voiceRecorderStarting ||
-        state.voiceRecorderStream ||
-        state.processingVoice ||
-        state.speaking
-      ) {
+      if (!USE_RECORDER_VOICE_MODE || !shouldContinueVoice() || state.processingVoice || state.speaking) {
+        return;
+      }
+
+      if (state.voiceRecorderStream) {
+        scheduleVoiceRecorderSegment(0);
+        return;
+      }
+
+      if (state.voiceRecorderStarting) {
         return;
       }
 
@@ -1127,7 +1164,7 @@ import './bootstrap';
           state.voiceRecorderData = new Uint8Array(analyser.fftSize);
         }
 
-        startVoiceRecorderSegment();
+        scheduleVoiceRecorderSegment(0);
       } catch (e) {
         appendLog('assistant', 'Error: ' + (e && e.message ? e.message : String(e)));
         stopVoiceRecorderLoop(true, false);
@@ -1148,6 +1185,10 @@ import './bootstrap';
         clearTimeout(state.recognitionRestartTimer);
         state.recognitionRestartTimer = null;
       }
+      if (state.voiceRecorderRestartTimer) {
+        clearTimeout(state.voiceRecorderRestartTimer);
+        state.voiceRecorderRestartTimer = null;
+      }
 
       stopRecognition();
       stopVoiceRecorderLoop(true, false);
@@ -1164,11 +1205,10 @@ import './bootstrap';
     };
 
     const startVoiceConversation = function (silentMessage, immediateStart) {
-      const hasSpeechRecognition = Boolean(SpeechRecognitionCtor);
       const hasRecorderSupport =
         Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) &&
         typeof window.MediaRecorder === 'function';
-      const isSupported = USE_RECORDER_VOICE_MODE ? hasRecorderSupport : hasSpeechRecognition;
+      const isSupported = hasRecorderSupport;
 
       if (!isSupported) {
         state.voiceActive = false;
@@ -1192,22 +1232,16 @@ import './bootstrap';
       setVoiceLastUser('');
       setVoiceLastAssistant('');
       stopInterruptMonitor();
+      stopRecognition();
+      stopCurrentPlayback();
+      stopVoiceRecorderLoop(true, true);
 
-      if (USE_RECORDER_VOICE_MODE) {
-        if (immediateStart) {
-          startVoiceRecorderLoop().catch(function () {});
-        } else {
-          setTimeout(function () {
-            startVoiceRecorderLoop().catch(function () {});
-          }, IS_MOBILE ? 450 : 40);
-        }
-      } else if (immediateStart) {
-        const started = startRecognitionNow();
-        if (!started) {
-          scheduleRecognitionRestart(IS_MOBILE ? 650 : 40);
-        }
+      if (immediateStart) {
+        startVoiceRecorderLoop().catch(function () {});
       } else {
-        scheduleRecognitionRestart(IS_MOBILE ? 650 : 40);
+        setTimeout(function () {
+          startVoiceRecorderLoop().catch(function () {});
+        }, IS_MOBILE ? 350 : 40);
       }
     };
 
