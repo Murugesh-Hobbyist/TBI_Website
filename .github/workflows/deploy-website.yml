@@ -1,23 +1,14 @@
-name: Deploy Website
+name: Hostinger Deployment Notice
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: deploy-main
-  cancel-in-progress: true
-
 jobs:
-  deploy:
+  deployment-notice:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Hostinger Deploy Webhook
-        shell: bash
-        run: |
-          curl --show-error --silent -X POST "https://webhooks.hostinger.com/deploy/ba6df48db9821cbf60f37e7204141502" || true
+      - name: Native deployment status
+        run: echo "Hostinger native GitHub auto-deployment handles pushes to main."
