@@ -82,6 +82,7 @@
                         </div>
 
                         <button class="btn btn-primary" type="submit">Send Request</button>
+                        <p class="text-xs leading-relaxed text-[#607C9A]">By submitting, you agree that TwinBot may use these details to respond to your request. Do not include PINs, OTPs, passwords, bank credentials, or identity documents. See our <a href="{{ route('policies.privacy') }}" class="font-semibold text-[#1F6FD0] hover:text-[#16589F]">Privacy Policy</a>.</p>
                     </form>
                 </div>
             </div>
@@ -144,4 +145,3 @@
         </div>
     </section>
 @endsection
-

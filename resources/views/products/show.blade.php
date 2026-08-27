@@ -34,6 +34,10 @@
                             <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#4F6890]">{{ $product['body'] }}</p>
                         </div>
                     @endif
+
+                    @if (($product['slug'] ?? null) === 'smart-vending-automation')
+                        @include('products.partials.smart-vending')
+                    @endif
                 </article>
 
                 <aside class="space-y-5">
@@ -78,6 +82,7 @@
                             </div>
 
                             <button class="btn btn-primary" type="submit">Send Enquiry</button>
+                            <p class="text-xs leading-relaxed text-[#607C9A]">By submitting, you agree that TwinBot may use these details to respond to your enquiry. See our <a href="{{ route('policies.privacy') }}" class="font-semibold text-[#1F6FD0] hover:text-[#16589F]">Privacy Policy</a>.</p>
                         </form>
                     </div>
 
@@ -94,4 +99,3 @@
         </div>
     </section>
 @endsection
-

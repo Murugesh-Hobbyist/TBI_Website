@@ -707,28 +707,10 @@ class AssistantController extends Controller
                 'keywords' => ['product', 'products', 'catalog', 'shop', 'product page'],
             ],
             [
-                'label' => 'Features',
-                'route' => 'features',
-                'description' => 'Feature breakdown and capability details.',
-                'keywords' => ['feature', 'features', 'capabilities'],
-            ],
-            [
                 'label' => 'Solutions',
                 'route' => 'solutions',
                 'description' => 'Industry solution positioning and architecture.',
                 'keywords' => ['solution', 'solutions', 'architecture'],
-            ],
-            [
-                'label' => 'Pricing',
-                'route' => 'pricing',
-                'description' => 'Commercial guidance and pricing options.',
-                'keywords' => ['pricing', 'price', 'cost', 'quote cost'],
-            ],
-            [
-                'label' => 'Projects',
-                'route' => 'projects.index',
-                'description' => 'Published project case studies.',
-                'keywords' => ['project', 'projects', 'case study', 'portfolio'],
             ],
             [
                 'label' => 'Videos',
@@ -747,18 +729,6 @@ class AssistantController extends Controller
                 'route' => 'contact',
                 'description' => 'Contact form, phone, and email details.',
                 'keywords' => ['contact', 'consultation', 'quote', 'talk to', 'call us'],
-            ],
-            [
-                'label' => 'Forum',
-                'route' => 'forum',
-                'description' => 'Technical discussion and forum page.',
-                'keywords' => ['forum', 'discussion', 'community'],
-            ],
-            [
-                'label' => 'Cart',
-                'route' => 'cart.show',
-                'description' => 'Cart and checkout flow.',
-                'keywords' => ['cart', 'checkout', 'order page'],
             ],
         ];
     }

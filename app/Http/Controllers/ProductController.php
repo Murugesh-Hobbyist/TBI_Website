@@ -12,6 +12,7 @@ class ProductController extends Controller
 {
     public function index()
     {
+        $fallbackProducts = collect($this->fallbackProducts())->values();
         $products = collect();
 
         try {
@@ -24,8 +25,13 @@ class ProductController extends Controller
                     return $this->normalizeProduct($p);
                 })
                 ->values();
+
+            $databaseSlugs = $products->pluck('slug')->filter();
+            $products = $products
+                ->concat($fallbackProducts->reject(fn (array $product) => $databaseSlugs->contains($product['slug'] ?? null)))
+                ->values();
         } catch (\Throwable $e) {
-            $products = collect($this->fallbackProducts())->values();
+            $products = $fallbackProducts;
         }
 
         return view('products.index', [
@@ -44,7 +50,10 @@ class ProductController extends Controller
             $p->load('media');
             $normalized = $this->normalizeProduct($p);
         } catch (ModelNotFoundException $e) {
-            abort(404);
+            $normalized = $this->fallbackProductBySlug($product);
+            if (!$normalized) {
+                abort(404);
+            }
         } catch (\Throwable $e) {
             $normalized = $this->fallbackProductBySlug($product);
             if (!$normalized) {

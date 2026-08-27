@@ -28,6 +28,9 @@
                     ['title' => 'Custom Electronics', 'desc' => 'Application-specific boards and interfacing modules tailored to your electrical and mechanical envelope.'],
                     ['title' => 'Retrofit Modernization', 'desc' => 'Upgrade legacy automation stacks with modern ECS architecture while preserving viable assets.'],
                     ['title' => 'Production Support', 'desc' => 'Deployment assistance, validation support, and iterative upgrades as your process matures.'],
+                    ['title' => 'Smart Vending Automation', 'desc' => 'Touchscreen, embedded control, dispensing logic, sensors, and payment-ready workflows for connected self-service machines.'],
+                    ['title' => 'Connected IoT Monitoring', 'desc' => 'Remote machine status, stock visibility, event records, alerts, configuration, and operational reporting for supported equipment.'],
+                    ['title' => 'OEM Vending Integration', 'desc' => 'A defined automation layer for cabinet manufacturers and integrators, with interface planning, prototype support, and acceptance testing.'],
                 ] as $solution)
                     <article class="tb-card tb-reveal">
                         <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">Solution Track</div>
@@ -99,4 +102,3 @@
         </div>
     </section>
 @endsection
-

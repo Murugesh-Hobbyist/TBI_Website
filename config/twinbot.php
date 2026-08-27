@@ -96,6 +96,14 @@ return [
             'body' => "FitSense Ultra is a high-precision displacement measurement tool for industrial applications where simplicity and accuracy are paramount.\n\nKey Features:\n- 4 probe measurement for accurate displacement readings\n- 7-inch LCD display for clear visualization\n- Compact, lightweight, portable design\n- User-friendly interface (minimal training)\n- Durable for regular industrial use\n\nApplications:\n- Basic precision measurement tasks in manufacturing\n- Quality checks for displacement and tolerances\n- Entry-level solution for straightforward measurement workflows",
             'image' => 'twinbot/products/fitsense-ultra.jpeg',
         ],
+        [
+            'slug' => 'smart-vending-automation',
+            'title' => 'Smart Vending Automation',
+            'series' => 'Smart Vending Systems',
+            'summary' => 'A configurable automation platform combining touchscreen interfaces, embedded control, dispensing logic, sensor integration, IoT monitoring, and payment-ready workflows.',
+            'body' => "TwinBot provides the electronics, embedded software, controller firmware, touchscreen workflow, and optional IoT platform behind connected vending machines. The solution is designed for cabinet manufacturers, OEMs, system integrators, and vending operators.\n\nEach deployment is configured around the product type, number of selections, dispensing mechanism, sensors, user journey, and connectivity requirements. Cabinet fabrication, refrigeration, shelves, spirals, elevators, locks, and final mechanical assembly may be supplied by an independent OEM or integrator unless expressly included in TwinBot's written scope.",
+            'image' => null,
+        ],
     ],
 
     'product_groups' => [
@@ -119,6 +127,12 @@ return [
                 'fitsense-lite',
                 'fitsense-pro',
                 'fitsense-ultra',
+            ],
+        ],
+        [
+            'title' => 'Smart Vending Systems',
+            'slugs' => [
+                'smart-vending-automation',
             ],
         ],
     ],
@@ -216,4 +230,3 @@ return [
         ],
     ],
 ];
-

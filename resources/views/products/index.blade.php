@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', 'Products | TwinBot Innovations')
-@section('meta_description', 'Explore TwinBot product lines including DigiDial consoles, FitSense systems, and industrial measurement accessories.')
+@section('meta_description', 'Explore TwinBot product lines including DigiDial consoles, FitSense systems, smart vending automation, and industrial measurement accessories.')
 
 @section('content')
     @php
@@ -13,7 +13,7 @@
             <div class="tb-panel p-6 md:p-10 tb-reveal">
                 <span class="tb-eyebrow">Product Portfolio</span>
                 <h1 class="tb-heading mt-4">Tools and systems designed for precision-driven industrial teams.</h1>
-                <p class="tb-lead mt-5 max-w-3xl">From dimensional inspection consoles to displacement measurement platforms, each product is built for consistent shop-floor performance and simple operator workflows.</p>
+                <p class="tb-lead mt-5 max-w-3xl">From dimensional inspection consoles and displacement measurement platforms to smart vending automation, each product is built for consistent performance and simple operator workflows.</p>
             </div>
         </div>
     </section>
@@ -75,4 +75,3 @@
         </div>
     </section>
 @endsection
-
