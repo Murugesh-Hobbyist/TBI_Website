@@ -334,7 +334,7 @@ import './bootstrap';
 
     const state = {
       mode: storeGet(assistantStore.mode) === 'voice' ? 'voice' : 'chat',
-      voiceActive: storeGet(assistantStore.voiceActive) === '1',
+      voiceActive: false,
       recognition: null,
       recognitionRunning: false,
       recognitionStopExpected: false,
@@ -1783,14 +1783,8 @@ import './bootstrap';
     }
 
     applyMode(state.mode);
-
-    if (storeGet(assistantStore.open) === '1') {
-      setPanelOpen(true);
-    }
-
-    if (state.mode === 'voice' && state.voiceActive) {
-      setPanelOpen(true);
-    }
+    storeSet(assistantStore.voiceActive, '0');
+    setPanelOpen(false);
 
   }
 
