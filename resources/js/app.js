@@ -313,6 +313,11 @@ import './bootstrap';
       return;
     }
 
+    modeVoiceBtn.classList.add('hidden');
+    modeVoiceBtn.setAttribute('aria-hidden', 'true');
+    modeVoiceBtn.setAttribute('tabindex', '-1');
+    voiceControls.classList.add('hidden');
+
     const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
     const IS_MOBILE = /android|iphone|ipad|ipod|mobile/i.test(String(navigator.userAgent || '').toLowerCase());
     const preferredLang =
