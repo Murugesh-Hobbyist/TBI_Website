@@ -34,7 +34,7 @@
                     <h2 class="tb-subheading mt-3">Tell us what you need</h2>
                     <p class="tb-lead mt-3">We review every request manually and reply with the right technical path.</p>
 
-                    <form class="mt-6 grid gap-4" method="POST" action="{{ route('contact.submit') }}">
+                    <form class="mt-6 grid gap-4" method="POST" action="{{ route('contact.submit') }}" data-contact-form>
                         @csrf
 
                         <div class="grid gap-3 sm:grid-cols-2">
@@ -68,7 +68,7 @@
                             @error('message')<div class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</div>@enderror
                         </div>
 
-                        <button class="btn btn-primary" type="submit">Send Request</button>
+                        <button class="btn btn-primary" type="submit" data-contact-submit>Send Request</button>
                         <p class="text-xs leading-relaxed text-[#607C9A]">By submitting, you agree that TwinBot may use these details to respond to your request. Do not include PINs, OTPs, passwords, bank credentials, or identity documents. See our <a href="{{ route('policies.privacy') }}" class="font-semibold text-[#1F6FD0] hover:text-[#16589F]">Privacy Policy</a>.</p>
                     </form>
                 </div>
@@ -77,3 +77,9 @@
     </section>
 
 @endsection
+
+@push('scripts')
+    <script>
+        (function(){var form=document.querySelector('[data-contact-form]');if(!form)return;form.addEventListener('submit',function(){if(!form.checkValidity())return;var button=form.querySelector('[data-contact-submit]');if(!button)return;button.disabled=true;button.textContent='Sending…';button.setAttribute('aria-busy','true')})})();
+    </script>
+@endpush

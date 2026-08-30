@@ -81,6 +81,12 @@ class SiteController extends Controller
         try {
             $recipient = (string) config('twinbot.contact.email_primary');
             $replyTo = $data['email'] ?? null;
+            $mailer = (string) config('mail.default');
+
+            if ($recipient === '' || in_array($mailer, ['array', 'log'], true)) {
+                throw new \RuntimeException('SMTP mail delivery is not configured.');
+            }
+
             $message = "New website contact request\n\n"
                 ."Name: {$data['name']}\n"
                 ."Company: ".($data['company'] ?: 'Not provided')."\n"
@@ -88,20 +94,27 @@ class SiteController extends Controller
                 ."Subject: {$data['subject']}\n\n"
                 ."Message:\n".($data['message'] ?: 'Not provided');
 
-            Mail::raw($message, function ($mail) use ($recipient, $replyTo, $data) {
+            $sentMessage = Mail::raw($message, function ($mail) use ($recipient, $replyTo, $data) {
                 $mail->to($recipient)->subject('[TwinBot website] '.$data['subject']);
 
                 if ($replyTo) {
                     $mail->replyTo($replyTo, $data['name']);
                 }
             });
+
+            $messageId = $sentMessage?->getMessageId();
+            Log::info('Contact notification accepted by mail transport.', [
+                'recipient' => $recipient,
+                'mailer' => $mailer,
+                'message_id' => $messageId,
+            ]);
         } catch (\Throwable $e) {
             Log::error('Contact notification email could not be sent.', ['exception' => $e]);
 
-            return redirect()->route('contact')->with('status', 'Your request was received, but email delivery needs attention. Please email support directly.');
+            return redirect()->route('contact')->with('status', 'Email was not sent: TwinBot mail delivery is not configured or was rejected. Please email support directly.');
         }
 
-        return redirect()->route('contact')->with('status', 'Thanks. Your request was sent to TwinBot support.');
+        return redirect()->route('contact')->with('status', 'Email accepted by TwinBot’s mail server and sent to support.'.($messageId ? ' Reference: '.$messageId : ''));
     }
 
     public function submitQuote(Request $request)
