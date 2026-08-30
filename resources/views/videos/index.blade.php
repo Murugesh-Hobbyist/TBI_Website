@@ -20,7 +20,7 @@
                 @php($activeVideo = $videos->first())
                 <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
                     <div class="tb-panel overflow-hidden p-3 md:p-4 tb-reveal">
-                        <div id="project-video-stage" class="aspect-video overflow-hidden rounded-2xl border border-[#C6DCEF] bg-[#122E53]">
+                        <div id="project-video-stage" class="relative aspect-video overflow-hidden rounded-2xl border border-[#C6DCEF] bg-[#122E53]">
                             <button
                                 id="project-video-cover"
                                 type="button"
@@ -95,13 +95,43 @@
             var player = document.createElement('iframe');
             player.id = 'project-video-player';
             player.className = 'h-full w-full';
-            player.src = 'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1';
+            player.src = 'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1&enablejsapi=1&origin=' + encodeURIComponent(window.location.origin);
             player.title = title;
             player.frameBorder = '0';
             player.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
             player.referrerPolicy = 'strict-origin-when-cross-origin';
             player.allowFullscreen = true;
             stage.appendChild(player);
+
+            var controls = document.createElement('div');
+            controls.className = 'absolute inset-x-0 bottom-0 flex h-[74px] items-center justify-between gap-3 bg-[#0B2441] px-4 text-white shadow-[0_-12px_24px_rgba(11,36,65,0.5)] md:px-5';
+            controls.innerHTML = '<div class="flex items-center gap-2"><button id="project-video-toggle" type="button" class="rounded-full bg-white/15 px-4 py-2 text-sm font-bold transition hover:bg-white/25" aria-label="Pause video" aria-pressed="true">Pause</button><button id="project-video-mute" type="button" class="rounded-full bg-white/15 px-4 py-2 text-sm font-bold transition hover:bg-white/25" aria-label="Mute video">Mute</button></div><button id="project-video-fullscreen" type="button" class="rounded-full border border-white/35 px-4 py-2 text-sm font-bold transition hover:bg-white/15" aria-label="View video fullscreen">Fullscreen</button>';
+            stage.appendChild(controls);
+
+            document.getElementById('project-video-toggle').addEventListener('click', function () {
+                var isPlaying = this.getAttribute('aria-pressed') === 'true';
+                sendYouTubeCommand(isPlaying ? 'pauseVideo' : 'playVideo');
+                this.setAttribute('aria-pressed', String(!isPlaying));
+                this.textContent = isPlaying ? 'Play' : 'Pause';
+                this.setAttribute('aria-label', isPlaying ? 'Play video' : 'Pause video');
+            });
+            document.getElementById('project-video-mute').addEventListener('click', function () {
+                var isMuted = this.getAttribute('aria-pressed') === 'true';
+                sendYouTubeCommand(isMuted ? 'unMute' : 'mute');
+                this.setAttribute('aria-pressed', String(!isMuted));
+                this.textContent = isMuted ? 'Mute' : 'Unmute';
+                this.setAttribute('aria-label', isMuted ? 'Mute video' : 'Unmute video');
+            });
+            document.getElementById('project-video-fullscreen').addEventListener('click', function () {
+                if (stage.requestFullscreen) stage.requestFullscreen();
+            });
+        }
+
+        function sendYouTubeCommand(command) {
+            var player = document.getElementById('project-video-player');
+            if (player && player.contentWindow) {
+                player.contentWindow.postMessage(JSON.stringify({ event: 'command', func: command, args: [] }), 'https://www.youtube-nocookie.com');
+            }
         }
 
         document.getElementById('project-video-cover')?.addEventListener('click', function () {
