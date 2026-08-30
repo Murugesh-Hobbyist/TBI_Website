@@ -203,10 +203,19 @@
                         playsinline: 1,
                         disablekb: 1,
                         cc_load_policy: 0,
+                        showinfo: 0,
                         origin: window.location.origin
                     },
                     events: {
                         onReady: function (event) {
+                            var iframe = event.target.getIframe();
+                            iframe.style.position = 'absolute';
+                            iframe.style.inset = '0';
+                            iframe.style.width = '100%';
+                            iframe.style.height = '100%';
+                            iframe.style.border = '0';
+                            iframe.style.transform = 'scale(1.34)';
+                            iframe.style.transformOrigin = 'center';
                             event.target.playVideo();
                             projectPlayerTimer = window.setInterval(function () {
                                 var duration = event.target.getDuration();
