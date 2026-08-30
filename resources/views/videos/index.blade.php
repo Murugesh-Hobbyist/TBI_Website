@@ -20,17 +20,22 @@
                 @php($activeVideo = $videos->first())
                 <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
                     <div class="tb-panel overflow-hidden p-3 md:p-4 tb-reveal">
-                        <div class="aspect-video overflow-hidden rounded-2xl border border-[#C6DCEF] bg-[#F3FAFF]">
-                            <iframe
-                                id="project-video-player"
-                                class="h-full w-full"
-                                src="https://www.youtube-nocookie.com/embed/{{ $activeVideo['youtube_id'] }}?autoplay=0&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1"
-                                title="{{ $activeVideo['title'] }}"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                referrerpolicy="strict-origin-when-cross-origin"
-                                allowfullscreen
-                            ></iframe>
+                        <div id="project-video-stage" class="aspect-video overflow-hidden rounded-2xl border border-[#C6DCEF] bg-[#122E53]">
+                            <button
+                                id="project-video-cover"
+                                type="button"
+                                class="group relative h-full w-full overflow-hidden text-left"
+                                data-youtube-id="{{ $activeVideo['youtube_id'] }}"
+                                data-title="{{ $activeVideo['title'] }}"
+                                aria-label="Play {{ $activeVideo['title'] }}"
+                            >
+                                <img id="project-video-thumbnail" class="h-full w-full object-cover opacity-80 transition duration-300 group-hover:scale-[1.02] group-hover:opacity-95" src="https://i.ytimg.com/vi/{{ $activeVideo['youtube_id'] }}/hqdefault.jpg" alt="{{ $activeVideo['title'] }} video preview">
+                                <span class="absolute inset-0 bg-gradient-to-t from-[#07192F]/70 via-transparent to-[#07192F]/20"></span>
+                                <span class="absolute inset-0 flex items-center justify-center">
+                                    <span class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/95 pl-1 text-2xl text-[#1F6FD0] shadow-xl transition group-hover:scale-110" aria-hidden="true">&#9658;</span>
+                                </span>
+                                <span class="absolute bottom-5 left-5 rounded-full bg-[#122E53]/85 px-4 py-2 text-sm font-bold text-white">Play project video</span>
+                            </button>
                         </div>
                     </div>
 
@@ -82,13 +87,30 @@
 
 @push('scripts')
     <script>
+        function startProjectVideo(youtubeId, title) {
+            var stage = document.getElementById('project-video-stage');
+            if (!stage) return;
+
+            stage.innerHTML = '';
+            var player = document.createElement('iframe');
+            player.id = 'project-video-player';
+            player.className = 'h-full w-full';
+            player.src = 'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1';
+            player.title = title;
+            player.frameBorder = '0';
+            player.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            player.referrerPolicy = 'strict-origin-when-cross-origin';
+            player.allowFullscreen = true;
+            stage.appendChild(player);
+        }
+
+        document.getElementById('project-video-cover')?.addEventListener('click', function () {
+            startProjectVideo(this.dataset.youtubeId, this.dataset.title);
+        });
+
         document.querySelectorAll('.project-video-card').forEach(function (card) {
             card.addEventListener('click', function () {
-                var player = document.getElementById('project-video-player');
-                if (!player) return;
-
-                player.src = 'https://www.youtube-nocookie.com/embed/' + card.dataset.youtubeId + '?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1';
-                player.title = card.dataset.title;
+                startProjectVideo(card.dataset.youtubeId, card.dataset.title);
                 document.getElementById('project-video-title').textContent = card.dataset.title;
                 document.getElementById('project-video-summary').textContent = card.dataset.summary;
                 document.getElementById('project-video-category').textContent = card.dataset.category;
@@ -97,7 +119,7 @@
                     item.classList.remove('ring-2', 'ring-[#1F6FD0]');
                 });
                 card.classList.add('ring-2', 'ring-[#1F6FD0]');
-                player.closest('.tb-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('project-video-stage').closest('.tb-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
         });
     </script>
