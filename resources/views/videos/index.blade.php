@@ -37,21 +37,6 @@
                                 <span class="absolute bottom-5 left-5 rounded-full bg-[#122E53]/85 px-4 py-2 text-sm font-bold text-white">Play project video</span>
                             </button>
                         </div>
-                        <div class="mt-5 border-t border-[#D8E6F4] pt-5">
-                            <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">Comparison: standard YouTube embed</div>
-                            <p class="mt-2 text-sm text-[#4F6890]">The same RICO video using the basic iframe method from the reference tutorial.</p>
-                            <div class="mt-3 aspect-video overflow-hidden rounded-2xl border border-[#C6DCEF] bg-[#122E53]">
-                                <iframe
-                                    class="h-full w-full"
-                                    src="https://www.youtube-nocookie.com/embed/{{ $activeVideo['youtube_id'] }}"
-                                    title="Standard YouTube embed: {{ $activeVideo['title'] }}"
-                                    frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    referrerpolicy="strict-origin-when-cross-origin"
-                                    allowfullscreen
-                                ></iframe>
-                            </div>
-                        </div>
                     </div>
 
                     <aside class="tb-panel p-6 md:p-8 tb-reveal" aria-live="polite">
@@ -105,6 +90,7 @@
         var projectPlayer;
         var projectPlayerTimer;
         var youtubeApiPromise;
+        var projectControlsTimer;
 
         function loadYouTubeApi() {
             if (window.YT && window.YT.Player) return Promise.resolve();
@@ -131,10 +117,12 @@
             if (!stage) return;
 
             if (projectPlayerTimer) window.clearInterval(projectPlayerTimer);
+            if (projectControlsTimer) window.clearTimeout(projectControlsTimer);
+            projectControlsTimer = null;
             if (projectPlayer && projectPlayer.destroy) projectPlayer.destroy();
             projectPlayer = null;
             stage.innerHTML = '';
-            stage.innerHTML = '<div id="project-video-player" class="h-full w-full"></div><button id="project-video-surface" type="button" class="absolute inset-0 z-10 cursor-pointer" aria-label="Pause video"></button><div id="project-video-controls" class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[58px] bg-gradient-to-t from-[#07192F]/95 via-[#07192F]/65 to-transparent opacity-0 transition-opacity duration-200 md:h-[64px]"><div class="flex h-full items-end gap-3 px-3 pb-3 text-white md:px-4 md:pb-4"><button id="project-video-restart" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-lg text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Restart video" title="Restart">↺</button><span id="project-video-time" class="shrink-0 text-xs font-bold tabular-nums">0:00 / 0:00</span><input id="project-video-progress" class="pointer-events-auto mb-1 h-1.5 min-w-0 flex-1 cursor-pointer accent-[#28C7B7]" type="range" min="0" max="0" value="0" step="0.1" aria-label="Video progress"><button id="project-video-captions" type="button" class="pointer-events-auto rounded px-2 py-1 text-xs font-extrabold text-white/80 transition hover:bg-white/15 hover:text-white" aria-label="Turn captions on" aria-pressed="false">CC</button><button id="project-video-fullscreen" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-xl text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></div>';
+            stage.innerHTML = '<div id="project-video-player" class="h-full w-full"></div><button id="project-video-surface" type="button" class="absolute inset-0 z-10 cursor-pointer" aria-label="Pause video"></button><div id="project-video-controls" class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[58px] bg-[#0B2441]/95 opacity-0 transition-opacity duration-200 md:h-[64px]"><div class="flex h-full items-end gap-3 px-3 pb-3 text-white md:px-4 md:pb-4"><button id="project-video-restart" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-lg text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Restart video" title="Restart">↺</button><span id="project-video-time" class="shrink-0 text-xs font-bold tabular-nums">0:00 / 0:00</span><input id="project-video-progress" class="pointer-events-auto mb-1 h-1.5 min-w-0 flex-1 cursor-pointer accent-[#28C7B7]" type="range" min="0" max="0" value="0" step="0.1" aria-label="Video progress"><button id="project-video-captions" type="button" class="pointer-events-auto rounded px-2 py-1 text-xs font-extrabold text-white/80 transition hover:bg-white/15 hover:text-white" aria-label="Turn captions on" aria-pressed="false">CC</button><button id="project-video-fullscreen" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-xl text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></div>';
 
             var controls = document.getElementById('project-video-controls');
             var surface = document.getElementById('project-video-surface');
@@ -159,8 +147,20 @@
                 controls.classList.add('pointer-events-none', 'opacity-0');
             }
 
+            function showControlsForFourSeconds() {
+                showControls();
+                window.clearTimeout(projectControlsTimer);
+                projectControlsTimer = window.setTimeout(function () {
+                    projectControlsTimer = null;
+                    hideControls();
+                }, 4000);
+            }
+
             stage.addEventListener('mouseenter', showControls);
-            stage.addEventListener('mouseleave', hideControls);
+            stage.addEventListener('mouseleave', function () {
+                if (!projectControlsTimer) hideControls();
+            });
+            stage.addEventListener('click', showControlsForFourSeconds, true);
 
             surface.addEventListener('click', function () {
                 if (!projectPlayer || !window.YT) return;
