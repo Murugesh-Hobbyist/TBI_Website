@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Lead;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class SiteController extends Controller
@@ -60,6 +62,7 @@ class SiteController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'company' => ['nullable', 'string', 'max:120'],
+            'subject' => ['required', 'string', 'max:160'],
             'message' => ['nullable', 'string', 'max:5000'],
         ]);
 
@@ -72,10 +75,33 @@ class SiteController extends Controller
         try {
             Lead::create($data);
         } catch (\Throwable $e) {
-            return redirect()->route('contact')->with('status', 'Thanks. Message received (database setup pending).');
+            Log::warning('Contact lead could not be saved.', ['exception' => $e]);
         }
 
-        return redirect()->route('contact')->with('status', 'Thanks. We will get back to you shortly.');
+        try {
+            $recipient = (string) config('twinbot.contact.email_primary');
+            $replyTo = $data['email'] ?? null;
+            $message = "New website contact request\n\n"
+                ."Name: {$data['name']}\n"
+                ."Company: ".($data['company'] ?: 'Not provided')."\n"
+                ."Email: ".($data['email'] ?: 'Not provided')."\n"
+                ."Subject: {$data['subject']}\n\n"
+                ."Message:\n".($data['message'] ?: 'Not provided');
+
+            Mail::raw($message, function ($mail) use ($recipient, $replyTo, $data) {
+                $mail->to($recipient)->subject('[TwinBot website] '.$data['subject']);
+
+                if ($replyTo) {
+                    $mail->replyTo($replyTo, $data['name']);
+                }
+            });
+        } catch (\Throwable $e) {
+            Log::error('Contact notification email could not be sent.', ['exception' => $e]);
+
+            return redirect()->route('contact')->with('status', 'Your request was received, but email delivery needs attention. Please email support directly.');
+        }
+
+        return redirect()->route('contact')->with('status', 'Thanks. Your request was sent to TwinBot support.');
     }
 
     public function submitQuote(Request $request)

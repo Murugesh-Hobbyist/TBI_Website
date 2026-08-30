@@ -13,7 +13,7 @@
             <div class="grid gap-5 md:grid-cols-2">
                 <div class="tb-panel p-6 md:p-10 tb-reveal">
                     <span class="tb-eyebrow">Contact TwinBot</span>
-                    <h1 class="tb-heading mt-4">Let us shape your next automation milestone.</h1>
+                    <h1 class="tb-subheading mt-4">Let us shape your next automation milestone.</h1>
                     <p class="tb-lead mt-5">Share your challenge, your timeline, and your target outcome. Our engineering team will respond with practical next steps.</p>
 
                     <div class="mt-6 grid gap-3">
@@ -51,6 +51,12 @@
                         </div>
 
                         <div>
+                            <label class="tb-form-label">Subject</label>
+                            <input name="subject" value="{{ old('subject') }}" class="tb-input" required />
+                            @error('subject')<div class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</div>@enderror
+                        </div>
+
+                        <div>
                             <label class="tb-form-label">Email</label>
                             <input name="email" type="email" value="{{ old('email') }}" class="tb-input" />
                             @error('email')<div class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</div>@enderror
@@ -70,24 +76,4 @@
         </div>
     </section>
 
-    <section class="tb-section pb-16">
-        <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-panel p-6 md:p-8 tb-reveal">
-                <span class="tb-eyebrow">FAQ</span>
-                <h2 class="tb-subheading mt-3">Quick answers</h2>
-                <div class="mt-5 grid gap-3 md:grid-cols-3">
-                        @foreach (config('twinbot.faqs', []) as $faq)
-                            <details class="tb-compare" @if($loop->first) open @endif>
-                                <summary>{{ $faq['q'] }}</summary>
-                                <div class="tb-compare-body">
-                                    <div class="tb-compare-item">
-                                        <p class="tb-compare-copy">{{ $faq['a'] }}</p>
-                                    </div>
-                                </div>
-                            </details>
-                        @endforeach
-                </div>
-            </div>
-        </div>
-    </section>
 @endsection

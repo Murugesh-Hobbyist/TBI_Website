@@ -12,6 +12,7 @@ class Lead extends Model
         'email',
         'phone',
         'company',
+        'subject',
         'message',
         'meta',
     ];
@@ -20,4 +21,3 @@ class Lead extends Model
         'meta' => 'array',
     ];
 }
-
