@@ -6,34 +6,6 @@
 @section('content')
     <section class="tb-section pt-6 md:pt-10">
         <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-panel p-6 md:p-10 tb-reveal">
-                <span class="tb-eyebrow">Who We Are</span>
-                <h1 class="tb-heading mt-4">Engineers building practical automation that works in production.</h1>
-                <p class="tb-lead mt-5 max-w-3xl">TwinBot Innovations was founded to close the gap between expensive, rigid industrial control stacks and the real needs of modern manufacturing teams. We design embedded platforms that are clear, dependable, and economically sensible.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="tb-section">
-        <div class="mx-auto max-w-6xl px-4">
-            <div class="grid gap-4 md:grid-cols-4">
-                @foreach ([
-                    ['k' => '20%+', 'v' => 'Typical reduction in fixed platform cost versus traditional options'],
-                    ['k' => '0%', 'v' => 'Compromise on reliability when systems are engineered correctly'],
-                    ['k' => '1 Year', 'v' => 'Free maintenance visit included after deployment'],
-                    ['k' => '5+', 'v' => 'ECS-based industrial projects running in production'],
-                ] as $metric)
-                    <article class="tb-card tb-reveal">
-                        <div class="font-display text-3xl text-[#1F6FD0]">{{ $metric['k'] }}</div>
-                        <p class="mt-2 text-sm leading-relaxed text-[#4F6890]">{{ $metric['v'] }}</p>
-                    </article>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    <section class="tb-section">
-        <div class="mx-auto max-w-6xl px-4">
             <div class="grid gap-5 md:grid-cols-2">
                 <div class="tb-panel p-6 md:p-8 tb-reveal">
                     <span class="tb-eyebrow">Mission</span>
@@ -66,7 +38,7 @@
         $leadershipTeam = [
             [
                 'name' => 'Murugesh',
-                'role' => 'CEO',
+                'role' => 'Founder',
                 'image' => 'twinbot/about/leadership/murugesh.png',
             ],
             [
@@ -76,7 +48,7 @@
             ],
             [
                 'name' => 'Karthikeyan',
-                'role' => 'Founder',
+                'role' => 'Seed Investor',
                 'image' => 'twinbot/about/leadership/karthikeyan.png',
             ],
         ];
@@ -88,7 +60,7 @@
                 <span class="tb-eyebrow">Leadership Team</span>
                 <h2 class="tb-subheading mt-3">People behind TwinBot</h2>
                 <p class="tb-lead mt-3 max-w-4xl">
-                    Our journey is fueled by a shared passion for innovation and excellence. As the founder, Murugesh led the charge in shaping the vision and developing the products, with his brother Lingappan contributing in the early stages as co-founder. Karthikeyan, the seed investor, helped enable the team to turn ideas into real industrial automation solutions.
+                    Our journey is fueled by a shared passion for innovation and excellence. As the founder, Murugesh led the charge in shaping the vision and developing the products, with his brother Lingappan contributing in the early stages as a hardware engineer. Karthikeyan, the seed investor, helped enable the team to turn ideas into real industrial automation solutions.
                 </p>
 
                 <div class="mt-6 grid gap-4 md:grid-cols-3">
@@ -113,17 +85,4 @@
         </div>
     </section>
 
-    <section class="tb-section pb-16">
-        <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-cta tb-reveal">
-                <span class="tb-eyebrow">Collaborate</span>
-                <h2 class="tb-subheading mt-3">Need a serious automation partner?</h2>
-                <p class="tb-lead mt-3 max-w-2xl">If your team needs an embedded platform that can survive production pressure, we are ready to design it with you.</p>
-                <div class="mt-5 flex flex-wrap gap-3">
-                    <a href="{{ route('contact') }}" class="btn btn-primary">Connect With TwinBot</a>
-                    <a href="{{ route('projects.index') }}" class="btn btn-ghost">See Execution Proof</a>
-                </div>
-            </div>
-        </div>
-    </section>
 @endsection
