@@ -15,9 +15,10 @@
 
                 <div class="tb-pitch-map mt-9">
                     <div class="tb-pitch-origin"><small>INSPECTION REQUIREMENT</small><strong>What does your production line need to inspect?</strong></div>
-                    <div class="tb-pitch-line" aria-hidden="true"><i></i></div>
+                    <div class="tb-pitch-line tb-flow-input" aria-hidden="true"><i></i></div>
                     <div class="tb-pitch-core"><span>TBI</span><div><small>TWINBOT ECS CORE</small><strong>Embedded control architecture</strong></div></div>
                     <div class="tb-pitch-compare"><span>Conventional PLC stack: more layers, separate tools</span><b>→</b><strong>TwinBot ECS: compact, integrated, custom</strong></div>
+                    <div class="tb-pitch-line tb-flow-core" aria-hidden="true"><i></i></div>
                     <div class="tb-pitch-split" aria-hidden="true"><i></i><i></i><i></i></div>
 
                     <div class="tb-product-streams">
@@ -28,7 +29,7 @@
 
                     <div class="tb-pitch-merge" aria-hidden="true"><i></i><i></i><i></i></div>
                     <div class="tb-pitch-shared">Custom operator UI <b>·</b> Access control <b>·</b> Fast multicore control <b>·</b> Remote updates <b>·</b> Traceable production data</div>
-                    <div class="tb-pitch-line" aria-hidden="true"><i></i></div>
+                    <div class="tb-pitch-line tb-flow-output" aria-hidden="true"><i></i></div>
                     <div class="tb-pitch-outcome"><span></span><small>OUTCOME</small><strong>Clear operation. Proof in every part. Ready to scale.</strong></div>
                 </div>
             </div>
@@ -68,6 +69,31 @@
         @keyframes tb-branch-spark{from{transform:translateY(0)}to{transform:translateY(3.15rem)}}
         @keyframes tb-target-signal{from{transform:translateY(0)}to{transform:translateY(2.55rem)}}
         @media(min-width:768px){.tb-customer-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
+
+        /* One sequenced pulse: input, core, three parallel platforms, merge, capabilities, outcome. */
+        .tb-pitch-map{--tb-flow-cycle:10.5s}
+        .tb-pitch-line i,.tb-pitch-split i:before,.tb-pitch-merge i:before,.tb-product-stream:before{animation:none!important;opacity:0}
+        .tb-flow-input i{animation:tb-flow-input var(--tb-flow-cycle) linear infinite!important}
+        .tb-flow-core i{animation:tb-flow-core var(--tb-flow-cycle) linear infinite!important}
+        .tb-pitch-split i:before{top:0;left:calc(50% - 3px);width:6px;height:.82rem;background:linear-gradient(#1677d2,#24c6aa);animation:tb-flow-split var(--tb-flow-cycle) linear infinite!important}
+        .tb-pitch-merge i:before{top:0;left:calc(50% - 3px);width:6px;height:.82rem;background:linear-gradient(#1677d2,#24c6aa);animation:tb-flow-merge var(--tb-flow-cycle) linear infinite!important}
+        .tb-flow-output i{animation:tb-flow-output var(--tb-flow-cycle) linear infinite!important}
+        .tb-product-stream:hover{transform:translateY(-7px)}
+        .tb-product-stream:hover .tb-stream-no{background:transparent;color:#167d83;box-shadow:none}
+        @keyframes tb-flow-input{0%,1%{opacity:0;transform:translateY(-115%)}2%{opacity:1}10%{opacity:1;transform:translateY(320%)}11%,100%{opacity:0;transform:translateY(320%)}}
+        @keyframes tb-flow-core{0%,14%{opacity:0;transform:translateY(-115%)}15%{opacity:1}24%{opacity:1;transform:translateY(320%)}25%,100%{opacity:0;transform:translateY(320%)}}
+        @keyframes tb-flow-split{0%,29%{opacity:0;transform:translateY(-105%)}30%{opacity:1}41%{opacity:1;transform:translateY(310%)}42%,100%{opacity:0;transform:translateY(310%)}}
+        @keyframes tb-flow-merge{0%,60%{opacity:0;transform:translateY(-105%)}61%{opacity:1}72%{opacity:1;transform:translateY(310%)}73%,100%{opacity:0;transform:translateY(310%)}}
+        @keyframes tb-flow-output{0%,80%{opacity:0;transform:translateY(-115%)}81%{opacity:1}91%{opacity:1;transform:translateY(320%)}92%,100%{opacity:0;transform:translateY(320%)}}
+        .tb-pitch-map:has(.tb-product-stream:hover){--tb-flow-cycle:9.4s}
+        .tb-pitch-map:has(.tb-product-stream:hover) .tb-pitch-split i:before,.tb-pitch-map:has(.tb-product-stream:hover) .tb-pitch-merge i:before{animation:none!important;opacity:0!important}
+        .tb-pitch-map:has(.tb-product-stream:nth-child(1):hover) .tb-pitch-split i:nth-child(1):before,.tb-pitch-map:has(.tb-product-stream:nth-child(1):hover) .tb-pitch-merge i:nth-child(1):before{animation:tb-flow-split var(--tb-flow-cycle) linear infinite!important;opacity:1!important}
+        .tb-pitch-map:has(.tb-product-stream:nth-child(1):hover) .tb-pitch-merge i:nth-child(1):before{animation-name:tb-flow-merge!important}
+        .tb-pitch-map:has(.tb-product-stream:nth-child(2):hover) .tb-pitch-split i:nth-child(2):before,.tb-pitch-map:has(.tb-product-stream:nth-child(2):hover) .tb-pitch-merge i:nth-child(2):before{animation:tb-flow-split var(--tb-flow-cycle) linear infinite!important;opacity:1!important}
+        .tb-pitch-map:has(.tb-product-stream:nth-child(2):hover) .tb-pitch-merge i:nth-child(2):before{animation-name:tb-flow-merge!important}
+        .tb-pitch-map:has(.tb-product-stream:nth-child(3):hover) .tb-pitch-split i:nth-child(3):before,.tb-pitch-map:has(.tb-product-stream:nth-child(3):hover) .tb-pitch-merge i:nth-child(3):before{animation:tb-flow-split var(--tb-flow-cycle) linear infinite!important;opacity:1!important}
+        .tb-pitch-map:has(.tb-product-stream:nth-child(3):hover) .tb-pitch-merge i:nth-child(3):before{animation-name:tb-flow-merge!important}
+        @media(prefers-reduced-motion:reduce){.tb-pitch-line i,.tb-pitch-split i:before,.tb-pitch-merge i:before{animation:none!important;opacity:0!important}}
     </style>
 @endsection
 
