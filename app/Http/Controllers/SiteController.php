@@ -78,14 +78,19 @@ class SiteController extends Controller
             Log::warning('Contact lead could not be saved.', ['exception' => $e]);
         }
 
-        try {
-            $recipient = (string) config('twinbot.contact.email_primary');
-            $replyTo = $data['email'] ?? null;
-            $mailer = (string) config('mail.default');
+        $recipient = (string) config('twinbot.contact.email_primary');
+        $replyTo = $data['email'] ?? null;
+        $mailer = (string) config('mail.default');
 
-            if ($recipient === '' || in_array($mailer, ['array', 'log'], true)) {
-                throw new \RuntimeException('SMTP mail delivery is not configured.');
-            }
+        if ($recipient === '') {
+            return redirect()->route('contact')->with('status', 'Email was not sent: the support recipient is not configured.');
+        }
+
+        if (in_array($mailer, ['array', 'log'], true)) {
+            return redirect()->route('contact')->with('status', 'Email was not sent: the live server is still using '.$mailer.' mail instead of SMTP.');
+        }
+
+        try {
 
             $message = "New website contact request\n\n"
                 ."Name: {$data['name']}\n"
@@ -111,7 +116,7 @@ class SiteController extends Controller
         } catch (\Throwable $e) {
             Log::error('Contact notification email could not be sent.', ['exception' => $e]);
 
-            return redirect()->route('contact')->with('status', 'Email was not sent: TwinBot mail delivery is not configured or was rejected. Please email support directly.');
+            return redirect()->route('contact')->with('status', 'Email was not sent: the SMTP server rejected the connection or credentials. Please verify the Hostinger mail settings.');
         }
 
         return redirect()->route('contact')->with('status', 'Email accepted by TwinBot’s mail server and sent to support.'.($messageId ? ' Reference: '.$messageId : ''));
