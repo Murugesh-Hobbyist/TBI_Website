@@ -119,7 +119,7 @@
             if (projectPlayer && projectPlayer.destroy) projectPlayer.destroy();
             projectPlayer = null;
             stage.innerHTML = '';
-            stage.innerHTML = '<div id="project-video-player" class="h-full w-full"></div><div class="pointer-events-none absolute inset-x-0 top-0 z-[5] h-20 bg-gradient-to-b from-[#07192F]/90 via-[#07192F]/45 to-transparent backdrop-blur-2xl"></div><div class="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-20 bg-gradient-to-t from-[#07192F]/90 via-[#07192F]/45 to-transparent backdrop-blur-2xl"></div><button id="project-video-surface" type="button" class="absolute inset-0 z-10 cursor-pointer" aria-label="Pause video"></button><div id="project-video-controls" class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[58px] bg-gradient-to-t from-[#07192F]/95 via-[#07192F]/65 to-transparent opacity-0 transition-opacity duration-200 md:h-[64px]"><div class="flex h-full items-end gap-3 px-3 pb-3 text-white md:px-4 md:pb-4"><button id="project-video-restart" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-lg text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Restart video" title="Restart">↺</button><span id="project-video-time" class="shrink-0 text-xs font-bold tabular-nums">0:00 / 0:00</span><input id="project-video-progress" class="pointer-events-auto mb-1 h-1.5 min-w-0 flex-1 cursor-pointer accent-[#28C7B7]" type="range" min="0" max="0" value="0" step="0.1" aria-label="Video progress"><button id="project-video-captions" type="button" class="pointer-events-auto rounded px-2 py-1 text-xs font-extrabold text-white/80 transition hover:bg-white/15 hover:text-white" aria-label="Turn captions on" aria-pressed="false">CC</button><button id="project-video-fullscreen" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-xl text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></div>';
+            stage.innerHTML = '<div id="project-video-player" class="h-full w-full"></div><button id="project-video-surface" type="button" class="absolute inset-0 z-10 cursor-pointer" aria-label="Pause video"></button><div id="project-video-controls" class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[58px] bg-gradient-to-t from-[#07192F]/95 via-[#07192F]/65 to-transparent opacity-0 transition-opacity duration-200 md:h-[64px]"><div class="flex h-full items-end gap-3 px-3 pb-3 text-white md:px-4 md:pb-4"><button id="project-video-restart" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-lg text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Restart video" title="Restart">↺</button><span id="project-video-time" class="shrink-0 text-xs font-bold tabular-nums">0:00 / 0:00</span><input id="project-video-progress" class="pointer-events-auto mb-1 h-1.5 min-w-0 flex-1 cursor-pointer accent-[#28C7B7]" type="range" min="0" max="0" value="0" step="0.1" aria-label="Video progress"><button id="project-video-captions" type="button" class="pointer-events-auto rounded px-2 py-1 text-xs font-extrabold text-white/80 transition hover:bg-white/15 hover:text-white" aria-label="Turn captions on" aria-pressed="false">CC</button><button id="project-video-fullscreen" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-xl text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></div>';
 
             var controls = document.getElementById('project-video-controls');
             var surface = document.getElementById('project-video-surface');
@@ -203,17 +203,10 @@
                         playsinline: 1,
                         disablekb: 1,
                         cc_load_policy: 0,
-                        showinfo: 0,
                         origin: window.location.origin
                     },
                     events: {
                         onReady: function (event) {
-                            var iframe = event.target.getIframe();
-                            iframe.style.position = 'absolute';
-                            iframe.style.inset = '0';
-                            iframe.style.width = '100%';
-                            iframe.style.height = '100%';
-                            iframe.style.border = '0';
                             event.target.playVideo();
                             projectPlayerTimer = window.setInterval(function () {
                                 var duration = event.target.getDuration();
