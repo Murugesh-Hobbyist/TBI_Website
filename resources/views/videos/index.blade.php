@@ -148,20 +148,20 @@
                 controls.classList.add('pointer-events-none', 'opacity-0');
             }
 
-            function showControlsForFiveSeconds() {
+            function showControlsForSixSeconds() {
                 showControls();
                 window.clearTimeout(projectControlsTimer);
                 projectControlsTimer = window.setTimeout(function () {
                     projectControlsTimer = null;
                     hideControls();
-                }, 5000);
+                }, 6000);
             }
 
             stage.addEventListener('mouseenter', showControls);
             stage.addEventListener('mouseleave', function () {
                 if (!projectControlsTimer) hideControls();
             });
-            stage.addEventListener('click', showControlsForFiveSeconds, true);
+            stage.addEventListener('click', showControlsForSixSeconds, true);
 
             surface.addEventListener('click', function () {
                 if (!projectPlayer || !window.YT) return;
@@ -217,6 +217,8 @@
                     stage.requestFullscreen?.();
                 }
             });
+
+            showControlsForSixSeconds();
 
             loadYouTubeApi().then(function () {
                 projectPlayer = new window.YT.Player('project-video-player', {
