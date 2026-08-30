@@ -8,17 +8,7 @@
         $bySlug = collect($products ?? [])->keyBy('slug');
     @endphp
 
-    <section class="tb-section pt-6 md:pt-10">
-        <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-panel p-6 md:p-10 tb-reveal">
-                <span class="tb-eyebrow">Product Portfolio</span>
-                <h1 class="tb-heading mt-4">Tools and systems designed for precision-driven industrial teams.</h1>
-                <p class="tb-lead mt-5 max-w-3xl">Explore DigiDial inspection consoles, practical measurement accessories, and smart vending automation built for consistent performance and simple operator workflows.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="tb-section pb-16">
+    <section class="tb-section pt-6 md:pt-10 pb-16">
         <div class="mx-auto max-w-6xl px-4">
             @foreach (($groups ?? []) as $group)
                 @php
@@ -65,16 +55,6 @@
             @if (($products ?? collect())->count() === 0)
                 <div class="tb-panel p-6 text-sm text-[#4F6890] tb-reveal">No products available right now.</div>
             @endif
-
-            <div class="tb-cta mt-6 tb-reveal">
-                <span class="tb-eyebrow">Need help choosing?</span>
-                <h2 class="tb-subheading mt-3">Tell us your application and we will recommend the right setup.</h2>
-                <p class="tb-lead mt-3 max-w-2xl">Share channel count, measurement objective, and process environment. We will suggest the best-fit configuration.</p>
-                <div class="mt-5 flex flex-wrap gap-3">
-                    <a href="{{ route('contact') }}" class="btn btn-primary">Get Product Guidance</a>
-                    <a href="{{ route('solutions') }}" class="btn btn-ghost">See Full Solution Approach</a>
-                </div>
-            </div>
         </div>
     </section>
 @endsection
