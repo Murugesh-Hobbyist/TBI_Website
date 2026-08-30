@@ -19,7 +19,7 @@
                     <h1 class="tb-subheading mt-2">Tell us what you need</h1>
                     <p class="tb-lead mt-2">We review every request manually and reply with the right technical path.</p>
 
-                    <form class="mt-5 grid gap-4 sm:grid-cols-2" method="POST" action="{{ route('contact.submit') }}" data-contact-form>
+                    <form class="mt-5 grid gap-4" method="POST" action="{{ route('contact.submit') }}" data-contact-form>
                         @csrf
 
                         <div class="grid content-start gap-3 sm:grid-cols-2">
@@ -49,10 +49,10 @@
                         <div class="flex flex-col">
                             <div class="flex-1">
                                 <label class="tb-form-label">Message</label>
-                                <textarea name="message" rows="8" class="tb-textarea h-full min-h-[12.6rem]" placeholder="Share your application, current challenge, and expected timeline.">{{ old('message') }}</textarea>
+                                <textarea name="message" rows="5" class="tb-textarea min-h-[8.5rem]" placeholder="Share your application, current challenge, and expected timeline.">{{ old('message') }}</textarea>
                                 @error('message')<div class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</div>@enderror
                             </div>
-                            <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <p class="max-w-2xl text-xs leading-relaxed text-[#607C9A]">By submitting, you agree that TwinBot may use these details to respond to your request. Do not include PINs, OTPs, passwords, bank credentials, or identity documents. See our <a href="{{ route('policies.privacy') }}" class="font-semibold text-[#1F6FD0] hover:text-[#16589F]">Privacy Policy</a>.</p>
                                 <button class="btn btn-primary shrink-0" type="submit" data-contact-submit>Send Request</button>
                             </div>
