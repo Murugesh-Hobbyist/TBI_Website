@@ -24,7 +24,7 @@
                             <iframe
                                 id="project-video-player"
                                 class="h-full w-full"
-                                src="https://www.youtube-nocookie.com/embed/{{ $activeVideo['youtube_id'] }}?rel=0&modestbranding=1"
+                                src="https://www.youtube-nocookie.com/embed/{{ $activeVideo['youtube_id'] }}?autoplay=0&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1"
                                 title="{{ $activeVideo['title'] }}"
                                 frameborder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -87,7 +87,7 @@
                 var player = document.getElementById('project-video-player');
                 if (!player) return;
 
-                player.src = 'https://www.youtube-nocookie.com/embed/' + card.dataset.youtubeId + '?autoplay=1&rel=0&modestbranding=1';
+                player.src = 'https://www.youtube-nocookie.com/embed/' + card.dataset.youtubeId + '?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1';
                 player.title = card.dataset.title;
                 document.getElementById('project-video-title').textContent = card.dataset.title;
                 document.getElementById('project-video-summary').textContent = card.dataset.summary;

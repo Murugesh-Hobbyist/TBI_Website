@@ -21,7 +21,7 @@
                     <div class="aspect-video w-full overflow-hidden rounded-2xl border border-[#C6DCEF] bg-[#F3FAFF]">
                         <iframe
                             class="h-full w-full"
-                            src="https://www.youtube-nocookie.com/embed/{{ $video->provider_id }}"
+                            src="https://www.youtube-nocookie.com/embed/{{ $video->provider_id }}?controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1"
                             title="{{ $video->title }}"
                             frameborder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -48,4 +48,3 @@
         </div>
     </section>
 @endsection
-
