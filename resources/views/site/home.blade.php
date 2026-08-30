@@ -248,7 +248,7 @@
                     <div class="tb-logo-grid mt-6">
                         @foreach (config('twinbot.assets.trusted_logos', []) as $logo)
                             <div class="tb-logo-card">
-                                <img src="{{ asset($logo) }}" alt="Trusted brand" class="max-h-10 w-auto object-contain" />
+                                <img src="{{ asset($logo) }}" alt="Trusted brand" class="max-h-11 max-w-full w-auto object-contain" />
                             </div>
                         @endforeach
                     </div>

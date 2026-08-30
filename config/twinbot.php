@@ -35,6 +35,8 @@ return [
             'twinbot/brands/brand-screenshot-08_23_46.png',
             'twinbot/brands/brand-screenshot-08_26_08.png',
             'twinbot/brands/brand-screenshot-16_26_53.png',
+            'twinbot/brands/sunmac-tools-services.png',
+            'twinbot/brands/rico.png',
         ],
     ],
 
