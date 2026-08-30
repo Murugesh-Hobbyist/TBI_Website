@@ -117,13 +117,15 @@
 
             if (projectPlayerTimer) window.clearInterval(projectPlayerTimer);
             if (projectPlayer && projectPlayer.destroy) projectPlayer.destroy();
+            projectPlayer = null;
             stage.innerHTML = '';
-            stage.innerHTML = '<div id="project-video-player" class="h-full w-full"></div><button id="project-video-surface" type="button" class="absolute inset-0 z-10 cursor-pointer" aria-label="Pause video"></button><div id="project-video-controls" class="absolute inset-x-0 bottom-0 z-20 h-[58px] bg-[#0B2441] shadow-[0_-12px_24px_rgba(11,36,65,0.5)] md:h-[64px]"><div id="project-video-control-content" class="pointer-events-none flex h-full items-center gap-3 px-3 text-white opacity-0 transition-opacity duration-200 md:px-4"><span id="project-video-time" class="shrink-0 text-xs font-bold tabular-nums">0:00 / 0:00</span><input id="project-video-progress" class="pointer-events-auto h-1.5 min-w-0 flex-1 cursor-pointer accent-[#28C7B7]" type="range" min="0" max="0" value="0" step="0.1" aria-label="Video progress"><button id="project-video-captions" type="button" class="pointer-events-auto rounded px-2 py-1 text-xs font-extrabold text-white/80 transition hover:bg-white/15 hover:text-white" aria-label="Turn captions on" aria-pressed="false">CC</button><button id="project-video-fullscreen" type="button" class="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded text-xl text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></div>';
+            stage.innerHTML = '<div id="project-video-player" class="h-full w-full"></div><button id="project-video-surface" type="button" class="absolute inset-0 z-10 cursor-pointer" aria-label="Pause video"></button><div id="project-video-controls" class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[58px] bg-gradient-to-t from-[#07192F]/95 via-[#07192F]/65 to-transparent opacity-0 transition-opacity duration-200 md:h-[64px]"><div class="flex h-full items-end gap-3 px-3 pb-3 text-white md:px-4 md:pb-4"><button id="project-video-restart" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-lg text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Restart video" title="Restart">↺</button><span id="project-video-time" class="shrink-0 text-xs font-bold tabular-nums">0:00 / 0:00</span><input id="project-video-progress" class="pointer-events-auto mb-1 h-1.5 min-w-0 flex-1 cursor-pointer accent-[#28C7B7]" type="range" min="0" max="0" value="0" step="0.1" aria-label="Video progress"><button id="project-video-captions" type="button" class="pointer-events-auto rounded px-2 py-1 text-xs font-extrabold text-white/80 transition hover:bg-white/15 hover:text-white" aria-label="Turn captions on" aria-pressed="false">CC</button><button id="project-video-fullscreen" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-xl text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></div>';
 
-            var controls = document.getElementById('project-video-control-content');
+            var controls = document.getElementById('project-video-controls');
             var surface = document.getElementById('project-video-surface');
             var progress = document.getElementById('project-video-progress');
             var time = document.getElementById('project-video-time');
+            var restart = document.getElementById('project-video-restart');
             var captions = document.getElementById('project-video-captions');
             var fullscreen = document.getElementById('project-video-fullscreen');
             var captionsEnabled = false;
@@ -131,6 +133,10 @@
             function showControls() {
                 controls.classList.remove('pointer-events-none', 'opacity-0');
                 controls.classList.add('pointer-events-auto', 'opacity-100');
+                if (projectPlayer && window.YT && projectPlayer.getPlayerState() !== window.YT.PlayerState.PLAYING) {
+                    projectPlayer.playVideo();
+                    surface.setAttribute('aria-label', 'Pause video');
+                }
             }
 
             function hideControls() {
@@ -154,6 +160,13 @@
 
             progress.addEventListener('input', function () {
                 if (projectPlayer) projectPlayer.seekTo(Number(this.value), true);
+            });
+
+            restart.addEventListener('click', function () {
+                if (!projectPlayer) return;
+                projectPlayer.seekTo(0, true);
+                projectPlayer.playVideo();
+                surface.setAttribute('aria-label', 'Pause video');
             });
 
             captions.addEventListener('click', function () {
