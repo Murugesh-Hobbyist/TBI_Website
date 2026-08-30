@@ -4,30 +4,44 @@ namespace App\Http\Controllers;
 
 use App\Models\Video;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
 
 class VideoController extends Controller
 {
     public function index()
     {
-        $dbOk = true;
+        $videos = collect();
 
         try {
             $videos = Video::query()
                 ->where('is_published', true)
                 ->latest('published_at')
-                ->paginate(12);
+                ->get()
+                ->map(fn (Video $video) => [
+                    'title' => $video->title,
+                    'summary' => $video->summary ?: 'A TwinBot project video.',
+                    'youtube_id' => $video->provider === 'youtube' ? $video->provider_id : null,
+                    'category' => 'Project Video',
+                ])
+                ->filter(fn (array $video) => filled($video['youtube_id']))
+                ->values();
         } catch (\Throwable $e) {
-            $dbOk = false;
-            $videos = new LengthAwarePaginator([], 0, 12, 1, [
-                'path' => Paginator::resolveCurrentPath(),
-            ]);
+            // Shared hosting can serve this page before a database is configured.
+        }
+
+        if ($videos->isEmpty()) {
+            $videos = collect(config('twinbot.videos', []))
+                ->map(fn (array $video) => [
+                    'title' => trim((string) ($video['title'] ?? 'TwinBot Project Video')),
+                    'summary' => trim((string) ($video['summary'] ?? 'A TwinBot automation project video.')),
+                    'youtube_id' => trim((string) ($video['youtube_id'] ?? '')),
+                    'category' => trim((string) ($video['category'] ?? 'Project Video')),
+                ])
+                ->filter(fn (array $video) => $video['youtube_id'] !== '')
+                ->values();
         }
 
         return view('videos.index', [
             'videos' => $videos,
-            'dbOk' => $dbOk,
         ]);
     }
 

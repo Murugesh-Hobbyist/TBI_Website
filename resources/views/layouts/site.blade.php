@@ -172,5 +172,6 @@
         </footer>
 
         @include('partials.assistant_widget')
+        @stack('scripts')
     </body>
 </html>

@@ -40,6 +40,17 @@ return [
         ],
     ],
 
+    // YouTube project library used when the database is unavailable. Add each
+    // public YouTube video ID here; videos are embedded on twinbot.in.
+    'videos' => [
+        // [
+        //     'title' => 'Project title',
+        //     'summary' => 'Short explanation of the automation outcome.',
+        //     'youtube_id' => 'VIDEO_ID_FROM_YOUTUBE_URL',
+        //     'category' => 'Industrial Automation',
+        // ],
+    ],
+
     // Fallback catalog used when DB is not configured (or unavailable).
     'products' => [
         [
