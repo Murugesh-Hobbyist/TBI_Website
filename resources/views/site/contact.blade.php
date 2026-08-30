@@ -22,7 +22,7 @@
                     <form class="mt-5 grid gap-4 sm:grid-cols-2" method="POST" action="{{ route('contact.submit') }}" data-contact-form>
                         @csrf
 
-                        <div class="grid content-start gap-3 sm:col-span-2 sm:grid-cols-2">
+                        <div class="grid content-start gap-3 sm:grid-cols-2">
                             <div>
                                 <label class="tb-form-label">Name</label>
                                 <input name="name" value="{{ old('name') }}" class="tb-input" required />
@@ -44,16 +44,16 @@
                             <input name="email" type="email" value="{{ old('email') }}" class="tb-input" />
                             @error('email')<div class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</div>@enderror
                         </div>
+                        <p class="sm:col-span-2 mt-1 max-w-xl text-xs leading-relaxed text-[#607C9A]">By submitting, you agree that TwinBot may use these details to respond to your request. Do not include PINs, OTPs, passwords, bank credentials, or identity documents. See our <a href="{{ route('policies.privacy') }}" class="font-semibold text-[#1F6FD0] hover:text-[#16589F]">Privacy Policy</a>.</p>
                         </div>
 
-                        <div class="flex flex-col sm:col-span-2">
+                        <div class="flex flex-col">
                             <div class="flex-1">
                                 <label class="tb-form-label">Message</label>
-                                <textarea name="message" rows="4" class="tb-textarea min-h-[7rem]" placeholder="Share your application, current challenge, and expected timeline.">{{ old('message') }}</textarea>
+                                <textarea name="message" rows="12" class="tb-textarea h-full min-h-[18rem]" placeholder="Share your application, current challenge, and expected timeline.">{{ old('message') }}</textarea>
                                 @error('message')<div class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</div>@enderror
                             </div>
-                            <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <p class="max-w-2xl text-xs leading-relaxed text-[#607C9A]">By submitting, you agree that TwinBot may use these details to respond to your request. Do not include PINs, OTPs, passwords, bank credentials, or identity documents. See our <a href="{{ route('policies.privacy') }}" class="font-semibold text-[#1F6FD0] hover:text-[#16589F]">Privacy Policy</a>.</p>
+                            <div class="mt-3 flex justify-end">
                                 <button class="btn btn-primary shrink-0" type="submit" data-contact-submit>Send Request</button>
                             </div>
                         </div>
