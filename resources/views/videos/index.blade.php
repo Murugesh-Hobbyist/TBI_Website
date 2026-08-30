@@ -37,6 +37,21 @@
                                 <span class="absolute bottom-5 left-5 rounded-full bg-[#122E53]/85 px-4 py-2 text-sm font-bold text-white">Play project video</span>
                             </button>
                         </div>
+                        <div class="mt-5 border-t border-[#D8E6F4] pt-5">
+                            <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">Comparison: standard YouTube embed</div>
+                            <p class="mt-2 text-sm text-[#4F6890]">The same RICO video using the basic iframe method from the reference tutorial.</p>
+                            <div class="mt-3 aspect-video overflow-hidden rounded-2xl border border-[#C6DCEF] bg-[#122E53]">
+                                <iframe
+                                    class="h-full w-full"
+                                    src="https://www.youtube-nocookie.com/embed/{{ $activeVideo['youtube_id'] }}"
+                                    title="Standard YouTube embed: {{ $activeVideo['title'] }}"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    referrerpolicy="strict-origin-when-cross-origin"
+                                    allowfullscreen
+                                ></iframe>
+                            </div>
+                        </div>
                     </div>
 
                     <aside class="tb-panel p-6 md:p-8 tb-reveal" aria-live="polite">
