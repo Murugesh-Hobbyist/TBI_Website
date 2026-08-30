@@ -68,127 +68,43 @@
         @keyframes tb-flow-signal { from { transform: translateY(-120%); } to { transform: translateY(320%); } }
         @keyframes tb-flow-pulse { 70% { box-shadow: 0 0 0 .6rem rgba(25, 196, 168, 0); } 100% { box-shadow: 0 0 0 0 rgba(25, 196, 168, 0); } }
         @keyframes tb-flow-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        .tb-pitch { overflow: hidden; background: radial-gradient(circle at 85% 14%, rgba(27, 198, 169, .18), transparent 27%), linear-gradient(135deg, #0b2544, #123f70); color: #fff; }
+        .tb-pitch .tb-eyebrow { color: #9feadf; border-color: rgba(159,234,223,.35); background: rgba(255,255,255,.08); }
+        .tb-pitch h2, .tb-pitch p { color: #fff; }
+        .tb-pitch-orbit { position: absolute; right: -5rem; top: -6rem; width: 19rem; height: 19rem; border: 1px solid rgba(159,234,223,.25); border-radius: 50%; animation: tb-orbit 14s linear infinite; }
+        .tb-pitch-orbit::before, .tb-pitch-orbit::after { content: ''; position: absolute; width: .7rem; height: .7rem; border-radius: 50%; background: #35dac1; box-shadow: 0 0 20px #35dac1; } .tb-pitch-orbit::before { top: 2rem; left: 2.4rem; } .tb-pitch-orbit::after { bottom: 2rem; right: 2.4rem; }
+        .tb-pitch-grid { position: relative; display: grid; gap: 1rem; margin-top: 2rem; } .tb-pitch-card { position: relative; padding: 1.25rem; border: 1px solid rgba(255,255,255,.16); border-radius: 1rem; background: rgba(255,255,255,.08); backdrop-filter: blur(10px); opacity: 0; transform: translateY(20px); transition: .65s ease; transition-delay: var(--pitch-delay); }
+        .tb-pitch.is-live .tb-pitch-card { opacity: 1; transform: translateY(0); }
+        .tb-pitch-card::before { content: attr(data-index); display: inline-flex; width: 1.8rem; height: 1.8rem; align-items: center; justify-content: center; border-radius: 50%; background: #ff5d62; color: #fff; font-size: .72rem; font-weight: 800; }
+        .tb-pitch-card h3 { margin-top: .75rem; color: #fff; font-family: 'Chakra Petch', sans-serif; font-size: 1.15rem; } .tb-pitch-card p { margin-top: .45rem; color: #c9dcf1; font-size: .86rem; line-height: 1.55; }
+        .tb-pitch-card--ecs { border-color: rgba(53,218,193,.55); background: linear-gradient(145deg, rgba(53,218,193,.24), rgba(255,255,255,.08)); } .tb-pitch-card--ecs::before { background: #1fc7aa; }
+        .tb-pitch-vs { display: grid; gap: .8rem; } .tb-pitch-vs strong { color: #ffbec0; font-size: .76rem; letter-spacing: .09em; text-transform: uppercase; } .tb-pitch-vs span { color: #a8f1e4; font-size: .76rem; letter-spacing: .09em; text-transform: uppercase; }
+        .tb-pitch-tag { display: inline-flex; margin-top: 1.4rem; padding: .5rem .8rem; border-radius: 999px; background: rgba(255,255,255,.1); color: #d9ecff; font-size: .78rem; font-weight: 700; }
+        .tb-section .tb-panel, .tb-section .tb-cta { transition: transform .35s ease, box-shadow .35s ease; } .tb-section .tb-panel:hover, .tb-section .tb-cta:hover { transform: translateY(-4px); box-shadow: 0 20px 42px rgba(29,88,147,.14); }
+        @keyframes tb-orbit { to { transform: rotate(360deg); } }
+        @media (min-width: 768px) { .tb-pitch-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } .tb-pitch-card:nth-child(3) { grid-column: 1 / -1; } }
         @media (max-width: 767px) { .tb-flow-node::before { display: none; } .tb-flow-line { height: 2.5rem; } }
     </style>
 
     <section class="tb-section">
         <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-panel p-6 md:p-8">
-                <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div class="tb-pitch tb-panel relative p-6 md:p-10">
+                <div class="tb-pitch-orbit" aria-hidden="true"></div>
+                <div class="relative z-10 max-w-3xl">
                     <div>
-                        <span class="tb-eyebrow">Decision Clarity</span>
-                        <h2 class="tb-subheading mt-3">Legacy PLC pain vs ECS execution advantage</h2>
-                        <p class="tb-lead mt-2 max-w-3xl">Use these quick comparison modules to align management and engineering teams around practical architecture choices.</p>
+                        <span class="tb-eyebrow">The TwinBot pitch</span>
+                        <h2 class="tb-heading mt-4">Stop paying the <span class="text-[#35dac1]">PLC complexity tax.</span></h2>
+                        <p class="mt-4 max-w-2xl text-base leading-relaxed text-[#d6e9ff]">The same production target can feel completely different on the floor. TwinBot ECS replaces cabinet archaeology with clear, evidence-led execution.</p>
                     </div>
-                    <a href="{{ route('contact') }}" class="btn btn-ghost">Get Architecture Advice</a>
-                </div>
-
-                <div class="mt-6 grid gap-4 md:grid-cols-2">
-                    @foreach ($compareRows as $row)
-                        <details class="tb-compare tb-reveal" @if($loop->index < 2) open @endif>
-                            <summary>{{ $row['aspect'] }}</summary>
-                            <div class="tb-compare-body">
-                                <div class="tb-compare-item">
-                                    <div class="tb-compare-label">Legacy PLC Pattern</div>
-                                    <p class="tb-compare-copy">{{ $row['plc'] }}</p>
-                                </div>
-                                <div class="tb-compare-item">
-                                    <div class="tb-compare-label">TwinBot ECS Approach</div>
-                                    <p class="tb-compare-copy">{{ $row['ecs'] }}</p>
-                                </div>
-                            </div>
-                        </details>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="tb-section">
-        <div class="mx-auto max-w-6xl px-4">
-            <div class="grid gap-5 md:grid-cols-2">
-                <div class="tb-panel p-6 md:p-8 tb-reveal">
-                    <span class="tb-eyebrow">Execution Flow</span>
-                    <h2 class="tb-subheading mt-3">From requirements to stable production integration</h2>
-
-                    <div class="tb-process mt-5">
-                        <div class="tb-step" data-step="01">
-                            <h3>Process discovery and risk mapping</h3>
-                            <p>We map your quality targets, machine constraints, and operator friction before locking architecture.</p>
-                        </div>
-                        <div class="tb-step" data-step="02">
-                            <h3>Embedded system design sprint</h3>
-                            <p>Hardware, firmware, and interface are tuned together to match your exact line behavior.</p>
-                        </div>
-                        <div class="tb-step" data-step="03">
-                            <h3>Validation on real production signals</h3>
-                            <p>Pass/fail logic, logging integrity, and throughput behavior are verified before deployment sign-off.</p>
-                        </div>
-                        <div class="tb-step" data-step="04">
-                            <h3>Rollout with lifecycle support</h3>
-                            <p>We support commissioning, stabilization, and iterative upgrades without disrupting operations.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tb-panel p-6 md:p-8 tb-reveal">
-                    <span class="tb-eyebrow">Sail OS Layer</span>
-                    <h2 class="tb-subheading mt-3">Control intelligence that teams can actually use</h2>
-                    <p class="tb-lead mt-3">Sail OS transforms raw machine data into action-ready operator and supervisor views with clean traceability.</p>
-
-                    <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                        @foreach ([
-                            'Real-time production dashboards',
-                            'Structured fault/event history',
-                            'Pass/fail traceability models',
-                            'Flexible sensor-device interfacing',
-                            'Operator-focused UX flows',
-                            'Ready for IoT + analytics stack',
-                        ] as $item)
-                            <div class="tb-panel-soft p-4 text-sm font-semibold text-[#2d557e]">{{ $item }}</div>
+                    <div class="tb-pitch-grid">
+                        @foreach ($compareRows as $row)
+                            <article class="tb-pitch-card" data-index="0{{ $loop->iteration }}" style="--pitch-delay: {{ $loop->index * 0.12 }}s">
+                                <h3>{{ $row['aspect'] }}</h3>
+                                <div class="tb-pitch-vs mt-4"><strong>Legacy PLC: {{ $row['plc'] }}</strong><span>TwinBot ECS: {{ $row['ecs'] }}</span></div>
+                            </article>
                         @endforeach
                     </div>
-
-                    <div class="mt-5 flex flex-wrap gap-3">
-                        <a href="{{ route('features') }}" class="btn btn-primary">View Platform Features</a>
-                        <a href="{{ route('solutions') }}" class="btn btn-ghost">See Solution Tracks</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="tb-section">
-        <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-panel p-6 md:p-8">
-                <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                    <div>
-                        <span class="tb-eyebrow">Product Portfolio</span>
-                        <h2 class="tb-subheading mt-3">Precision devices built for real production outcomes</h2>
-                    </div>
-                    <a href="{{ route('products.index') }}" class="btn btn-ghost">Browse Full Catalog</a>
-                </div>
-
-                <div class="mt-6 grid gap-4 md:grid-cols-3">
-                    @foreach (($featuredProducts ?? collect()) as $p)
-                        @php
-                            $img = $p['image'] ?? null;
-                            $src = $img && \Illuminate\Support\Str::startsWith($img, ['http://', 'https://']) ? $img : ($img ? asset($img) : null);
-                        @endphp
-                        <a href="{{ route('products.show', ['product' => $p['slug']]) }}" class="tb-card tb-reveal group">
-                            @if ($src)
-                                <div class="tb-product-thumb">
-                                    <img src="{{ $src }}" alt="{{ $p['title'] }}" class="h-full w-full object-contain transition duration-200 group-hover:scale-[1.03]" />
-                                </div>
-                            @endif
-                            <div class="mt-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#607b9a]">{{ $p['series'] ?? 'Product' }}</div>
-                            <div class="mt-2 font-display text-xl text-[#132b4d]">{{ $p['title'] }}</div>
-                            @if (!empty($p['summary']))
-                                <p class="mt-2 text-sm leading-relaxed text-[#4f6890]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $p['summary']), 130) }}</p>
-                            @endif
-                            <div class="mt-4 text-sm font-bold text-[#1f6fd0]">Explore details</div>
-                        </a>
-                    @endforeach
+                    <div class="tb-pitch-tag">Less cabinet archaeology. More production confidence.</div>
                 </div>
             </div>
         </div>
@@ -222,3 +138,23 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    <script>
+        document.querySelectorAll('.tb-pitch').forEach(function (pitch) {
+            if (!('IntersectionObserver' in window)) {
+                pitch.classList.add('is-live');
+                return;
+            }
+
+            new IntersectionObserver(function (entries, observer) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        pitch.classList.add('is-live');
+                        observer.unobserve(pitch);
+                    }
+                });
+            }, { threshold: 0.22 }).observe(pitch);
+        });
+    </script>
+@endpush
