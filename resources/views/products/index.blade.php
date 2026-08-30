@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', 'Products | TwinBot Innovations')
-@section('meta_description', 'Explore TwinBot product lines including DigiDial consoles, FitSense systems, smart vending automation, and industrial measurement accessories.')
+@section('meta_description', 'Explore TwinBot DigiDial consoles, smart vending systems, and industrial measurement accessories.')
 
 @section('content')
     @php
@@ -13,7 +13,7 @@
             <div class="tb-panel p-6 md:p-10 tb-reveal">
                 <span class="tb-eyebrow">Product Portfolio</span>
                 <h1 class="tb-heading mt-4">Tools and systems designed for precision-driven industrial teams.</h1>
-                <p class="tb-lead mt-5 max-w-3xl">From dimensional inspection consoles and displacement measurement platforms to smart vending automation, each product is built for consistent performance and simple operator workflows.</p>
+                <p class="tb-lead mt-5 max-w-3xl">Explore DigiDial inspection consoles, practical measurement accessories, and smart vending automation built for consistent performance and simple operator workflows.</p>
             </div>
         </div>
     </section>
@@ -49,6 +49,9 @@
                                 @endif
                                 <div class="mt-4 text-xs font-extrabold uppercase tracking-[0.12em] text-[#607C9A]">{{ $product['series'] ?? 'Product' }}</div>
                                 <div class="mt-2 font-display text-xl text-[#122E53]">{{ $product['title'] }}</div>
+                                @if (!empty($product['price_label']))
+                                    <div class="mt-2 text-sm font-extrabold text-[#078B9A]">{{ $product['price_label'] }}</div>
+                                @endif
                                 @if (!empty($product['summary']))
                                     <p class="mt-2 text-sm leading-relaxed text-[#4F6890]">{{ \Illuminate\Support\Str::limit(strip_tags((string) $product['summary']), 150) }}</p>
                                 @endif

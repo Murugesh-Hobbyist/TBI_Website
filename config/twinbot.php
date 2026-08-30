@@ -99,6 +99,7 @@ return [
             'slug' => 'digidial-console-8ch',
             'title' => 'DigiDial Console - 8CH',
             'series' => 'DigiDial Console Series',
+            'price_label' => '₹1.7 lakh',
             'summary' => 'Automated dimensional inspection system built around Mitutoyo Digimatic Dials. Captures measurements, compares tolerances, outputs OK/Fail, logs results, and simplifies operator effort.',
             'body' => "DigiDial Console is a purpose-built automated inspection system designed to measure casted or machined part dimensions using up to 8 Mitutoyo Digimatic Dials with 2-digit precision.\n\nIt captures real-time readings, compares them against predefined tolerance limits, and automatically determines Pass or Fail. It reduces manual error, ensures consistency, and stores every detail for inspection analysis.\n\nOptional IoTLink module outputs data via RS485 Modbus RTU for IoT integration.",
             'image' => 'twinbot/products/digidial-console-8ch.png',
@@ -115,6 +116,7 @@ return [
             'slug' => 'digidial-console-16ch',
             'title' => 'DigiDial Console - 16CH',
             'series' => 'DigiDial Console Series',
+            'price_label' => '₹2.5 lakh',
             'summary' => 'Automated dimensional inspection system built around Mitutoyo Digimatic Dials. Captures measurements, compares tolerances, outputs OK/Fail, logs results, and simplifies operator effort.',
             'body' => "DigiDial Console is a purpose-built automated inspection system designed to measure casted or machined part dimensions using up to 16 Mitutoyo Digimatic Dials with 2-digit precision.\n\nEquipped with a 15-inch capacitive touch display, it captures real-time readings, compares them against tolerance limits, and determines Pass/Fail automatically.\n\nOptional IoTLink module outputs data via RS485 Modbus RTU for IoT integration.",
             'image' => 'twinbot/products/digidial-console-16ch.png',
@@ -166,7 +168,6 @@ return [
             'title' => 'DigiDial Console Series',
             'slugs' => [
                 'digidial-console-8ch',
-                'digidial-console-12ch',
                 'digidial-console-16ch',
             ],
         ],
@@ -174,14 +175,6 @@ return [
             'title' => 'Accessories',
             'slugs' => [
                 'mitutoyo-digimatic-cable',
-            ],
-        ],
-        [
-            'title' => 'FitSense Series',
-            'slugs' => [
-                'fitsense-lite',
-                'fitsense-pro',
-                'fitsense-ultra',
             ],
         ],
         [

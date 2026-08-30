@@ -18,6 +18,9 @@
                 <article class="tb-panel p-6 md:p-8 tb-reveal">
                     <span class="tb-eyebrow">{{ $product['series'] ?? 'Product' }}</span>
                     <h1 class="tb-heading mt-4">{{ $product['title'] ?? 'Product' }}</h1>
+                    @if (!empty($product['price_label']))
+                        <div class="mt-3 text-lg font-extrabold text-[#078B9A]">{{ $product['price_label'] }}</div>
+                    @endif
                     @if (!empty($product['summary']))
                         <p class="tb-lead mt-4">{{ $product['summary'] }}</p>
                     @endif

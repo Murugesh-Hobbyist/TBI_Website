@@ -124,6 +124,7 @@ class ProductController extends Controller
 
     private function normalizeProduct(Product $p): array
     {
+        $fallback = $this->fallbackProductBySlug((string) $p->slug) ?? [];
         $image = null;
         $firstImage = $p->media->firstWhere('type', 'image');
         if ($firstImage && $firstImage->path) {
@@ -132,7 +133,6 @@ class ProductController extends Controller
 
         // If no media exists, use the fallback catalog image (if available).
         if (!$image) {
-            $fallback = $this->fallbackProductBySlug((string) $p->slug);
             $image = $fallback['image'] ?? null;
         }
 
@@ -141,6 +141,8 @@ class ProductController extends Controller
             'slug' => (string) $p->slug,
             'summary' => $p->summary ? (string) $p->summary : null,
             'body' => $p->body ? (string) $p->body : null,
+            'series' => $fallback['series'] ?? null,
+            'price_label' => $fallback['price_label'] ?? null,
             'sku' => $p->sku ? (string) $p->sku : null,
             'price_cents' => (int) $p->price_cents,
             'currency' => (string) $p->currency,
