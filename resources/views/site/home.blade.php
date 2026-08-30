@@ -6,20 +6,6 @@
 @section('content')
     @php
         $compareRows = collect(config('twinbot.home.plc_vs_ecs', []));
-        $heroStats = [
-            ['value' => '20%+', 'label' => 'Lower platform ownership cost'],
-            ['value' => '5+', 'label' => 'Industrial lines running live'],
-            ['value' => '24/7', 'label' => 'Engineering response coverage'],
-            ['value' => '1 Year', 'label' => 'Free maintenance visit'],
-        ];
-
-        $signalBlocks = [
-            ['value' => '92.8%', 'label' => 'First-pass inspection confidence'],
-            ['value' => '3.2x', 'label' => 'Faster line fault traceability'],
-            ['value' => '<45m', 'label' => 'Average pilot setup cycle'],
-            ['value' => '99.2%', 'label' => 'Runtime stability observed'],
-        ];
-
         $valuePillars = [
             [
                 'title' => 'Operator-Clear Interfaces',
@@ -38,83 +24,52 @@
 
     <section class="tb-section pt-6 md:pt-10">
         <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-hero-shell p-6 md:p-10 tb-reveal">
-                <div class="tb-hero-grid">
-                    <div>
-                        <span class="tb-eyebrow">Automation Studio 2.0</span>
-                        <h1 class="tb-heading mt-5">
-                            Industrial systems, redesigned for
-                            <span class="tb-gradient-text">speed, clarity, and scale.</span>
-                        </h1>
-                        <p class="tb-lead mt-5 max-w-2xl">
-                            TwinBot builds embedded control and inspection platforms that eliminate unnecessary PLC complexity,
-                            simplify operator workflows, and keep production teams confident from pilot to full rollout.
-                        </p>
+            <div class="tb-panel p-6 md:p-10 tb-reveal">
+                <div class="mx-auto max-w-4xl text-center">
+                    <span class="tb-eyebrow">TwinBot Platform Flow</span>
+                    <h1 class="tb-heading mt-4">From control complexity to confident execution.</h1>
+                    <p class="tb-lead mx-auto mt-5 max-w-3xl">TwinBot builds embedded control and inspection platforms that eliminate unnecessary PLC complexity, simplify operator workflows, and keep production teams confident from pilot to full rollout.</p>
+                </div>
 
-                        <div class="mt-8 flex flex-wrap gap-3">
-                            <a href="{{ route('products.index') }}" class="btn btn-primary">Explore Product Systems</a>
-                            <a href="{{ route('contact') }}" class="btn btn-ghost">Start Technical Consultation</a>
-                        </div>
-
-                        <div class="tb-hero-pills mt-7">
-                            <span class="tb-hero-pill">Embedded Control Systems</span>
-                            <span class="tb-hero-pill">Inspection Automation</span>
-                            <span class="tb-hero-pill">Industrial Data Logging</span>
-                            <span class="tb-hero-pill">Custom Electronics</span>
-                        </div>
+                <div class="tb-flowchart mt-9">
+                    <div class="tb-flow-source">
+                        <span class="tb-flow-pulse"></span>
+                        <span>Production challenge</span>
                     </div>
-
-                    <div class="space-y-4">
-                        <div class="tb-signal-board">
-                            <div class="tb-signal-title">Live Execution Signals</div>
-                            <p class="tb-signal-copy">Representative outcomes from deployment-first architecture across production environments.</p>
-                            <div class="tb-signal-grid">
-                                @foreach ($signalBlocks as $block)
-                                    <div class="tb-signal-item">
-                                        <div class="tb-signal-value">{{ $block['value'] }}</div>
-                                        <div class="tb-signal-label">{{ $block['label'] }}</div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            @foreach ($heroStats as $stat)
-                                <div class="tb-stat">
-                                    <div class="tb-stat-value">{{ $stat['value'] }}</div>
-                                    <div class="tb-stat-label">{{ $stat['label'] }}</div>
-                                </div>
-                            @endforeach
-                        </div>
+                    <div class="tb-flow-line" aria-hidden="true"><span></span></div>
+                    <div class="grid gap-4 md:grid-cols-3">
+                        @foreach ($valuePillars as $pillar)
+                            <article class="tb-flow-node" style="--flow-delay: {{ $loop->index * 0.35 }}s">
+                                <div class="tb-flow-index">0{{ $loop->iteration }}</div>
+                                <h2>{{ $pillar['title'] }}</h2>
+                                <p>{{ $pillar['copy'] }}</p>
+                            </article>
+                        @endforeach
                     </div>
+                    <div class="tb-flow-outcome"><span></span>Clearer actions. Stronger evidence. Confident rollout.</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="tb-section">
-        <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-panel p-6 md:p-8">
-                <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                    <div>
-                        <span class="tb-eyebrow">Why Teams Switch</span>
-                        <h2 class="tb-subheading mt-3">What makes TwinBot platforms feel different on the floor</h2>
-                    </div>
-                    <a href="{{ route('solutions') }}" class="btn btn-ghost">See Solution Tracks</a>
-                </div>
-
-                <div class="mt-6 grid gap-4 md:grid-cols-3">
-                    @foreach ($valuePillars as $pillar)
-                        <article class="tb-card tb-reveal">
-                            <div class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#5f7a98]">Advantage</div>
-                            <h3 class="mt-2 font-display text-xl text-[#122f54]">{{ $pillar['title'] }}</h3>
-                            <p class="mt-2 text-sm leading-relaxed text-[#4d688f]">{{ $pillar['copy'] }}</p>
-                        </article>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </section>
+    <style>
+        .tb-flowchart { position: relative; }
+        .tb-flow-source, .tb-flow-outcome { display: flex; align-items: center; justify-content: center; gap: .7rem; margin: 0 auto; width: fit-content; border-radius: 999px; padding: .7rem 1.1rem; font-size: .76rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #173e69; background: #e8f5ff; border: 1px solid #b9d9f4; }
+        .tb-flow-pulse { width: .55rem; height: .55rem; border-radius: 50%; background: #19c4a8; box-shadow: 0 0 0 0 rgba(25, 196, 168, .6); animation: tb-flow-pulse 1.8s infinite; }
+        .tb-flow-line { position: relative; height: 3.5rem; width: 2px; margin: 0 auto; overflow: hidden; background: #bdd7ee; }
+        .tb-flow-line span { display: block; width: 100%; height: 35%; background: linear-gradient(#1f6fd0, #19c4a8); animation: tb-flow-signal 1.6s ease-in-out infinite; }
+        .tb-flow-node { position: relative; min-height: 12.2rem; padding: 1.5rem; border: 1px solid #c7dff4; border-radius: 1.25rem; background: linear-gradient(145deg, #fff, #eef8ff); box-shadow: 0 14px 28px rgba(28, 91, 152, .1); animation: tb-flow-rise .7s both; animation-delay: var(--flow-delay); }
+        .tb-flow-node::before { content: ''; position: absolute; top: -1.1rem; left: 50%; width: 1px; height: 1.1rem; background: #bdd7ee; }
+        .tb-flow-index { display: inline-flex; align-items: center; justify-content: center; width: 2.3rem; height: 2.3rem; border-radius: .75rem; color: #fff; background: linear-gradient(135deg, #1f6fd0, #19c4a8); font-size: .78rem; font-weight: 800; }
+        .tb-flow-node h2 { margin-top: 1rem; color: #122f54; font-family: 'Chakra Petch', sans-serif; font-size: 1.3rem; line-height: 1.15; }
+        .tb-flow-node p { margin-top: .7rem; color: #4d688f; font-size: .9rem; line-height: 1.6; }
+        .tb-flow-outcome { margin-top: 2rem; color: #0d5b57; background: #eafbf6; border-color: #a9e4d5; letter-spacing: .07em; }
+        .tb-flow-outcome span { width: .55rem; height: .55rem; border-radius: 50%; background: #19c4a8; }
+        @keyframes tb-flow-signal { from { transform: translateY(-120%); } to { transform: translateY(320%); } }
+        @keyframes tb-flow-pulse { 70% { box-shadow: 0 0 0 .6rem rgba(25, 196, 168, 0); } 100% { box-shadow: 0 0 0 0 rgba(25, 196, 168, 0); } }
+        @keyframes tb-flow-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 767px) { .tb-flow-node::before { display: none; } .tb-flow-line { height: 2.5rem; } }
+    </style>
 
     <section class="tb-section">
         <div class="mx-auto max-w-6xl px-4">
