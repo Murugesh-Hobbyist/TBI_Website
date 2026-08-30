@@ -42,7 +42,7 @@
                 <p>We combine embedded engineering, measurement expertise, and field reality to deliver systems that perform in production, not just in presentation decks.</p>
                 <div class="mt-6 flex flex-wrap justify-center gap-3">
                     <a href="{{ route('contact') }}" class="btn btn-primary">Book a Technical Call</a>
-                    <a href="{{ route('projects.index') }}" class="btn btn-ghost">See Published Projects</a>
+                    <a href="{{ route('videos.index') }}" class="btn btn-ghost">See Published Projects</a>
                 </div>
             </div>
         </div>

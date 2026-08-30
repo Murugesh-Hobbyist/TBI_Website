@@ -84,7 +84,6 @@
                 </nav>
 
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('contact') }}" class="btn btn-ghost hidden lg:inline-flex">Need quick quote?</a>
                     <a href="{{ route('contact') }}" class="btn btn-primary hidden md:inline-flex">Book Consultation</a>
                     <button id="tb-menu-toggle" type="button" class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#c6d8ee] bg-white text-[#1b456f]" aria-label="Open menu" aria-expanded="false">
                         <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
