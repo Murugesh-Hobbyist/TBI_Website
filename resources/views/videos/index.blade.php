@@ -87,51 +87,128 @@
 
 @push('scripts')
     <script>
+        var projectPlayer;
+        var projectPlayerTimer;
+        var youtubeApiPromise;
+
+        function loadYouTubeApi() {
+            if (window.YT && window.YT.Player) return Promise.resolve();
+            if (youtubeApiPromise) return youtubeApiPromise;
+
+            youtubeApiPromise = new Promise(function (resolve) {
+                window.onYouTubeIframeAPIReady = resolve;
+                var script = document.createElement('script');
+                script.src = 'https://www.youtube.com/iframe_api';
+                document.head.appendChild(script);
+            });
+            return youtubeApiPromise;
+        }
+
+        function formatVideoTime(seconds) {
+            seconds = Math.max(0, Math.floor(seconds || 0));
+            var minutes = Math.floor(seconds / 60);
+            var remainingSeconds = String(seconds % 60).padStart(2, '0');
+            return minutes + ':' + remainingSeconds;
+        }
+
         function startProjectVideo(youtubeId, title) {
             var stage = document.getElementById('project-video-stage');
             if (!stage) return;
 
+            if (projectPlayerTimer) window.clearInterval(projectPlayerTimer);
+            if (projectPlayer && projectPlayer.destroy) projectPlayer.destroy();
             stage.innerHTML = '';
-            var player = document.createElement('iframe');
-            player.id = 'project-video-player';
-            player.className = 'h-full w-full';
-            player.src = 'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1&enablejsapi=1&origin=' + encodeURIComponent(window.location.origin);
-            player.title = title;
-            player.frameBorder = '0';
-            player.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-            player.referrerPolicy = 'strict-origin-when-cross-origin';
-            player.allowFullscreen = true;
-            stage.appendChild(player);
+            stage.innerHTML = '<div id="project-video-player" class="h-full w-full"></div><button id="project-video-surface" type="button" class="absolute inset-0 z-10 cursor-pointer" aria-label="Pause video"></button><div id="project-video-controls" class="absolute inset-x-0 bottom-0 z-20 h-[58px] bg-[#0B2441] shadow-[0_-12px_24px_rgba(11,36,65,0.5)] md:h-[64px]"><div id="project-video-control-content" class="pointer-events-none flex h-full items-center gap-3 px-3 text-white opacity-0 transition-opacity duration-200 md:px-4"><span id="project-video-time" class="shrink-0 text-xs font-bold tabular-nums">0:00 / 0:00</span><input id="project-video-progress" class="pointer-events-auto h-1.5 min-w-0 flex-1 cursor-pointer accent-[#28C7B7]" type="range" min="0" max="0" value="0" step="0.1" aria-label="Video progress"><button id="project-video-captions" type="button" class="pointer-events-auto rounded px-2 py-1 text-xs font-extrabold text-white/80 transition hover:bg-white/15 hover:text-white" aria-label="Turn captions on" aria-pressed="false">CC</button><button id="project-video-fullscreen" type="button" class="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded text-xl text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></div>';
 
-            var controls = document.createElement('div');
-            controls.className = 'absolute inset-x-0 bottom-0 flex h-[74px] items-center justify-between gap-3 bg-[#0B2441] px-4 text-white shadow-[0_-12px_24px_rgba(11,36,65,0.5)] md:px-5';
-            controls.innerHTML = '<div class="flex items-center gap-2"><button id="project-video-toggle" type="button" class="rounded-full bg-white/15 px-4 py-2 text-sm font-bold transition hover:bg-white/25" aria-label="Pause video" aria-pressed="true">Pause</button><button id="project-video-mute" type="button" class="rounded-full bg-white/15 px-4 py-2 text-sm font-bold transition hover:bg-white/25" aria-label="Mute video">Mute</button></div><button id="project-video-fullscreen" type="button" class="rounded-full border border-white/35 px-4 py-2 text-sm font-bold transition hover:bg-white/15" aria-label="View video fullscreen">Fullscreen</button>';
-            stage.appendChild(controls);
+            var controls = document.getElementById('project-video-control-content');
+            var surface = document.getElementById('project-video-surface');
+            var progress = document.getElementById('project-video-progress');
+            var time = document.getElementById('project-video-time');
+            var captions = document.getElementById('project-video-captions');
+            var fullscreen = document.getElementById('project-video-fullscreen');
+            var captionsEnabled = false;
 
-            document.getElementById('project-video-toggle').addEventListener('click', function () {
-                var isPlaying = this.getAttribute('aria-pressed') === 'true';
-                sendYouTubeCommand(isPlaying ? 'pauseVideo' : 'playVideo');
-                this.setAttribute('aria-pressed', String(!isPlaying));
-                this.textContent = isPlaying ? 'Play' : 'Pause';
-                this.setAttribute('aria-label', isPlaying ? 'Play video' : 'Pause video');
-            });
-            document.getElementById('project-video-mute').addEventListener('click', function () {
-                var isMuted = this.getAttribute('aria-pressed') === 'true';
-                sendYouTubeCommand(isMuted ? 'unMute' : 'mute');
-                this.setAttribute('aria-pressed', String(!isMuted));
-                this.textContent = isMuted ? 'Mute' : 'Unmute';
-                this.setAttribute('aria-label', isMuted ? 'Mute video' : 'Unmute video');
-            });
-            document.getElementById('project-video-fullscreen').addEventListener('click', function () {
-                if (stage.requestFullscreen) stage.requestFullscreen();
-            });
-        }
-
-        function sendYouTubeCommand(command) {
-            var player = document.getElementById('project-video-player');
-            if (player && player.contentWindow) {
-                player.contentWindow.postMessage(JSON.stringify({ event: 'command', func: command, args: [] }), 'https://www.youtube-nocookie.com');
+            function showControls() {
+                controls.classList.remove('pointer-events-none', 'opacity-0');
+                controls.classList.add('pointer-events-auto', 'opacity-100');
             }
+
+            function hideControls() {
+                controls.classList.remove('pointer-events-auto', 'opacity-100');
+                controls.classList.add('pointer-events-none', 'opacity-0');
+            }
+
+            stage.addEventListener('mouseenter', showControls);
+            stage.addEventListener('mouseleave', hideControls);
+
+            surface.addEventListener('click', function () {
+                if (!projectPlayer || !window.YT) return;
+                if (projectPlayer.getPlayerState() === window.YT.PlayerState.PLAYING) {
+                    projectPlayer.pauseVideo();
+                    surface.setAttribute('aria-label', 'Play video');
+                } else {
+                    projectPlayer.playVideo();
+                    surface.setAttribute('aria-label', 'Pause video');
+                }
+            });
+
+            progress.addEventListener('input', function () {
+                if (projectPlayer) projectPlayer.seekTo(Number(this.value), true);
+            });
+
+            captions.addEventListener('click', function () {
+                if (!projectPlayer) return;
+                captionsEnabled = !captionsEnabled;
+                projectPlayer.loadModule('captions');
+                projectPlayer.setOption('captions', 'track', captionsEnabled ? { languageCode: 'en' } : {});
+                captions.setAttribute('aria-pressed', String(captionsEnabled));
+                captions.setAttribute('aria-label', captionsEnabled ? 'Turn captions off' : 'Turn captions on');
+                captions.classList.toggle('bg-white/20', captionsEnabled);
+                captions.classList.toggle('text-white', captionsEnabled);
+            });
+
+            fullscreen.addEventListener('click', function () {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen?.();
+                } else {
+                    stage.requestFullscreen?.();
+                }
+            });
+
+            loadYouTubeApi().then(function () {
+                projectPlayer = new window.YT.Player('project-video-player', {
+                    host: 'https://www.youtube-nocookie.com',
+                    videoId: youtubeId,
+                    width: '100%',
+                    height: '100%',
+                    playerVars: {
+                        autoplay: 1,
+                        controls: 0,
+                        rel: 0,
+                        modestbranding: 1,
+                        iv_load_policy: 3,
+                        playsinline: 1,
+                        disablekb: 1,
+                        cc_load_policy: 0,
+                        origin: window.location.origin
+                    },
+                    events: {
+                        onReady: function (event) {
+                            event.target.playVideo();
+                            projectPlayerTimer = window.setInterval(function () {
+                                var duration = event.target.getDuration();
+                                var current = event.target.getCurrentTime();
+                                progress.max = duration || 0;
+                                progress.value = current || 0;
+                                time.textContent = formatVideoTime(current) + ' / ' + formatVideoTime(duration);
+                            }, 250);
+                        },
+                        onStateChange: function (event) {
+                            surface.setAttribute('aria-label', event.data === window.YT.PlayerState.PLAYING ? 'Pause video' : 'Play video');
+                        }
+                    }
+                });
+            });
         }
 
         document.getElementById('project-video-cover')?.addEventListener('click', function () {
