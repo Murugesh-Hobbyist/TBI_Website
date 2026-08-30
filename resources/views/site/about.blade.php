@@ -38,8 +38,8 @@
         $leadershipTeam = [
             [
                 'name' => 'Murugesh',
-                'role' => 'Founder',
-                'image' => 'twinbot/about/leadership/murugesh.png',
+                'role' => 'Founder & CEO',
+                'image' => 'twinbot/about/leadership/murugesh.jpg',
             ],
             [
                 'name' => 'Lingappan',
