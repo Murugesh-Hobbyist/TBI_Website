@@ -52,18 +52,18 @@
         .tb-customer-logo{min-height:4.6rem;border-radius:.7rem}
         .tb-customer-logo img{max-width:76%;max-height:2.2rem}
         .tb-pitch-split i,.tb-pitch-merge i{overflow:hidden}
-        .tb-pitch-split i:before,.tb-pitch-merge i:before{content:'';position:absolute;z-index:2;top:-4px;width:1.15rem;height:.5rem;border-radius:999px;background:#25c8ae;box-shadow:0 0 12px #25c8ae;animation:tb-branch-spark 2.1s linear infinite}
+        .tb-pitch-split i:before,.tb-pitch-merge i:before{content:'';position:absolute;z-index:2;top:-.7rem;left:calc(50% - 3px);width:6px;height:.82rem;border-radius:999px;background:linear-gradient(#1677d2,#24c6aa);box-shadow:0 0 10px rgba(22,119,210,.9),0 0 18px rgba(36,198,170,.75);animation:tb-branch-spark 2.1s linear infinite}
         .tb-pitch-split i:nth-child(2):before,.tb-pitch-merge i:nth-child(2):before{animation-delay:.5s}
         .tb-pitch-split i:nth-child(3):before,.tb-pitch-merge i:nth-child(3):before{animation-delay:1s}
         .tb-pitch-split i:before,.tb-pitch-merge i:before{transition:opacity .25s ease,filter .25s ease}
         .tb-pitch-map:has(.tb-product-stream:nth-child(1):hover) .tb-pitch-split i:not(:nth-child(1)):before,.tb-pitch-map:has(.tb-product-stream:nth-child(2):hover) .tb-pitch-split i:not(:nth-child(2)):before,.tb-pitch-map:has(.tb-product-stream:nth-child(3):hover) .tb-pitch-split i:not(:nth-child(3)):before{opacity:.14;filter:saturate(.25)}
-        .tb-pitch-map:has(.tb-product-stream:nth-child(1):hover) .tb-pitch-split i:nth-child(1):before,.tb-pitch-map:has(.tb-product-stream:nth-child(2):hover) .tb-pitch-split i:nth-child(2):before,.tb-pitch-map:has(.tb-product-stream:nth-child(3):hover) .tb-pitch-split i:nth-child(3):before{background:#fff;box-shadow:0 0 16px #25c8ae,0 0 28px #2171d0}
+        .tb-pitch-map:has(.tb-product-stream:nth-child(1):hover) .tb-pitch-split i:nth-child(1):before,.tb-pitch-map:has(.tb-product-stream:nth-child(2):hover) .tb-pitch-split i:nth-child(2):before,.tb-pitch-map:has(.tb-product-stream:nth-child(3):hover) .tb-pitch-split i:nth-child(3):before{background:#1267bd;box-shadow:0 0 16px #24c6aa,0 0 28px #1267bd}
         .tb-product-stream{transition:transform .3s ease}
         .tb-product-stream:before{content:'';position:absolute;z-index:3;left:calc(50% - .18rem);top:-2.6rem;width:.36rem;height:.82rem;border-radius:999px;background:#fff;box-shadow:0 0 10px #25c8ae,0 0 22px #2171d0;opacity:0;pointer-events:none}
         .tb-product-stream:hover:before{opacity:1;animation:tb-target-signal 1s linear infinite}
         .tb-product-stream:hover{transform:translateY(-7px)}
         .tb-product-stream:hover .tb-stream-no{background:#1dbda7;color:#fff;box-shadow:0 0 18px rgba(29,189,167,.45)}
-        @keyframes tb-branch-spark{from{left:-20%}to{left:110%}}
+        @keyframes tb-branch-spark{from{transform:translateY(0)}to{transform:translateY(3.15rem)}}
         @keyframes tb-target-signal{from{transform:translateY(0)}to{transform:translateY(2.55rem)}}
         @media(min-width:768px){.tb-customer-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
     </style>
