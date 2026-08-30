@@ -122,13 +122,14 @@
             if (projectPlayer && projectPlayer.destroy) projectPlayer.destroy();
             projectPlayer = null;
             stage.innerHTML = '';
-            stage.innerHTML = '<div id="project-video-player" class="h-full w-full"></div><button id="project-video-surface" type="button" class="absolute inset-0 z-10 cursor-pointer" aria-label="Pause video"></button><div id="project-video-controls" class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[58px] bg-[#0B2441]/95 opacity-0 transition-opacity duration-200 md:h-[64px]"><div class="flex h-full items-end gap-3 px-3 pb-3 text-white md:px-4 md:pb-4"><button id="project-video-restart" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-lg text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Restart video" title="Restart">↺</button><span id="project-video-time" class="shrink-0 text-xs font-bold tabular-nums">0:00 / 0:00</span><input id="project-video-progress" class="pointer-events-auto mb-1 h-1.5 min-w-0 flex-1 cursor-pointer accent-[#28C7B7]" type="range" min="0" max="0" value="0" step="0.1" aria-label="Video progress"><button id="project-video-captions" type="button" class="pointer-events-auto rounded px-2 py-1 text-xs font-extrabold text-white/80 transition hover:bg-white/15 hover:text-white" aria-label="Turn captions on" aria-pressed="false">CC</button><button id="project-video-fullscreen" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-xl text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></div>';
+            stage.innerHTML = '<div id="project-video-player" class="h-full w-full"></div><button id="project-video-surface" type="button" class="absolute inset-0 z-10 cursor-pointer" aria-label="Pause video"></button><div id="project-video-controls" class="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[58px] bg-[#0B2441] opacity-0 transition-opacity duration-200 md:h-[64px]"><div class="flex h-full items-center gap-3 px-3 text-white md:px-4"><button id="project-video-restart" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-lg text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Restart video" title="Restart">↺</button><span id="project-video-time" class="shrink-0 text-xs font-bold tabular-nums">0:00 / 0:00</span><input id="project-video-progress" class="pointer-events-auto h-1.5 min-w-0 flex-1 cursor-pointer accent-[#FF0000]" type="range" min="0" max="0" value="0" step="0.1" aria-label="Video progress"><button id="project-video-mute" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-base text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Mute video" aria-pressed="false" title="Mute">🔊</button><button id="project-video-captions" type="button" class="pointer-events-auto rounded px-2 py-1 text-xs font-extrabold text-white/80 transition hover:bg-white/15 hover:text-white" aria-label="Turn captions on" aria-pressed="false">CC</button><button id="project-video-fullscreen" type="button" class="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-xl text-white/90 transition hover:bg-white/15 hover:text-white" aria-label="Enter fullscreen" title="Fullscreen">⛶</button></div></div>';
 
             var controls = document.getElementById('project-video-controls');
             var surface = document.getElementById('project-video-surface');
             var progress = document.getElementById('project-video-progress');
             var time = document.getElementById('project-video-time');
             var restart = document.getElementById('project-video-restart');
+            var mute = document.getElementById('project-video-mute');
             var captions = document.getElementById('project-video-captions');
             var fullscreen = document.getElementById('project-video-fullscreen');
             var captionsEnabled = false;
@@ -147,20 +148,20 @@
                 controls.classList.add('pointer-events-none', 'opacity-0');
             }
 
-            function showControlsForFourSeconds() {
+            function showControlsForFiveSeconds() {
                 showControls();
                 window.clearTimeout(projectControlsTimer);
                 projectControlsTimer = window.setTimeout(function () {
                     projectControlsTimer = null;
                     hideControls();
-                }, 4000);
+                }, 5000);
             }
 
             stage.addEventListener('mouseenter', showControls);
             stage.addEventListener('mouseleave', function () {
                 if (!projectControlsTimer) hideControls();
             });
-            stage.addEventListener('click', showControlsForFourSeconds, true);
+            stage.addEventListener('click', showControlsForFiveSeconds, true);
 
             surface.addEventListener('click', function () {
                 if (!projectPlayer || !window.YT) return;
@@ -182,6 +183,20 @@
                 projectPlayer.seekTo(0, true);
                 projectPlayer.playVideo();
                 surface.setAttribute('aria-label', 'Pause video');
+            });
+
+            mute.addEventListener('click', function () {
+                if (!projectPlayer) return;
+                var isMuted = projectPlayer.isMuted();
+                if (isMuted) {
+                    projectPlayer.unMute();
+                } else {
+                    projectPlayer.mute();
+                }
+                mute.setAttribute('aria-pressed', String(!isMuted));
+                mute.setAttribute('aria-label', isMuted ? 'Mute video' : 'Unmute video');
+                mute.title = isMuted ? 'Mute' : 'Unmute';
+                mute.textContent = isMuted ? '🔊' : '🔇';
             });
 
             captions.addEventListener('click', function () {
