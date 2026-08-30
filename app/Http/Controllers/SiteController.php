@@ -116,7 +116,14 @@ class SiteController extends Controller
         } catch (\Throwable $e) {
             Log::error('Contact notification email could not be sent.', ['exception' => $e]);
 
-            return redirect()->route('contact')->with('status', 'Email was not sent: the SMTP server rejected the connection or credentials. Please verify the Hostinger mail settings.');
+            $error = strtolower($e->getMessage());
+            $status = str_contains($error, 'authentication') || str_contains($error, 'username') || str_contains($error, 'password')
+                ? 'Email was not sent: Hostinger rejected the mailbox username or password.'
+                : (str_contains($error, 'connection') || str_contains($error, 'stream_socket')
+                    ? 'Email was not sent: the SMTP server could not be reached. Check host, port, and encryption.'
+                    : 'Email was not sent: the SMTP server rejected the message. Please verify the Hostinger mail settings.');
+
+            return redirect()->route('contact')->with('status', $status);
         }
 
         return redirect()->route('contact')->with('status', 'Email accepted by TwinBot’s mail server and sent to support.'.($messageId ? ' Reference: '.$messageId : ''));
