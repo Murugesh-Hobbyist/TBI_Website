@@ -54,10 +54,9 @@
         .tb-customer-logo{min-height:4.6rem;border-radius:.7rem}
         .tb-customer-logo img{max-width:76%;max-height:2.2rem}
         .tb-pitch-split i,.tb-pitch-merge i{overflow:hidden}
-        .tb-pitch-split i:before,.tb-pitch-merge i:before{content:'';position:absolute;z-index:2;top:-4px;width:1.15rem;height:.5rem;border-radius:999px;background:#25c8ae;box-shadow:0 0 12px #25c8ae;animation:tb-branch-spark 2.1s linear infinite}
-        .tb-pitch-split i:nth-child(2):before,.tb-pitch-merge i:nth-child(2):before{animation-delay:.5s}
-        .tb-pitch-split i:nth-child(3):before,.tb-pitch-merge i:nth-child(3):before{animation-delay:1s}
-        .tb-pitch-map:hover .tb-pitch-split i:before,.tb-pitch-map:hover .tb-pitch-merge i:before,.tb-pitch-map:hover .tb-pitch-line i{animation-duration:.65s}
+        .tb-product-streams{width:min(100%,52rem)}
+        .tb-pitch-split i:before,.tb-pitch-merge i:before{display:none}
+        .tb-pitch-merge{display:none}
         .tb-product-stream{transition:transform .3s ease}
         .tb-product-stream:hover{transform:translateY(-7px)}
         .tb-product-stream:hover .tb-stream-no{background:#1dbda7;color:#fff;box-shadow:0 0 18px rgba(29,189,167,.45)}
