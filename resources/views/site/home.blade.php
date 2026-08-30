@@ -1,166 +1,71 @@
 @extends('layouts.site')
 
-@section('title', 'TwinBot Innovations | Embedded Automation Reimagined')
-@section('meta_description', 'TwinBot Innovations designs embedded control systems, precision measurement platforms, and industrial automation products that are clear, scalable, and production-ready.')
+@section('title', 'TwinBot Innovations | Embedded Automation for Production')
+@section('meta_description', 'TwinBot Innovations develops embedded control, inspection, and traceability systems for industrial automation.')
 
 @section('content')
-    @php
-        $compareRows = collect(config('twinbot.home.plc_vs_ecs', []));
-        $valuePillars = [
-            [
-                'title' => 'Operator-Clear Interfaces',
-                'copy' => 'Fewer clicks, clearer pass/fail states, and predictable flow for shift-level execution.',
-            ],
-            [
-                'title' => 'Modular Embedded Core',
-                'copy' => 'Purpose-built electronics and firmware blocks that scale from pilot station to production line.',
-            ],
-            [
-                'title' => 'Actionable Visibility Layer',
-                'copy' => 'Traceable event logging and structured diagnostics so decisions come from evidence.',
-            ],
-        ];
-    @endphp
-
     <section class="tb-section pt-6 md:pt-10">
         <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-panel p-6 md:p-10 tb-reveal">
-                <div class="mx-auto max-w-4xl text-center">
-                    <span class="tb-eyebrow">TwinBot Platform Flow</span>
-                    <h1 class="tb-heading mt-4">From control complexity to confident execution.</h1>
-                    <p class="tb-lead mx-auto mt-5 max-w-3xl">TwinBot builds embedded control and inspection platforms that eliminate unnecessary PLC complexity, simplify operator workflows, and keep production teams confident from pilot to full rollout.</p>
-                </div>
-
-                <div class="tb-flowchart mt-9">
-                    <div class="tb-flow-source">
-                        <span class="tb-flow-pulse"></span>
-                        <span>Production challenge</span>
+            <div class="tb-home-hero tb-home-reveal p-6 md:p-10">
+                <div class="tb-home-hero-grid">
+                    <div class="relative z-10">
+                        <span class="tb-home-kicker">TwinBot Innovations · Embedded Control Systems</span>
+                        <h1 class="tb-home-title mt-5">Industrial automation,<br><span>built around the people who run it.</span></h1>
+                        <p class="tb-home-copy mt-6 max-w-2xl">TwinBot Innovations develops embedded control, inspection, and traceability platforms for production teams that need clearer operation, faster evidence, and a system that grows from pilot to rollout.</p>
+                        <div class="mt-8 flex flex-wrap gap-3"><a href="{{ route('solutions') }}" class="btn btn-primary">Explore ECS Solutions</a><a href="{{ route('videos.index') }}" class="btn btn-ghost">Watch Systems in Action</a></div>
+                        <div class="tb-home-trustline mt-8"><span></span>Purpose-built electronics · Firmware · Operator UX · Traceability</div>
                     </div>
-                    <div class="tb-flow-line" aria-hidden="true"><span></span></div>
-                    <div class="grid gap-4 md:grid-cols-3">
-                        @foreach ($valuePillars as $pillar)
-                            <article class="tb-flow-node" style="--flow-delay: {{ $loop->index * 0.35 }}s">
-                                <div class="tb-flow-index">0{{ $loop->iteration }}</div>
-                                <h2>{{ $pillar['title'] }}</h2>
-                                <p>{{ $pillar['copy'] }}</p>
-                            </article>
-                        @endforeach
+                    <div class="tb-ecs-board" aria-label="TwinBot embedded control system visual">
+                        <div class="tb-ecs-board-label">TwinBot ECS / Live system view</div><div class="tb-ecs-orbit tb-ecs-orbit-a"></div><div class="tb-ecs-orbit tb-ecs-orbit-b"></div>
+                        <div class="tb-ecs-core"><span>ECS</span><small>CONTROL CORE</small></div>
+                        <div class="tb-ecs-node node-a">Operator<br>UX</div><div class="tb-ecs-node node-b">Sensors &<br>Devices</div><div class="tb-ecs-node node-c">Inspection<br>Logic</div><div class="tb-ecs-node node-d">Event<br>Evidence</div>
+                        <i class="tb-ecs-signal signal-a"></i><i class="tb-ecs-signal signal-b"></i><i class="tb-ecs-signal signal-c"></i>
                     </div>
-                    <div class="tb-flow-outcome"><span></span>Clearer actions. Stronger evidence. Confident rollout.</div>
                 </div>
             </div>
         </div>
     </section>
+
+    <section class="tb-section"><div class="mx-auto max-w-6xl px-4"><div class="tb-ecs-dock tb-home-reveal">
+        <div class="tb-ecs-dock-head"><div><span class="tb-home-kicker">Why ECS</span><h2>One production objective.<br><span>Two very different experiences.</span></h2></div><p>Conventional PLC automation can work. TwinBot ECS is built to make the daily experience clearer, more connected, and easier to evolve.</p></div>
+        <div class="tb-ecs-compare">
+            <article class="tb-ecs-lane legacy"><div>Conventional PLC route</div><h3>Complexity accumulates.</h3><p>More handoffs can mean more places for operators to wait, interpret, and troubleshoot.</p><ul><li>Modules & wiring</li><li>Vendor layers</li><li>Manual diagnosis</li><li>Separate data trail</li></ul></article>
+            <div class="tb-ecs-switch" aria-hidden="true"><span>same line</span><i></i><b>→</b></div>
+            <article class="tb-ecs-lane twinbot"><div>TwinBot embedded control route</div><h3>Clarity is designed in.</h3><p>A focused architecture connects the floor experience to the evidence behind every decision.</p><ul><li>Purpose-built core</li><li>Clear operator flow</li><li>Inspection in context</li><li>Traceable events</li></ul></article>
+        </div><div class="tb-ecs-footer"><span></span>Less cabinet archaeology. More confident production.</div>
+    </div></div></section>
+
+    <section class="tb-section"><div class="mx-auto max-w-6xl px-4">
+        <div class="tb-home-section-head tb-home-reveal"><span class="tb-home-kicker">Production reality</span><h2>Where production gets difficult,<br><span>TwinBot makes the next action obvious.</span></h2></div>
+        <div class="tb-challenge-grid">
+            <article class="tb-challenge tb-home-reveal" style="--delay:.05s"><b>01</b><h3>Operators need a clearer signal.</h3><p>Focused interfaces, visible pass/fail states, and predictable shift-level flow replace guesswork.</p><small>Operator-Clear Interfaces</small></article>
+            <article class="tb-challenge tb-home-reveal" style="--delay:.15s"><b>02</b><h3>Production needs a system that can grow.</h3><p>Start with the station in front of you, then extend purpose-built electronics and firmware where the line needs it.</p><small>Modular Embedded Core</small></article>
+            <article class="tb-challenge tb-home-reveal" style="--delay:.25s"><b>03</b><h3>Teams need proof, not more noise.</h3><p>Turn events and diagnostics into traceable evidence that helps teams decide, recover, and improve faster.</p><small>Actionable Visibility Layer</small></article>
+        </div>
+    </div></section>
+
+    <section class="tb-section"><div class="mx-auto max-w-6xl px-4"><div class="grid gap-5 md:grid-cols-[.86fr_1.14fr]">
+        <div class="tb-proof-panel tb-home-reveal"><span class="tb-home-kicker">The TwinBot difference</span><h2>Built for the floor.<br>Ready for the future.</h2><p>Control hardware, firmware, inspection logic, and human-centred interfaces become one operational system—not disconnected components.</p><div class="tb-proof-list"><span><b>01</b>Focused architecture</span><span><b>02</b>Practical deployment</span><span><b>03</b>Evidence-led improvement</span></div></div>
+        <div class="tb-panel p-6 md:p-8 tb-home-reveal"><span class="tb-home-kicker">Trusted collaborations</span><h2 class="tb-subheading mt-3">Teams building with TwinBot</h2><div class="tb-logo-grid mt-6">@foreach (config('twinbot.assets.trusted_logos', []) as $logo)<div class="tb-logo-card"><img src="{{ asset($logo) }}" alt="Trusted TwinBot collaboration" class="max-h-11 max-w-full w-auto object-contain" /></div>@endforeach</div></div>
+    </div></div></section>
+
+    <section class="tb-section pb-16"><div class="mx-auto max-w-6xl px-4"><div class="tb-explore tb-home-reveal">
+        <div><span class="tb-home-kicker">Explore TwinBot</span><h2>See the platform from every angle.</h2><p>Explore the products, engineering approach, and real production systems behind TwinBot.</p></div>
+        <div class="tb-explore-grid"><a href="{{ route('products.index') }}"><span>Products</span><small>Control and inspection systems built for production.</small><b>→</b></a><a href="{{ route('solutions') }}"><span>Solutions</span><small>Embedded automation approaches for real line challenges.</small><b>→</b></a><a href="{{ route('videos.index') }}"><span>Videos</span><small>Watch TwinBot systems working on the floor.</small><b>→</b></a></div>
+    </div></div></section>
 
     <style>
-        .tb-flowchart { position: relative; }
-        .tb-flow-source, .tb-flow-outcome { display: flex; align-items: center; justify-content: center; gap: .7rem; margin: 0 auto; width: fit-content; border-radius: 999px; padding: .7rem 1.1rem; font-size: .76rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #173e69; background: #e8f5ff; border: 1px solid #b9d9f4; }
-        .tb-flow-pulse { width: .55rem; height: .55rem; border-radius: 50%; background: #19c4a8; box-shadow: 0 0 0 0 rgba(25, 196, 168, .6); animation: tb-flow-pulse 1.8s infinite; }
-        .tb-flow-line { position: relative; height: 3.5rem; width: 2px; margin: 0 auto; overflow: hidden; background: #bdd7ee; }
-        .tb-flow-line span { display: block; width: 100%; height: 35%; background: linear-gradient(#1f6fd0, #19c4a8); animation: tb-flow-signal 1.6s ease-in-out infinite; }
-        .tb-flow-node { position: relative; min-height: 12.2rem; padding: 1.5rem; border: 1px solid #c7dff4; border-radius: 1.25rem; background: linear-gradient(145deg, #fff, #eef8ff); box-shadow: 0 14px 28px rgba(28, 91, 152, .1); animation: tb-flow-rise .7s both; animation-delay: var(--flow-delay); }
-        .tb-flow-node::before { content: ''; position: absolute; top: -1.1rem; left: 50%; width: 1px; height: 1.1rem; background: #bdd7ee; }
-        .tb-flow-index { display: inline-flex; align-items: center; justify-content: center; width: 2.3rem; height: 2.3rem; border-radius: .75rem; color: #fff; background: linear-gradient(135deg, #1f6fd0, #19c4a8); font-size: .78rem; font-weight: 800; }
-        .tb-flow-node h2 { margin-top: 1rem; color: #122f54; font-family: 'Chakra Petch', sans-serif; font-size: 1.3rem; line-height: 1.15; }
-        .tb-flow-node p { margin-top: .7rem; color: #4d688f; font-size: .9rem; line-height: 1.6; }
-        .tb-flow-outcome { margin-top: 2rem; color: #0d5b57; background: #eafbf6; border-color: #a9e4d5; letter-spacing: .07em; }
-        .tb-flow-outcome span { width: .55rem; height: .55rem; border-radius: 50%; background: #19c4a8; }
-        @keyframes tb-flow-signal { from { transform: translateY(-120%); } to { transform: translateY(320%); } }
-        @keyframes tb-flow-pulse { 70% { box-shadow: 0 0 0 .6rem rgba(25, 196, 168, 0); } 100% { box-shadow: 0 0 0 0 rgba(25, 196, 168, 0); } }
-        @keyframes tb-flow-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-        .tb-pitch { overflow: hidden; background: radial-gradient(circle at 85% 14%, rgba(27, 198, 169, .18), transparent 27%), linear-gradient(135deg, #0b2544, #123f70); color: #fff; }
-        .tb-pitch .tb-eyebrow { color: #9feadf; border-color: rgba(159,234,223,.35); background: rgba(255,255,255,.08); }
-        .tb-pitch h2, .tb-pitch p { color: #fff; }
-        .tb-pitch-orbit { position: absolute; right: -5rem; top: -6rem; width: 19rem; height: 19rem; border: 1px solid rgba(159,234,223,.25); border-radius: 50%; animation: tb-orbit 14s linear infinite; }
-        .tb-pitch-orbit::before, .tb-pitch-orbit::after { content: ''; position: absolute; width: .7rem; height: .7rem; border-radius: 50%; background: #35dac1; box-shadow: 0 0 20px #35dac1; } .tb-pitch-orbit::before { top: 2rem; left: 2.4rem; } .tb-pitch-orbit::after { bottom: 2rem; right: 2.4rem; }
-        .tb-pitch-grid { position: relative; display: grid; gap: 1rem; margin-top: 2rem; } .tb-pitch-card { position: relative; padding: 1.25rem; border: 1px solid rgba(255,255,255,.16); border-radius: 1rem; background: rgba(255,255,255,.08); backdrop-filter: blur(10px); transition: .65s ease; transition-delay: var(--pitch-delay); } .tb-pitch.motion-ready .tb-pitch-card { opacity: 0; transform: translateY(20px); }
-        .tb-pitch.is-live .tb-pitch-card { opacity: 1; transform: translateY(0); }
-        .tb-pitch-card::before { content: attr(data-index); display: inline-flex; width: 1.8rem; height: 1.8rem; align-items: center; justify-content: center; border-radius: 50%; background: #ff5d62; color: #fff; font-size: .72rem; font-weight: 800; }
-        .tb-pitch-card h3 { margin-top: .75rem; color: #fff; font-family: 'Chakra Petch', sans-serif; font-size: 1.15rem; } .tb-pitch-card p { margin-top: .45rem; color: #c9dcf1; font-size: .86rem; line-height: 1.55; }
-        .tb-pitch-card--ecs { border-color: rgba(53,218,193,.55); background: linear-gradient(145deg, rgba(53,218,193,.24), rgba(255,255,255,.08)); } .tb-pitch-card--ecs::before { background: #1fc7aa; }
-        .tb-pitch-vs { display: grid; gap: .8rem; } .tb-pitch-vs strong { color: #ffbec0; font-size: .76rem; letter-spacing: .09em; text-transform: uppercase; } .tb-pitch-vs span { color: #a8f1e4; font-size: .76rem; letter-spacing: .09em; text-transform: uppercase; }
-        .tb-pitch-tag { display: inline-flex; margin-top: 1.4rem; padding: .5rem .8rem; border-radius: 999px; background: rgba(255,255,255,.1); color: #d9ecff; font-size: .78rem; font-weight: 700; }
-        .tb-discovery-grid { display: grid; gap: .75rem; margin-top: 1.35rem; } .tb-discovery-link { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: 1rem; border: 1px solid rgba(255,255,255,.24); border-radius: .9rem; color: #fff; background: rgba(255,255,255,.08); transition: transform .25s ease, background .25s ease; } .tb-discovery-link:hover { transform: translateX(6px); background: rgba(255,255,255,.16); } .tb-discovery-link span { font-size: .78rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; } .tb-discovery-link b { font-size: 1.2rem; color: #35dac1; }
-        .tb-section .tb-panel, .tb-section .tb-cta { transition: transform .35s ease, box-shadow .35s ease; }
-        @keyframes tb-orbit { to { transform: rotate(360deg); } }
-        @media (min-width: 768px) { .tb-pitch-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } .tb-pitch-card:nth-child(3) { grid-column: 1 / -1; } .tb-discovery-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } .tb-discovery-link { flex-direction: column; align-items: flex-start; min-height: 7.3rem; } }
-        @media (hover: hover) { .tb-section .tb-panel:hover, .tb-section .tb-cta:hover { transform: translateY(-4px); box-shadow: 0 20px 42px rgba(29,88,147,.14); } }
-        @media (max-width: 767px) { .tb-flow-node::before { display: none; } .tb-flow-line { height: 2.5rem; } }
-        @media (prefers-reduced-motion: reduce) { .tb-flow-pulse, .tb-flow-line span, .tb-pitch-orbit { animation: none; } .tb-flow-node, .tb-pitch-card { animation: none; transition: none; opacity: 1; transform: none; } }
+        .tb-home-hero,.tb-ecs-dock,.tb-proof-panel,.tb-explore{border:1px solid #c8e1f4;border-radius:1.6rem;box-shadow:0 20px 48px rgba(24,83,139,.12)}.tb-home-hero{position:relative;overflow:hidden;background:radial-gradient(circle at 80% 18%,rgba(45,213,190,.25),transparent 27%),linear-gradient(135deg,#fafdff,#eaf6ff)}.tb-home-hero:before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(30,111,208,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(30,111,208,.055) 1px,transparent 1px);background-size:28px 28px}.tb-home-hero-grid{display:grid;gap:2.5rem;align-items:center}.tb-home-kicker{display:inline-flex;border:1px solid #b6d7f1;border-radius:999px;padding:.45rem .75rem;color:#215788;background:#f4fbff;font-size:.68rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase}.tb-home-title{font-family:'Chakra Petch',sans-serif;color:#112f55;font-size:clamp(2.5rem,5.4vw,5.05rem);line-height:.98;letter-spacing:-.055em}.tb-home-title span,.tb-home-section-head h2 span,.tb-ecs-dock h2 span{color:#1a9fba}.tb-home-copy{color:#42668f;font-size:1.05rem;line-height:1.8}.tb-home-trustline,.tb-ecs-footer{display:flex;align-items:center;gap:.6rem;color:#40678e;font-size:.78rem;font-weight:700}.tb-home-trustline span,.tb-ecs-footer span{width:.6rem;height:.6rem;border-radius:50%;background:#1dc6a9;box-shadow:0 0 0 .35rem rgba(29,198,169,.12);animation:tb-pulse 2s infinite}
+        .tb-ecs-board{position:relative;min-height:25rem;overflow:hidden;border:1px solid rgba(30,112,203,.23);border-radius:1.4rem;background:linear-gradient(145deg,#0d3158,#155b85)}.tb-ecs-board-label{position:absolute;left:1.2rem;top:1.1rem;color:#bfe7ff;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.tb-ecs-orbit{position:absolute;left:50%;top:50%;border:1px solid rgba(87,231,211,.34);border-radius:50%;transform:translate(-50%,-50%)}.tb-ecs-orbit-a{width:15rem;height:15rem;animation:tb-orbit 18s linear infinite}.tb-ecs-orbit-b{width:20rem;height:20rem;border-style:dashed;animation:tb-orbit 28s linear infinite reverse}.tb-ecs-core{position:absolute;left:50%;top:50%;z-index:2;display:grid;place-content:center;width:7.4rem;height:7.4rem;border-radius:50%;transform:translate(-50%,-50%);background:linear-gradient(145deg,#25d4bb,#1f70d0);color:#fff;text-align:center;box-shadow:0 0 0 12px rgba(255,255,255,.05),0 0 34px rgba(37,212,187,.5)}.tb-ecs-core span{font-family:'Chakra Petch',sans-serif;font-size:1.65rem;font-weight:800}.tb-ecs-core small{font-size:.5rem;font-weight:800;letter-spacing:.09em}.tb-ecs-node{position:absolute;z-index:2;border:1px solid rgba(189,235,255,.4);border-radius:.75rem;padding:.55rem .7rem;background:rgba(4,27,54,.6);color:#e5f7ff;font-size:.66rem;font-weight:800;line-height:1.35;text-align:center}.node-a{left:9%;top:26%}.node-b{right:8%;top:25%}.node-c{left:12%;bottom:19%}.node-d{right:8%;bottom:19%}.tb-ecs-signal{position:absolute;z-index:1;width:.55rem;height:.55rem;border-radius:50%;background:#4cf0d1;box-shadow:0 0 15px #4cf0d1;animation:tb-signal 3.5s ease-in-out infinite}.signal-a{left:29%;top:39%}.signal-b{right:28%;top:53%;animation-delay:1s}.signal-c{left:48%;bottom:18%;animation-delay:2s}
+        .tb-ecs-dock{padding:1.5rem;overflow:hidden;background:linear-gradient(135deg,#0a2949,#123f70);color:#fff}.tb-ecs-dock .tb-home-kicker,.tb-explore .tb-home-kicker{border-color:rgba(159,234,223,.35);color:#9feadf;background:rgba(255,255,255,.08)}.tb-ecs-dock-head{display:grid;gap:1rem;align-items:end}.tb-ecs-dock h2{margin-top:.85rem;font-family:'Chakra Petch',sans-serif;font-size:clamp(2rem,4vw,3.4rem);line-height:1.05}.tb-ecs-dock-head p{max-width:30rem;color:#c9e4fa;line-height:1.7}.tb-ecs-compare{display:grid;gap:1rem;align-items:stretch;margin-top:2rem}.tb-ecs-lane{padding:1.35rem;border-radius:1rem}.tb-ecs-lane>div{font-size:.67rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.legacy{border:1px solid rgba(255,129,129,.3);background:rgba(111,37,53,.25)}.legacy>div{color:#ffb7b7}.twinbot{border:1px solid rgba(76,240,209,.38);background:rgba(23,154,143,.17)}.twinbot>div{color:#94f5e3}.tb-ecs-lane h3{margin-top:.65rem;font-family:'Chakra Petch',sans-serif;font-size:1.45rem}.tb-ecs-lane p{margin-top:.8rem;color:#d3e7f9;font-size:.9rem;line-height:1.6}.tb-ecs-lane ul{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1rem}.tb-ecs-lane li{padding:.4rem .55rem;border-radius:.45rem;background:rgba(255,255,255,.1);font-size:.72rem;font-weight:700}.tb-ecs-switch{display:flex;align-items:center;justify-content:center;gap:.6rem;color:#bbd9f3;font-size:.67rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.tb-ecs-switch i{width:3rem;height:1px;background:linear-gradient(90deg,#ff7777,#4cf0d1)}.tb-ecs-switch b{color:#4cf0d1;font-size:1.2rem;animation:tb-arrow 1.5s ease-in-out infinite}.tb-ecs-footer{margin-top:1.3rem;border-top:1px solid rgba(255,255,255,.14);padding-top:1.2rem;color:#9feadf}
+        .tb-home-section-head{text-align:center}.tb-home-section-head h2{margin-top:1rem;color:#132f55;font-family:'Chakra Petch',sans-serif;font-size:clamp(2rem,4vw,3.35rem);line-height:1.08}.tb-challenge-grid{display:grid;gap:1rem;margin-top:2rem}.tb-challenge{min-height:17rem;border:1px solid #c8e1f4;border-radius:1.25rem;padding:1.4rem;background:linear-gradient(150deg,#fff,#edf8ff);box-shadow:0 12px 26px rgba(30,91,146,.08);transition:transform .35s ease,box-shadow .35s ease}.tb-challenge:hover{transform:translateY(-7px) rotate(-.35deg);box-shadow:0 23px 36px rgba(30,91,146,.15)}.tb-challenge>b{color:#1fa9b5;font-family:'Chakra Petch',sans-serif;font-size:1.05rem}.tb-challenge h3{margin-top:1rem;color:#14345c;font-family:'Chakra Petch',sans-serif;font-size:1.35rem;line-height:1.15}.tb-challenge p{margin-top:.8rem;color:#527396;font-size:.9rem;line-height:1.65}.tb-challenge small{display:block;margin-top:1.1rem;color:#167d94;font-size:.71rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}.tb-proof-panel{padding:1.7rem;background:linear-gradient(145deg,#dff7f2,#f3feff)}.tb-proof-panel h2{margin-top:1rem;color:#12395d;font-family:'Chakra Petch',sans-serif;font-size:clamp(1.9rem,3vw,2.7rem);line-height:1.08}.tb-proof-panel p{margin-top:1rem;color:#4b718f;line-height:1.7}.tb-proof-list{display:grid;gap:.65rem;margin-top:1.5rem}.tb-proof-list span{display:flex;align-items:center;gap:.6rem;color:#23547d;font-size:.82rem;font-weight:800}.tb-proof-list b{display:inline-grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:.45rem;background:#1f9db4;color:#fff;font-size:.67rem}.tb-explore{padding:1.5rem;background:radial-gradient(circle at 89% 5%,rgba(45,213,190,.27),transparent 24%),linear-gradient(135deg,#0c2d52,#154f7a);color:#fff}.tb-explore h2{margin-top:.85rem;font-family:'Chakra Petch',sans-serif;font-size:clamp(2rem,4vw,3.2rem);line-height:1.05}.tb-explore p{margin-top:1rem;max-width:40rem;color:#cae4fa;line-height:1.65}.tb-explore-grid{display:grid;gap:.75rem;margin-top:1.5rem}.tb-explore-grid a{position:relative;display:block;min-height:8rem;border:1px solid rgba(255,255,255,.23);border-radius:1rem;padding:1rem;background:rgba(255,255,255,.08);color:#fff;transition:transform .3s ease,background .3s ease}.tb-explore-grid a:hover{transform:translateY(-6px);background:rgba(255,255,255,.16)}.tb-explore-grid span{display:block;font-family:'Chakra Petch',sans-serif;font-size:1.35rem;font-weight:800}.tb-explore-grid small{display:block;margin-top:.6rem;max-width:13rem;color:#cde8fa;font-size:.78rem;line-height:1.45}.tb-explore-grid b{position:absolute;right:1rem;bottom:.8rem;color:#5cf0d7;font-size:1.35rem}
+        @keyframes tb-pulse{70%{box-shadow:0 0 0 .65rem rgba(29,198,169,0)}100%{box-shadow:0 0 0 0 rgba(29,198,169,0)}}@keyframes tb-orbit{to{transform:translate(-50%,-50%) rotate(360deg)}}@keyframes tb-signal{50%{transform:translate(24px,-15px);opacity:.3}}@keyframes tb-arrow{50%{transform:translateX(6px)}}@media (min-width:768px){.tb-home-hero-grid{grid-template-columns:1.05fr .95fr}.tb-ecs-dock{padding:2.3rem}.tb-ecs-dock-head{grid-template-columns:1.2fr .8fr}.tb-ecs-compare{grid-template-columns:1fr auto 1fr}.tb-challenge-grid,.tb-explore-grid{grid-template-columns:repeat(3,1fr)}.tb-explore{padding:2.3rem}}@media(max-width:767px){.tb-ecs-board{min-height:21rem}.tb-ecs-orbit-b{width:17rem;height:17rem}.tb-ecs-node{font-size:.57rem}.tb-ecs-switch{padding:.15rem}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+        .tb-motion-ready .tb-home-reveal{opacity:0;transform:translateY(24px);transition:opacity .75s ease,transform .75s cubic-bezier(.2,.75,.25,1);transition-delay:var(--delay,0s)}.tb-motion-ready .tb-home-reveal.tb-visible{opacity:1;transform:none}
     </style>
-
-    <section class="tb-section">
-        <div class="mx-auto max-w-6xl px-4">
-            <div class="tb-pitch tb-panel relative p-6 md:p-10">
-                <div class="tb-pitch-orbit" aria-hidden="true"></div>
-                <div class="relative z-10 max-w-3xl">
-                    <div>
-                        <span class="tb-eyebrow">The TwinBot pitch</span>
-                        <h2 class="tb-heading mt-4">Stop paying the <span class="text-[#35dac1]">PLC complexity tax.</span></h2>
-                        <p class="mt-4 max-w-2xl text-base leading-relaxed text-[#d6e9ff]">The same production target can feel completely different on the floor. TwinBot ECS replaces cabinet archaeology with clear, evidence-led execution.</p>
-                    </div>
-                    <div class="tb-pitch-grid">
-                        @foreach ($compareRows->take(3) as $row)
-                            <article class="tb-pitch-card" data-index="0{{ $loop->iteration }}" style="--pitch-delay: {{ $loop->index * 0.12 }}s">
-                                <h3>{{ $row['aspect'] }}</h3>
-                                <div class="tb-pitch-vs mt-4"><strong>Legacy PLC: {{ $row['plc'] }}</strong><span>TwinBot ECS: {{ $row['ecs'] }}</span></div>
-                            </article>
-                        @endforeach
-                    </div>
-                    <div class="tb-pitch-tag">Less cabinet archaeology. More production confidence.</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="tb-section pb-16">
-        <div class="mx-auto max-w-6xl px-4">
-            <div class="grid gap-5 md:grid-cols-[1fr_0.95fr]">
-                <div class="tb-panel p-6 md:p-8 tb-reveal">
-                    <span class="tb-eyebrow">Trusted Collaborations</span>
-                    <h2 class="tb-subheading mt-3">Teams that built with TwinBot</h2>
-                    <div class="tb-logo-grid mt-6">
-                        @foreach (config('twinbot.assets.trusted_logos', []) as $logo)
-                            <div class="tb-logo-card">
-                                <img src="{{ asset($logo) }}" alt="Trusted brand" class="max-h-11 max-w-full w-auto object-contain" />
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div class="tb-cta tb-reveal">
-                    <span class="tb-eyebrow">Explore TwinBot</span>
-                    <h2 class="tb-subheading mt-3">See the platform from every angle.</h2>
-                    <p class="tb-lead mt-3">Explore the products, engineering approach, and real production systems behind TwinBot.</p>
-                    <div class="tb-discovery-grid">
-                        <a href="{{ route('products.index') }}" class="tb-discovery-link"><span>Products</span><b aria-hidden="true">→</b></a>
-                        <a href="{{ route('solutions') }}" class="tb-discovery-link"><span>Solutions</span><b aria-hidden="true">→</b></a>
-                        <a href="{{ route('videos.index') }}" class="tb-discovery-link"><span>Videos</span><b aria-hidden="true">→</b></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 @endsection
 
 @push('scripts')
     <script>
-        document.querySelectorAll('.tb-pitch').forEach(function (pitch) {
-            if (!('IntersectionObserver' in window)) {
-                pitch.classList.add('is-live');
-                return;
-            }
-
-            pitch.classList.add('motion-ready');
-
-            new IntersectionObserver(function (entries, observer) {
-                entries.forEach(function (entry) {
-                    if (entry.isIntersecting) {
-                        pitch.classList.add('is-live');
-                        observer.unobserve(pitch);
-                    }
-                });
-            }, { threshold: 0.22 }).observe(pitch);
-        });
+        (function () { if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; document.documentElement.classList.add('tb-motion-ready'); var observer = new IntersectionObserver(function (entries) { entries.forEach(function (entry) { if (entry.isIntersecting) { entry.target.classList.add('tb-visible'); observer.unobserve(entry.target); } }); }, { threshold: .14 }); document.querySelectorAll('.tb-home-reveal').forEach(function (item) { observer.observe(item); }); })();
     </script>
 @endpush
