@@ -49,6 +49,48 @@ return [
             'youtube_id' => 'Nzs5pbyB8tc',
             'category' => 'Inspection Automation',
         ],
+        [
+            'title' => '4 in 1 Multi Gauge',
+            'summary' => 'A TwinBot multi-gauge inspection setup designed to consolidate multiple measurement checks into one efficient operator workflow.',
+            'youtube_id' => 'QvD_hJs4r2s',
+            'category' => 'Multi-Gauge Inspection',
+        ],
+        [
+            'title' => 'DigiDial Console - 16CH',
+            'summary' => 'A 16-channel DigiDial console project for collecting, monitoring, and evaluating multiple dimensional readings in one inspection station.',
+            'youtube_id' => 'trUdTk4wmko',
+            'category' => 'Digital Inspection Console',
+        ],
+        [
+            'title' => 'Oil Pan Ring Automation',
+            'summary' => 'An automated inspection workflow developed for oil-pan ring production and repeatable quality verification.',
+            'youtube_id' => 'LQZDB9_EK5g',
+            'category' => 'Component Inspection',
+        ],
+        [
+            'title' => 'ALU Inspection Automation',
+            'summary' => 'A TwinBot automation project for consistent inspection and handling of aluminium components.',
+            'youtube_id' => 'RiLnSDr7d1M',
+            'category' => 'Aluminium Automation',
+        ],
+        [
+            'title' => 'Flow Track Pro',
+            'summary' => 'A production-flow tracking solution that brings clearer process visibility to an industrial automation workflow.',
+            'youtube_id' => 'WCPb6dEVrGg',
+            'category' => 'Production Tracking',
+        ],
+        [
+            'title' => 'Coin Cell Crimping & Decrimping Machine',
+            'summary' => 'A TwinBot machine developed for IIT Kharagpur to support controlled coin-cell crimping and decrimping operations.',
+            'youtube_id' => '6fxRWCn8SFA',
+            'category' => 'R&D Automation',
+        ],
+        [
+            'title' => 'DHBCG Automation',
+            'summary' => 'A TwinBot industrial automation project demonstrating a dedicated production and inspection workflow.',
+            'youtube_id' => 'LboPQzDCgY4',
+            'category' => 'Industrial Automation',
+        ],
     ],
 
     // Fallback catalog used when DB is not configured (or unavailable).
