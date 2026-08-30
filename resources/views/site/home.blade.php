@@ -52,6 +52,8 @@
         .tb-customer-logo{min-height:4.6rem;border-radius:.7rem}
         .tb-customer-logo img{max-width:76%;max-height:2.2rem}
         .tb-pitch-split i,.tb-pitch-merge i{overflow:hidden}
+        /* The connectors and the three product lanes share one width, so every vertical pulse lands on its product. */
+        .tb-product-streams{width:min(100%,52rem)}
         .tb-pitch-split i:before,.tb-pitch-merge i:before{content:'';position:absolute;z-index:2;top:-.7rem;left:calc(50% - 3px);width:6px;height:.82rem;border-radius:999px;background:linear-gradient(#1677d2,#24c6aa);box-shadow:0 0 10px rgba(22,119,210,.9),0 0 18px rgba(36,198,170,.75);animation:tb-branch-spark 2.1s linear infinite}
         .tb-pitch-split i:nth-child(2):before,.tb-pitch-merge i:nth-child(2):before{animation-delay:.5s}
         .tb-pitch-split i:nth-child(3):before,.tb-pitch-merge i:nth-child(3):before{animation-delay:1s}
