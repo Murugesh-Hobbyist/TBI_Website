@@ -43,12 +43,12 @@ return [
     // YouTube project library used when the database is unavailable. Add each
     // public YouTube video ID here; videos are embedded on twinbot.in.
     'videos' => [
-        // [
-        //     'title' => 'Project title',
-        //     'summary' => 'Short explanation of the automation outcome.',
-        //     'youtube_id' => 'VIDEO_ID_FROM_YOUTUBE_URL',
-        //     'category' => 'Industrial Automation',
-        // ],
+        [
+            'title' => 'Beam Crankshaft Flatness Measurement Automation System',
+            'summary' => 'A RICO inspection-automation project for measuring beam crankshaft flatness with a repeatable, operator-friendly quality-control workflow.',
+            'youtube_id' => 'Nzs5pbyB8tc',
+            'category' => 'Inspection Automation',
+        ],
     ],
 
     // Fallback catalog used when DB is not configured (or unavailable).
