@@ -63,13 +63,6 @@
         </div>
 
         <header class="tb-header">
-            <div class="tb-topline">
-                <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-2 text-xs font-semibold text-[#214b78]">
-                    <div class="hidden sm:block">Industrial automation studio for control, traceability, and production-scale reliability.</div>
-                    <a href="{{ route('contact') }}" class="tb-mini-link">Start technical discussion</a>
-                </div>
-            </div>
-
             <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4">
                 <a href="{{ route('home') }}" class="tb-brand-badge" aria-label="{{ config('twinbot.site.domain') }}">
                     <img src="{{ asset(config('twinbot.assets.logo')) }}" alt="{{ config('twinbot.site.name') }}" class="h-10 w-auto" />
