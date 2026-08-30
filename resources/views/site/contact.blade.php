@@ -50,7 +50,7 @@
                         <div class="flex flex-col">
                             <div class="flex-1">
                                 <label class="tb-form-label">Message</label>
-                                <textarea name="message" rows="12" class="tb-textarea h-full min-h-[18rem]" placeholder="Share your application, current challenge, and expected timeline.">{{ old('message') }}</textarea>
+                                <textarea name="message" rows="10" class="tb-textarea h-[15.5rem]" placeholder="Share your application, current challenge, and expected timeline.">{{ old('message') }}</textarea>
                                 @error('message')<div class="mt-1 text-xs font-semibold text-red-700">{{ $message }}</div>@enderror
                             </div>
                             <div class="mt-3 flex justify-end">
